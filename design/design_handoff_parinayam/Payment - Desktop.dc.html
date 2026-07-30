@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Payment — Desktop" style="width: 1440px; min-height: 960px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233;">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+      <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #8A93A6; font-weight: 600;">🔒 Secure checkout · 256-bit encrypted</div>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 1fr 420px; gap: 32px; max-width: 1160px; margin: 0 auto; padding: 40px 24px 64px; align-items: start;">
+
+    <!-- ============ PAYMENT METHODS ============ -->
+    <main>
+      <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; margin: 0 0 6px;">Complete your payment</h1>
+      <p style="font-size: 14.5px; color: #5A6472; margin: 0 0 28px;">Choose how you'd like to pay.</p>
+
+      <!-- UPI (selected) -->
+      <div style="background: #ffffff; border: 2px solid #1E3A8A; border-radius: 18px; padding: 24px 28px; margin-bottom: 14px; box-shadow: 0 8px 26px rgba(30,58,138,0.08);">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+          <span style="width: 22px; height: 22px; border-radius: 50%; border: 7px solid #1E3A8A; display: inline-block; background: #ffffff;"></span>
+          <span style="font-size: 16px; font-weight: 800; color: #14275F;">UPI</span>
+          <span style="background: #E6F6EF; color: #0E9F6E; font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: 999px;">RECOMMENDED · Instant</span>
+        </div>
+        <div style="display: flex; gap: 12px; margin-bottom: 18px;">
+          <div style="flex: 1; border: 1.5px solid #1E3A8A; background: #FBFCFE; border-radius: 13px; padding: 14px; text-align: center; font-size: 13.5px; font-weight: 700; color: #1E3A8A; cursor: pointer;">GPay</div>
+          <div style="flex: 1; border: 1.5px solid #E4E8EF; border-radius: 13px; padding: 14px; text-align: center; font-size: 13.5px; font-weight: 600; color: #5A6472; cursor: pointer;">PhonePe</div>
+          <div style="flex: 1; border: 1.5px solid #E4E8EF; border-radius: 13px; padding: 14px; text-align: center; font-size: 13.5px; font-weight: 600; color: #5A6472; cursor: pointer;">Paytm</div>
+          <div style="flex: 1; border: 1.5px solid #E4E8EF; border-radius: 13px; padding: 14px; text-align: center; font-size: 13.5px; font-weight: 600; color: #5A6472; cursor: pointer;">Other UPI</div>
+        </div>
+        <label style="font-size: 12.5px; font-weight: 700; color: #14275F; display: block; margin-bottom: 8px;">UPI ID</label>
+        <div style="display: flex; gap: 12px;">
+          <div style="flex: 1; padding: 14px 16px; border: 1.5px solid #E4E8EF; border-radius: 12px; font-size: 14.5px; color: #1A2233;">anjali.menon@okhdfcbank</div>
+          <button style="padding: 14px 28px; border-radius: 12px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer;">Verify</button>
+        </div>
+      </div>
+
+      <!-- CARDS -->
+      <div style="background: #ffffff; border: 1.5px solid #EEF0F4; border-radius: 18px; padding: 20px 28px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; cursor: pointer;">
+        <span style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D7DCE6; display: inline-block;"></span>
+        <span style="font-size: 15.5px; font-weight: 700; color: #14275F; flex: 1;">Credit / Debit card</span>
+        <span style="display: flex; gap: 6px;">
+          <span style="border: 1px solid #E4E8EF; border-radius: 6px; padding: 4px 9px; font-size: 10.5px; font-weight: 800; color: #1E3A8A;">VISA</span>
+          <span style="border: 1px solid #E4E8EF; border-radius: 6px; padding: 4px 9px; font-size: 10.5px; font-weight: 800; color: #C0392B;">MC</span>
+          <span style="border: 1px solid #E4E8EF; border-radius: 6px; padding: 4px 9px; font-size: 10.5px; font-weight: 800; color: #0E9F6E;">RuPay</span>
+        </span>
+      </div>
+
+      <!-- NET BANKING -->
+      <div style="background: #ffffff; border: 1.5px solid #EEF0F4; border-radius: 18px; padding: 20px 28px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; cursor: pointer;">
+        <span style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D7DCE6; display: inline-block;"></span>
+        <span style="font-size: 15.5px; font-weight: 700; color: #14275F; flex: 1;">Net banking</span>
+        <span style="font-size: 12.5px; color: #8A93A6; font-weight: 600;">SBI, Federal, HDFC, ICICI +38</span>
+      </div>
+
+      <!-- WALLET -->
+      <div style="background: #ffffff; border: 1.5px solid #EEF0F4; border-radius: 18px; padding: 20px 28px; display: flex; align-items: center; gap: 14px; cursor: pointer;">
+        <span style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D7DCE6; display: inline-block;"></span>
+        <span style="font-size: 15.5px; font-weight: 700; color: #14275F; flex: 1;">Wallets</span>
+        <span style="font-size: 12.5px; color: #8A93A6; font-weight: 600;">Amazon Pay, Mobikwik</span>
+      </div>
+    </main>
+
+    <!-- ============ ORDER SUMMARY ============ -->
+    <aside style="display: flex; flex-direction: column; gap: 18px; position: sticky; top: 24px;">
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 26px 28px;">
+        <div style="font-size: 17px; font-weight: 800; color: #14275F; margin-bottom: 18px;">Order summary</div>
+        <div style="display: flex; align-items: center; gap: 14px; background: #14275F; border-radius: 14px; padding: 16px 18px; color: #ffffff; margin-bottom: 20px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #C19A3F, #E3C57A); display: flex; align-items: center; justify-content: center; font-size: 19px;">★</div>
+          <div style="flex: 1;">
+            <div style="font-size: 15px; font-weight: 800;">Premium — 6 months</div>
+            <div style="font-size: 12px; color: #B9C3DD; margin-top: 2px;">Renews 6 Jan 2027 · cancel anytime</div>
+          </div>
+        </div>
+
+        <!-- coupon -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #F2FBF7; border: 1px dashed #7BD3B0; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 15px;">🏷</span>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: #0E9F6E;">FIRSTMATCH applied</div>
+              <div style="font-size: 11.5px; color: #5A6472;">20% off on first membership</div>
+            </div>
+          </div>
+          <span style="font-size: 12.5px; font-weight: 700; color: #C0392B; cursor: pointer;">Remove</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 11px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: #5A6472;">Premium 6-month plan</span><span style="font-weight: 700; color: #14275F;">₹5,900</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #5A6472;">Coupon discount</span><span style="font-weight: 700; color: #0E9F6E;">− ₹1,180</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #5A6472;">GST (18%)</span><span style="font-weight: 700; color: #14275F;">₹850</span></div>
+          <div style="border-top: 1.5px solid #EEF0F4; padding-top: 14px; display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 15px; font-weight: 800; color: #14275F;">Total payable</span>
+            <span style="font-size: 26px; font-weight: 800; color: #14275F;">₹5,570</span>
+          </div>
+        </div>
+
+        <button style="width: 100%; margin-top: 22px; padding: 16px 0; border-radius: 14px; border: none; background: linear-gradient(135deg, #C19A3F, #E3C57A); color: #ffffff; font-weight: 800; font-size: 16px; font-family: inherit; cursor: pointer; box-shadow: 0 10px 26px rgba(193,154,63,0.4);" style-hover="transform: translateY(-1px);">Pay ₹5,570 securely</button>
+        <div style="text-align: center; font-size: 12px; color: #8A93A6; margin-top: 12px;">By paying you agree to the Terms &amp; Refund Policy. Invoice emailed instantly.</div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 20px; font-size: 12.5px; color: #8A93A6; font-weight: 600;">
+        <span>🔒 PCI-DSS</span><span>↩ 7-day refund</span><span>🧾 GST invoice</span>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #E9EBF0; }
+    * { box-sizing: border-box; }
+    .pn-scroll-x::-webkit-scrollbar { display: none; }
+  </style>
+</helmet>
+
+<div data-screen-label="Dashboard — Mobile" style="width: 390px; min-height: 844px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; box-shadow: 0 0 60px rgba(20,39,95,0.12); display: flex; flex-direction: column; position: relative;">
+
+  <!-- HEADER -->
+  <header style="background: #ffffff; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEF0F4; position: sticky; top: 0; z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <image-slot id="mdash-avatar" shape="circle" placeholder="you" style="width: 42px; height: 42px; display: block; border: 2px solid #E3C57A; border-radius: 50%;"></image-slot>
+      <div>
+        <div style="font-size: 12px; color: #8A93A6; font-weight: 600;">Good morning 🌤</div>
+        <div style="font-size: 16px; font-weight: 800; color: #14275F;">Anjali Menon</div>
+      </div>
+    </div>
+    <div style="position: relative; width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid #E4E8EF; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #ffffff;">🔔<span style="position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; border-radius: 999px; background: #E8936B; color: #ffffff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 4px;">4</span></div>
+  </header>
+
+  <main style="flex: 1; padding: 18px 0 108px;">
+
+    <!-- WELCOME BANNER -->
+    <div style="margin: 0 20px 18px; background: linear-gradient(135deg, #14275F, #1E3A8A); border-radius: 18px; padding: 20px; color: #ffffff;">
+      <div style="font-size: 15px; font-weight: 700;">3 new interests · 12 new matches</div>
+      <div style="font-size: 12.5px; color: #B9C3DD; margin: 4px 0 14px;">Your profile is getting noticed today.</div>
+      <button style="padding: 11px 20px; border-radius: 11px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.12); color: #ffffff; font-weight: 700; font-size: 13px; font-family: inherit;">View today's matches →</button>
+    </div>
+
+    <!-- STAT TILES -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 20px 22px;">
+      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="4">
+        <div style="background: #ffffff; border-radius: 14px; border: 1px solid #EEF0F4; padding: 12px 6px; text-align: center;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: {{ t.bg }}; color: {{ t.fg }}; display: flex; align-items: center; justify-content: center; font-size: 14px; margin: 0 auto 8px;">{{ t.icon }}</div>
+          <div style="font-size: 18px; font-weight: 800; color: #14275F;">{{ t.value }}</div>
+          <div style="font-size: 10px; font-weight: 600; color: #8A93A6; margin-top: 1px;">{{ t.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- PROFILE STRENGTH -->
+    <div style="margin: 0 20px 22px; background: #ffffff; border-radius: 18px; border: 1px solid #EEF0F4; padding: 18px; display: flex; align-items: center; gap: 16px;">
+      <div style="width: 62px; height: 62px; border-radius: 50%; background: conic-gradient(#0E9F6E 0 306deg, #EDEFF3 306deg 360deg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #0E9F6E;">85%</div>
+      </div>
+      <div style="flex: 1;">
+        <div style="font-size: 15px; font-weight: 800; color: #14275F;">Profile strength: Strong</div>
+        <div style="font-size: 12.5px; color: #8A93A6; margin-top: 2px;">Add a voice intro for +10%</div>
+      </div>
+      <span style="color: #8A93A6; font-size: 16px;">›</span>
+    </div>
+
+    <!-- SUGGESTED MATCHES (swipe cards) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 20px 14px;">
+      <div style="font-size: 17px; font-weight: 800; color: #14275F;">Suggested for you</div>
+      <a href="#" style="font-size: 13px; font-weight: 700; color: #1E3A8A; text-decoration: none;">See all →</a>
+    </div>
+    <div class="pn-scroll-x" style="display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 6px; scrollbar-width: none; margin-bottom: 22px;">
+      <sc-for list="{{ matches }}" as="m" hint-placeholder-count="3">
+        <div style="width: 200px; flex-shrink: 0; background: #ffffff; border-radius: 16px; border: 1px solid #EEF0F4; overflow: hidden; position: relative; box-shadow: 0 6px 20px rgba(20,39,95,0.06);">
+          <div style="position: relative;">
+            <image-slot id="m{{ m.slotId }}" shape="rect" placeholder="Profile photo" style="width: 100%; height: 180px; display: block;"></image-slot>
+            <div style="position: absolute; bottom: 9px; right: 9px; background: #14275F; color: #ffffff; border-radius: 999px; padding: 3px 9px; font-size: 10.5px; font-weight: 800;">{{ m.match }}%</div>
+            <sc-if value="{{ m.online }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; bottom: 9px; left: 9px; background: rgba(255,255,255,0.92); border-radius: 999px; padding: 3px 9px; font-size: 10.5px; font-weight: 700; color: #0E9F6E;">● Online</div>
+            </sc-if>
+          </div>
+          <div style="padding: 12px 14px 14px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 14px; font-weight: 800; color: #14275F; white-space: nowrap;">{{ m.name }}, {{ m.age }}</span>
+              <span style="width: 14px; height: 14px; border-radius: 50%; background: #1E3A8A; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-size: 8px;">✓</span>
+            </div>
+            <div style="font-size: 12px; color: #5A6472; margin-top: 3px;">{{ m.meta }}</div>
+            <div style="display: flex; gap: 7px; margin-top: 11px;">
+              <button style="flex: 1; padding: 10px 0; border-radius: 10px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 700; font-size: 12.5px; font-family: inherit;">♥ Interest</button>
+              <button style="width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-family: inherit;">☆</button>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- MEMBERSHIP -->
+    <div style="margin: 0 20px 22px; background: linear-gradient(135deg, #14275F, #1E3A8A); border-radius: 18px; padding: 18px 20px; color: #ffffff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #E3C57A;">★ PREMIUM</span>
+        <span style="font-size: 11.5px; color: #B9C3DD;">till Mar 2027</span>
+      </div>
+      <div style="height: 7px; border-radius: 999px; background: rgba(255,255,255,0.15); overflow: hidden;"><div style="width: 68%; height: 100%; background: linear-gradient(90deg, #C19A3F, #E3C57A);"></div></div>
+      <div style="font-size: 11.5px; color: #B9C3DD; margin-top: 7px;">68 of 100 contact views used</div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div style="margin: 0 20px; background: #ffffff; border-radius: 18px; border: 1px solid #EEF0F4; padding: 18px 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="font-size: 16px; font-weight: 800; color: #14275F;">Notifications</div>
+        <a href="#" style="font-size: 12.5px; font-weight: 700; color: #1E3A8A; text-decoration: none;">All →</a>
+      </div>
+      <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="3">
+        <div style="display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-top: 1px solid #F3F5F9;">
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: {{ n.bg }}; color: {{ n.fg }}; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">{{ n.icon }}</div>
+          <div style="flex: 1;">
+            <div style="font-size: 13px; color: #1A2233; line-height: 1.45;">{{ n.text }}</div>
+            <div style="font-size: 11px; color: #8A93A6; margin-top: 2px;">{{ n.when }}</div>
+          </div>
+          <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width: 7px; height: 7px; border-radius: 50%; background: #1E3A8A; margin-top: 6px;"></span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav style="position: sticky; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(14px); border-top: 1px solid #EEF0F4; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 8px 22px; z-index: 20;">
+    <div style="text-align: center; color: #1E3A8A;">
+      <div style="font-size: 19px;">⌂</div><div style="font-size: 10.5px; font-weight: 800; margin-top: 2px;">Home</div>
+    </div>
+    <div style="text-align: center; color: #8A93A6;">
+      <div style="font-size: 19px;">🔍</div><div style="font-size: 10.5px; font-weight: 600; margin-top: 2px;">Search</div>
+    </div>
+    <div style="text-align: center; margin-top: -26px;">
+      <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #C19A3F, #E3C57A); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto; box-shadow: 0 10px 24px rgba(193,154,63,0.45); border: 4px solid #F7F8FA;">♥</div>
+      <div style="font-size: 10.5px; font-weight: 700; color: #8A93A6; margin-top: 3px;">Matches</div>
+    </div>
+    <div style="text-align: center; color: #8A93A6; position: relative;">
+      <div style="font-size: 19px;">💬</div><div style="font-size: 10.5px; font-weight: 600; margin-top: 2px;">Inbox</div>
+      <span style="position: absolute; top: -3px; right: 22px; width: 16px; height: 16px; border-radius: 999px; background: #E8936B; color: #ffffff; font-size: 9.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2</span>
+    </div>
+    <div style="text-align: center; color: #8A93A6;">
+      <div style="font-size: 19px;">👤</div><div style="font-size: 10.5px; font-weight: 600; margin-top: 2px;">Profile</div>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tiles: [
+        { icon: '♥', bg: '#FBEFE6', fg: '#C05A2E', value: '14', label: 'Received' },
+        { icon: '↗', bg: '#EEF2FB', fg: '#1E3A8A', value: '9', label: 'Sent' },
+        { icon: '👁', bg: '#F6EFDD', fg: '#9A6B2F', value: '38', label: 'Visitors' },
+        { icon: '★', bg: '#E6F6EF', fg: '#0E9F6E', value: '12', label: 'Shortlists' }
+      ],
+      matches: [
+        { slotId: 'dm-1', name: 'Arjun N', age: 29, meta: 'CA · Thrissur', match: 92, online: true },
+        { slotId: 'dm-2', name: 'Kiran P', age: 31, meta: 'Engineer · Kozhikode', match: 89, online: false },
+        { slotId: 'dm-3', name: 'Sreejith M', age: 30, meta: 'Banker · Kottayam', match: 87, online: true }
+      ],
+      notifs: [
+        { icon: '♥', bg: '#FBEFE6', fg: '#C05A2E', text: 'Arjun N sent you an interest', when: '12 min ago', unread: true },
+        { icon: '👁', bg: '#EEF2FB', fg: '#1E3A8A', text: 'Kiran P viewed your profile', when: '1 hr ago', unread: true },
+        { icon: '✓', bg: '#E6F6EF', fg: '#0E9F6E', text: 'Sreejith M accepted your interest', when: 'Yesterday', unread: false }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

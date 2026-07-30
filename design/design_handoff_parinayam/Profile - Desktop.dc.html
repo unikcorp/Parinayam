@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Member Profile — Desktop" style="width: 1440px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; min-height: 1000px;">
+
+  <!-- APP NAV -->
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4; position: sticky; top: 0; z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 40px;">
+      <div style="display: flex; align-items: center; gap: 11px;">
+        <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+        <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+      </div>
+      <nav style="display: flex; gap: 8px; font-size: 14.5px; font-weight: 600;">
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Home</span>
+        <span style="padding: 9px 18px; border-radius: 10px; background: #EEF2FB; color: #1E3A8A; font-weight: 700;">Matches</span>
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Search</span>
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Inbox</span>
+      </nav>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid #E4E8EF; display: flex; align-items: center; justify-content: center; font-size: 17px; background: #ffffff;">🔔</div>
+      <image-slot id="prof-nav-avatar" shape="circle" placeholder="you" style="width: 40px; height: 40px; display: block;"></image-slot>
+    </div>
+  </header>
+
+  <!-- ============ COVER + IDENTITY ============ -->
+  <div style="padding: 24px 48px 0;">
+    <div style="position: relative; border-radius: 24px; overflow: visible;">
+      <image-slot id="prof-cover" shape="rounded" radius="24" placeholder="Cover photo — landscape" style="width: 100%; height: 280px; display: block; border-radius: 24px;"></image-slot>
+      <div style="position: absolute; left: 44px; bottom: -64px; display: flex; align-items: flex-end; gap: 24px;">
+        <div style="position: relative;">
+          <image-slot id="prof-photo" shape="circle" placeholder="Profile photo" style="width: 152px; height: 152px; display: block; border: 6px solid #ffffff; border-radius: 50%; box-shadow: 0 16px 40px rgba(20,39,95,0.18);"></image-slot>
+          <span style="position: absolute; bottom: 12px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: #0E9F6E; border: 3.5px solid #ffffff;" title="Online"></span>
+        </div>
+      </div>
+      <div style="position: absolute; right: 24px; bottom: 20px; display: flex; gap: 10px;">
+        <span style="background: rgba(255,255,255,0.94); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 700; color: #14275F;">📷 12 photos</span>
+        <span style="background: rgba(255,255,255,0.94); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 700; color: #14275F;">▶ Video profile</span>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 0 224px; min-height: 96px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span style="font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; white-space: nowrap;">Arjun Nair, 29</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; background: #1E3A8A; color: #ffffff; font-size: 12px; font-weight: 800; padding: 5px 13px; border-radius: 999px;">✓ Verified</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #C19A3F, #E3C57A); color: #ffffff; font-size: 12px; font-weight: 800; padding: 5px 13px; border-radius: 999px;">★ PREMIUM</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; background: #E6F6EF; color: #0E9F6E; font-size: 12px; font-weight: 700; padding: 5px 13px; border-radius: 999px;">● Online now</span>
+        </div>
+        <div style="font-size: 15px; color: #5A6472; margin-top: 8px;">Chartered Accountant · Thrissur, Kerala · 5'9" · Never married · PNM-2023-04127</div>
+        <div style="font-size: 13.5px; color: #8A93A6; margin-top: 4px;">Profile managed by parent · Last active 5 min ago</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center; padding-top: 6px;">
+        <button style="padding: 14px 28px; border-radius: 13px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 800; font-size: 15px; font-family: inherit; cursor: pointer; box-shadow: 0 8px 22px rgba(30,58,138,0.28);" style-hover="background: #24449E; transform: translateY(-1px);">♥ Express Interest</button>
+        <button style="padding: 14px 24px; border-radius: 13px; border: none; background: linear-gradient(135deg, #C19A3F, #D9B75E); color: #ffffff; font-weight: 800; font-size: 15px; font-family: inherit; cursor: pointer; box-shadow: 0 8px 20px rgba(193,154,63,0.3);">📞 View Contact</button>
+        <button style="width: 50px; height: 50px; border-radius: 13px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 17px; font-family: inherit; cursor: pointer;" style-hover="border-color: #C19A3F; color: #C19A3F;" title="Shortlist">☆</button>
+        <button style="width: 50px; height: 50px; border-radius: 13px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 17px; font-family: inherit; cursor: pointer;" title="Share">↗</button>
+        <button style="width: 50px; height: 50px; border-radius: 13px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 17px; font-family: inherit; cursor: pointer;" title="More — Block / Report">⋯</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BODY GRID ============ -->
+  <div style="display: grid; grid-template-columns: 1fr 380px; gap: 28px; padding: 32px 48px 56px; align-items: start;">
+
+    <!-- MAIN -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- ABOUT / AI SUMMARY -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 28px 32px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <div style="font-size: 18px; font-weight: 800; color: #14275F;">About Arjun</div>
+          <span style="background: #F3F0FB; color: #6B4DB3; font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: 999px;">✦ AI SUMMARY</span>
+        </div>
+        <p style="font-size: 15px; line-height: 1.75; color: #4A5568; margin: 0;">A Thrissur-based Chartered Accountant from a close-knit traditional family, Arjun balances a settled career with a love for travel and Carnatic music. His family values horoscope compatibility and is looking for an educated partner from Kerala, ideally settled in India. Profiles like his typically respond within a day.</p>
+      </div>
+
+      <!-- PHOTO GALLERY -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 28px 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+          <div style="font-size: 18px; font-weight: 800; color: #14275F;">Gallery</div>
+          <span style="font-size: 13px; font-weight: 700; color: #1E3A8A;">View all 12 →</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+          <image-slot id="gal-1" shape="rounded" radius="14" placeholder="photo" style="width: 100%; height: 170px; display: block;"></image-slot>
+          <image-slot id="gal-2" shape="rounded" radius="14" placeholder="photo" style="width: 100%; height: 170px; display: block;"></image-slot>
+          <image-slot id="gal-3" shape="rounded" radius="14" placeholder="photo" style="width: 100%; height: 170px; display: block;"></image-slot>
+          <div style="position: relative;">
+            <image-slot id="gal-4" shape="rounded" radius="14" placeholder="photo" style="width: 100%; height: 170px; display: block;"></image-slot>
+            <div style="position: absolute; inset: 0; background: rgba(20,39,95,0.55); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 17px; font-weight: 800;">+8</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; margin-top: 18px; background: #F7F8FA; border-radius: 14px; padding: 14px 18px;">
+          <button style="width: 44px; height: 44px; border-radius: 50%; border: none; background: #1E3A8A; color: #ffffff; font-size: 15px; font-family: inherit; cursor: pointer; flex-shrink: 0;">▶</button>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; font-weight: 700; color: #14275F;">Voice introduction</div>
+            <div style="height: 22px; display: flex; align-items: center; gap: 2.5px; margin-top: 5px;">
+              <sc-for list="{{ waveform }}" as="w" hint-placeholder-count="30">
+                <span style="width: 3px; height: {{ w }}px; border-radius: 2px; background: #B3C0E3; display: inline-block;"></span>
+              </sc-for>
+            </div>
+          </div>
+          <span style="font-size: 12.5px; color: #8A93A6; font-weight: 600;">0:42</span>
+        </div>
+      </div>
+
+      <!-- DETAILS SECTIONS -->
+      <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="4">
+        <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 28px 32px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="width: 38px; height: 38px; border-radius: 11px; background: {{ sec.bg }}; color: {{ sec.fg }}; display: flex; align-items: center; justify-content: center; font-size: 16px;">{{ sec.icon }}</div>
+            <div style="font-size: 18px; font-weight: 800; color: #14275F;">{{ sec.title }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px 40px;">
+            <sc-for list="{{ sec.rows }}" as="row" hint-placeholder-count="6">
+              <div style="display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid #F5F6F9; padding-bottom: 10px;">
+                <span style="font-size: 13.5px; color: #8A93A6; font-weight: 600;">{{ row.k }}</span>
+                <span style="font-size: 14px; color: #14275F; font-weight: 700; text-align: right;">{{ row.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+
+      <!-- PARTNER PREFERENCE MATCH -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 28px 32px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <div style="width: 38px; height: 38px; border-radius: 11px; background: #FBEFE6; color: #C05A2E; display: flex; align-items: center; justify-content: center; font-size: 16px;">♥</div>
+          <div style="font-size: 18px; font-weight: 800; color: #14275F;">His partner preferences — how you match</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <sc-for list="{{ prefs }}" as="pf" hint-placeholder-count="5">
+            <div style="display: flex; align-items: center; gap: 14px; background: {{ pf.bg }}; border-radius: 12px; padding: 12px 18px;">
+              <span style="width: 24px; height: 24px; border-radius: 50%; background: {{ pf.mbg }}; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;">{{ pf.mark }}</span>
+              <span style="font-size: 13.5px; color: #8A93A6; font-weight: 600; width: 130px;">{{ pf.k }}</span>
+              <span style="font-size: 14px; color: #14275F; font-weight: 700;">{{ pf.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside style="display: flex; flex-direction: column; gap: 20px;">
+
+      <!-- COMPATIBILITY -->
+      <div style="background: linear-gradient(135deg, #14275F, #1E3A8A); border-radius: 20px; padding: 26px; color: #ffffff; text-align: center;">
+        <div style="width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(#E3C57A 0 331deg, rgba(255,255,255,0.15) 331deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <div style="width: 88px; height: 88px; border-radius: 50%; background: #14275F; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="font-size: 26px; font-weight: 800; color: #E3C57A;">92%</span>
+            <span style="font-size: 10px; color: #B9C3DD; font-weight: 700; letter-spacing: 0.06em;">MATCH</span>
+          </div>
+        </div>
+        <div style="font-size: 16px; font-weight: 800;">Highly compatible with you</div>
+        <div style="font-size: 13px; color: #B9C3DD; margin-top: 6px; line-height: 1.6;">Education, community, lifestyle and horoscope all align strongly.</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px;">
+          <div style="background: rgba(255,255,255,0.08); border-radius: 11px; padding: 10px 4px;"><div style="font-size: 15px; font-weight: 800; color: #E3C57A;">9/10</div><div style="font-size: 10px; color: #B9C3DD; font-weight: 700;">PORUTHAM</div></div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 11px; padding: 10px 4px;"><div style="font-size: 15px; font-weight: 800; color: #E3C57A;">96%</div><div style="font-size: 10px; color: #B9C3DD; font-weight: 700;">LIFESTYLE</div></div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 11px; padding: 10px 4px;"><div style="font-size: 15px; font-weight: 800; color: #E3C57A;">94</div><div style="font-size: 10px; color: #B9C3DD; font-weight: 700;">TRUST</div></div>
+        </div>
+      </div>
+
+      <!-- MUTUAL CONNECTIONS -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 22px 24px;">
+        <div style="font-size: 16px; font-weight: 800; color: #14275F; margin-bottom: 14px;">Mutual connections</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex;">
+            <image-slot id="mut-1" shape="circle" placeholder="p" style="width: 40px; height: 40px; display: block; border: 2.5px solid #ffffff; border-radius: 50%;"></image-slot>
+            <image-slot id="mut-2" shape="circle" placeholder="p" style="width: 40px; height: 40px; display: block; border: 2.5px solid #ffffff; border-radius: 50%; margin-left: -12px;"></image-slot>
+            <image-slot id="mut-3" shape="circle" placeholder="p" style="width: 40px; height: 40px; display: block; border: 2.5px solid #ffffff; border-radius: 50%; margin-left: -12px;"></image-slot>
+          </div>
+          <div style="font-size: 13px; color: #5A6472; line-height: 1.5;"><b style="color: #14275F;">3 families</b> you know are connected to his family</div>
+        </div>
+      </div>
+
+      <!-- HOROSCOPE -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 22px 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-size: 16px; font-weight: 800; color: #14275F;">Horoscope</div>
+          <span style="background: #F6EFDD; color: #9A6B2F; font-size: 11px; font-weight: 800; padding: 4px 11px; border-radius: 999px;">⭐ 9/10 PORUTHAM</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 13.5px;"><span style="color: #8A93A6; font-weight: 600;">Star (Nakshatra)</span><span style="color: #14275F; font-weight: 700;">Thiruvathira</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 13.5px;"><span style="color: #8A93A6; font-weight: 600;">Rasi</span><span style="color: #14275F; font-weight: 700;">Mithunam</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 13.5px;"><span style="color: #8A93A6; font-weight: 600;">Dosham</span><span style="color: #0E9F6E; font-weight: 700;">No dosham</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 13.5px;"><span style="color: #8A93A6; font-weight: 600;">Birth time & place</span><span style="color: #14275F; font-weight: 700;">04:32 AM · Thrissur</span></div>
+        </div>
+        <button style="width: 100%; margin-top: 16px; padding: 12px 0; border-radius: 11px; border: none; background: #F6EFDD; color: #9A6B2F; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer;">View full match report →</button>
+      </div>
+
+      <!-- SIMILAR PROFILES -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 22px 24px;">
+        <div style="font-size: 16px; font-weight: 800; color: #14275F; margin-bottom: 14px;">Similar profiles</div>
+        <div style="display: flex; flex-direction: column;">
+          <sc-for list="{{ similar }}" as="sp" hint-placeholder-count="3">
+            <div style="display: flex; gap: 13px; align-items: center; padding: 11px 0; border-top: 1px solid #F3F5F9; cursor: pointer;">
+              <image-slot id="{{ sp.slotId }}" shape="circle" placeholder="p" style="width: 48px; height: 48px; display: block; flex-shrink: 0;"></image-slot>
+              <div style="flex: 1;">
+                <div style="font-size: 14px; font-weight: 800; color: #14275F; white-space: nowrap;">{{ sp.name }}</div>
+                <div style="font-size: 12px; color: #8A93A6; margin-top: 2px;">{{ sp.meta }}</div>
+              </div>
+              <span style="background: #EEF2FB; color: #1E3A8A; border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 800;">{{ sp.match }}%</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}">
+class Component extends DCLogic {
+  renderVals() {
+    const heights = [8,14,18,10,20,16,9,15,19,12,17,8,13,20,11,16,9,18,14,10,19,13,8,15,17,11,20,12,16,9];
+    return {
+      waveform: heights,
+      sections: [
+        { icon: '🎓', bg: '#EEF2FB', fg: '#1E3A8A', title: 'Education & career', rows: [
+          { k: 'Highest education', v: 'CA, ICAI Delhi' },
+          { k: 'Undergraduate', v: 'B.Com, Kerala University' },
+          { k: 'Occupation', v: 'Chartered Accountant' },
+          { k: 'Employer', v: 'Own practice, Thrissur' },
+          { k: 'Annual income', v: '₹18–22 LPA' },
+          { k: 'Work location', v: 'Thrissur, Kerala' }
+        ]},
+        { icon: '🏠', bg: '#FBEFE6', fg: '#C05A2E', title: 'Family', rows: [
+          { k: 'Family type', v: 'Traditional, nuclear' },
+          { k: 'Father', v: 'Retired bank officer' },
+          { k: 'Mother', v: 'Homemaker' },
+          { k: 'Siblings', v: '1 sister, married' },
+          { k: 'Family location', v: 'Thrissur' },
+          { k: 'Ancestral home', v: 'Irinjalakuda' }
+        ]},
+        { icon: '🌿', bg: '#E6F6EF', fg: '#0E9F6E', title: 'Lifestyle', rows: [
+          { k: 'Diet', v: 'Vegetarian' },
+          { k: 'Smoking', v: 'Never' },
+          { k: 'Drinking', v: 'Never' },
+          { k: 'Hobbies', v: 'Travel, Carnatic music' },
+          { k: 'Languages', v: 'Malayalam, English, Hindi' },
+          { k: 'Pets', v: 'Loves dogs' }
+        ]},
+        { icon: '🕉', bg: '#F6EFDD', fg: '#9A6B2F', title: 'Religion & community', rows: [
+          { k: 'Religion', v: 'Hindu' },
+          { k: 'Caste', v: 'Nair' },
+          { k: 'Sub caste', v: 'Veluthedathu Nair' },
+          { k: 'Family deity', v: 'Guruvayurappan' },
+          { k: 'Gothram', v: 'Vishwamitra' },
+          { k: 'Religious level', v: 'Moderately observant' }
+        ]}
+      ],
+      prefs: [
+        { k: 'Age', v: '24–29 yrs — you are 27', mark: '✓', mbg: '#0E9F6E', bg: '#F2FBF7' },
+        { k: 'Education', v: 'Graduate & above — you: Postgraduate', mark: '✓', mbg: '#0E9F6E', bg: '#F2FBF7' },
+        { k: 'Community', v: 'Veluthedathu Nair — matched', mark: '✓', mbg: '#0E9F6E', bg: '#F2FBF7' },
+        { k: 'Location', v: 'Kerala, India — matched', mark: '✓', mbg: '#0E9F6E', bg: '#F2FBF7' },
+        { k: 'Working partner', v: 'Prefers working — you: employed', mark: '✓', mbg: '#0E9F6E', bg: '#F2FBF7' }
+      ],
+      similar: [
+        { slotId: 'sim-1', name: 'Kiran P, 31', meta: 'Engineer · Kozhikode', match: 89 },
+        { slotId: 'sim-2', name: 'Sreejith M, 30', meta: 'Banker · Kottayam', match: 87 },
+        { slotId: 'sim-3', name: 'Hari K, 28', meta: 'Architect · Palakkad', match: 84 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Settings — Desktop" style="width: 1440px; min-height: 960px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233;">
+
+  <!-- APP NAV -->
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+      <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+    </div>
+    <image-slot id="set-avatar" shape="circle" placeholder="you" style="width: 40px; height: 40px; display: block;"></image-slot>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 28px; padding: 32px 48px 64px; max-width: 1240px; margin: 0 auto; align-items: start;">
+
+    <!-- SETTINGS NAV -->
+    <aside style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 16px; position: sticky; top: 24px;">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="7">
+        <div style="display: flex; align-items: center; gap: 13px; padding: 13px 16px; border-radius: 12px; background: {{ n.bg }}; color: {{ n.fg }}; font-size: 14.5px; font-weight: {{ n.weight }}; cursor: pointer; margin-bottom: 4px;">
+          <span style="font-size: 16px;">{{ n.icon }}</span> {{ n.label }}
+        </div>
+      </sc-for>
+    </aside>
+
+    <!-- CONTENT -->
+    <main style="display: flex; flex-direction: column; gap: 22px;">
+      <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; margin: 0;">Privacy &amp; visibility</h1>
+
+      <!-- PHOTO PRIVACY -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 26px 30px;">
+        <div style="font-size: 17px; font-weight: 800; color: #14275F; margin-bottom: 6px;">Photo privacy</div>
+        <div style="font-size: 13.5px; color: #8A93A6; margin-bottom: 18px;">Control who can see your photos.</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+          <div style="border: 1.5px solid #E4E8EF; border-radius: 14px; padding: 16px; cursor: pointer;">
+            <div style="font-size: 14px; font-weight: 700; color: #14275F;">🌐 All members</div>
+            <div style="font-size: 12px; color: #8A93A6; margin-top: 4px;">Any verified member</div>
+          </div>
+          <div style="border: 2px solid #1E3A8A; border-radius: 14px; padding: 16px; background: #FBFCFE; cursor: pointer; position: relative;">
+            <span style="position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; border-radius: 50%; background: #1E3A8A; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-size: 10px;">✓</span>
+            <div style="font-size: 14px; font-weight: 700; color: #1E3A8A;">🤝 On request</div>
+            <div style="font-size: 12px; color: #8A93A6; margin-top: 4px;">Only members you approve</div>
+          </div>
+          <div style="border: 1.5px solid #E4E8EF; border-radius: 14px; padding: 16px; cursor: pointer;">
+            <div style="font-size: 14px; font-weight: 700; color: #14275F;">🔒 Premium only</div>
+            <div style="font-size: 12px; color: #8A93A6; margin-top: 4px;">Paid members only</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISIBILITY TOGGLES -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 26px 30px;">
+        <div style="font-size: 17px; font-weight: 800; color: #14275F; margin-bottom: 18px;">Visibility controls</div>
+        <div style="display: flex; flex-direction: column;">
+          <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="5">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-top: 1px solid #F5F6F9;">
+              <div>
+                <div style="font-size: 14.5px; font-weight: 700; color: #1A2233;">{{ t.label }}</div>
+                <div style="font-size: 12.5px; color: #8A93A6; margin-top: 3px;">{{ t.desc }}</div>
+              </div>
+              <div style="width: 48px; height: 28px; border-radius: 999px; background: {{ t.trackBg }}; position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s;">
+                <span style="position: absolute; top: 3px; left: {{ t.knobLeft }}; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: left 0.2s;"></span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 26px 30px;">
+        <div style="font-size: 17px; font-weight: 800; color: #14275F; margin-bottom: 18px;">Notification preferences</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid #EEF0F4; font-size: 12px; font-weight: 800; color: #8A93A6; text-transform: uppercase; letter-spacing: 0.05em;">
+          <span>Event</span><span style="text-align: center;">Push</span><span style="text-align: center;">Email</span><span style="text-align: center;">SMS</span>
+        </div>
+        <sc-for list="{{ notifRows }}" as="nr" hint-placeholder-count="4">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; padding: 14px 0; border-bottom: 1px solid #F5F6F9; align-items: center;">
+            <span style="font-size: 14px; font-weight: 600; color: #1A2233;">{{ nr.label }}</span>
+            <span style="text-align: center; color: {{ nr.c1 }}; font-weight: 800; font-size: 15px;">{{ nr.v1 }}</span>
+            <span style="text-align: center; color: {{ nr.c2 }}; font-weight: 800; font-size: 15px;">{{ nr.v2 }}</span>
+            <span style="text-align: center; color: {{ nr.c3 }}; font-weight: 800; font-size: 15px;">{{ nr.v3 }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- BLOCKED USERS -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; padding: 26px 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="font-size: 17px; font-weight: 800; color: #14275F;">Blocked users</div>
+          <span style="font-size: 12.5px; color: #8A93A6; font-weight: 600;">2 blocked</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #F3F5F9; display: flex; align-items: center; justify-content: center; color: #8A93A6; font-weight: 800; font-size: 14px;">RS</div>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 700; color: #1A2233;">PNM-2024-11893</div>
+              <div style="font-size: 12px; color: #8A93A6;">Blocked 12 May 2026</div>
+            </div>
+            <button style="padding: 9px 18px; border-radius: 10px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-weight: 700; font-size: 12.5px; font-family: inherit; cursor: pointer;">Unblock</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #F3F5F9; display: flex; align-items: center; justify-content: center; color: #8A93A6; font-weight: 800; font-size: 14px;">MK</div>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 700; color: #1A2233;">PNM-2023-07721</div>
+              <div style="font-size: 12px; color: #8A93A6;">Blocked 3 Feb 2026</div>
+            </div>
+            <button style="padding: 9px 18px; border-radius: 10px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-weight: 700; font-size: 12.5px; font-family: inherit; cursor: pointer;">Unblock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #F5D9D6; padding: 26px 30px;">
+        <div style="font-size: 17px; font-weight: 800; color: #C0392B; margin-bottom: 6px;">Account</div>
+        <div style="font-size: 13.5px; color: #8A93A6; margin-bottom: 18px;">Pausing hides your profile from search. Deleting is permanent after 30 days.</div>
+        <div style="display: flex; gap: 12px;">
+          <button style="padding: 12px 24px; border-radius: 12px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer;">⏸ Pause profile</button>
+          <button style="padding: 12px 24px; border-radius: 12px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer;">🔑 Change password</button>
+          <button style="padding: 12px 24px; border-radius: 12px; border: none; background: #FDECEC; color: #C0392B; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer;">Delete account</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}">
+class Component extends DCLogic {
+  renderVals() {
+    const on = { trackBg: '#0E9F6E', knobLeft: '23px' };
+    const off = { trackBg: '#D7DCE6', knobLeft: '3px' };
+    return {
+      navItems: [
+        { icon: '👤', label: 'Profile settings', bg: 'transparent', fg: '#5A6472', weight: 600 },
+        { icon: '🔒', label: 'Privacy & visibility', bg: '#EEF2FB', fg: '#1E3A8A', weight: 700 },
+        { icon: '🔔', label: 'Notifications', bg: 'transparent', fg: '#5A6472', weight: 600 },
+        { icon: '🚫', label: 'Blocked users', bg: 'transparent', fg: '#5A6472', weight: 600 },
+        { icon: '🔑', label: 'Password & security', bg: 'transparent', fg: '#5A6472', weight: 600 },
+        { icon: '★', label: 'Membership & billing', bg: 'transparent', fg: '#5A6472', weight: 600 },
+        { icon: '⚠', label: 'Account', bg: 'transparent', fg: '#5A6472', weight: 600 }
+      ],
+      toggles: [
+        { label: 'Show my profile in search', desc: 'Verified members can find you in search results', ...on },
+        { label: 'Show online status', desc: 'Members can see when you\u2019re active', ...on },
+        { label: 'Show last active time', desc: '\u201cLast active 5 min ago\u201d on your profile', ...off },
+        { label: 'Allow profile sharing', desc: 'Members can share your profile with family', ...on },
+        { label: 'Hide from contacts', desc: 'Hide profile from phone contacts who join', ...off }
+      ],
+      notifRows: [
+        { label: 'New interest received', v1: '✓', v2: '✓', v3: '✓', c1: '#0E9F6E', c2: '#0E9F6E', c3: '#0E9F6E' },
+        { label: 'Interest accepted', v1: '✓', v2: '✓', v3: '—', c1: '#0E9F6E', c2: '#0E9F6E', c3: '#B3BAC7' },
+        { label: 'New messages', v1: '✓', v2: '—', v3: '—', c1: '#0E9F6E', c2: '#B3BAC7', c3: '#B3BAC7' },
+        { label: 'Weekly match digest', v1: '—', v2: '✓', v3: '—', c1: '#B3BAC7', c2: '#0E9F6E', c3: '#B3BAC7' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

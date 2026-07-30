@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Success Stories — Desktop" style="width: 1440px; min-height: 960px; margin: 0 auto; background: #FDF9F4; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; padding-bottom: 72px;">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+      <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+    </div>
+    <button style="padding: 10px 22px; border-radius: 11px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer;">Share your story</button>
+  </header>
+
+  <!-- HERO -->
+  <section style="text-align: center; padding: 52px 48px 36px;">
+    <div style="font-size: 13px; font-weight: 700; color: #C19A3F; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px;">Success stories</div>
+    <h1 style="font-size: 44px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; margin: 0 0 12px;">3,200 weddings. 3,200 stories.</h1>
+    <p style="font-size: 16.5px; color: #5A6472; margin: 0 auto; max-width: 560px;">Real couples who met on Parinayam, in their own words.</p>
+
+    <!-- SEARCH + FILTERS -->
+    <div style="max-width: 760px; margin: 28px auto 0; display: flex; gap: 12px;">
+      <div style="flex: 1; display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1.5px solid #F0E4D6; border-radius: 14px; padding: 14px 18px; font-size: 14.5px; color: #8A93A6;">🔍 Search by couple name or town…</div>
+      <div style="padding: 14px 18px; background: #ffffff; border: 1.5px solid #F0E4D6; border-radius: 14px; font-size: 14px; font-weight: 700; color: #14275F; display: flex; align-items: center; gap: 8px;">Year: All <span style="color: #8A93A6; font-size: 11px;">▾</span></div>
+      <div style="padding: 14px 18px; background: #ffffff; border: 1.5px solid #F0E4D6; border-radius: 14px; font-size: 14px; font-weight: 700; color: #14275F; display: flex; align-items: center; gap: 8px;">District: All <span style="color: #8A93A6; font-size: 11px;">▾</span></div>
+    </div>
+  </section>
+
+  <!-- FEATURED STORY -->
+  <section style="padding: 0 48px 40px;">
+    <div style="background: #14275F; border-radius: 26px; overflow: hidden; display: grid; grid-template-columns: 560px 1fr; color: #ffffff;">
+      <image-slot id="feat-story" shape="rect" placeholder="Featured couple — wedding photo" style="width: 100%; height: 420px; display: block;"></image-slot>
+      <div style="padding: 52px 56px; display: flex; flex-direction: column; justify-content: center;">
+        <span style="display: inline-flex; width: fit-content; background: linear-gradient(135deg, #C19A3F, #E3C57A); color: #ffffff; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; padding: 5px 14px; border-radius: 999px; margin-bottom: 20px;">FEATURED STORY</span>
+        <h2 style="font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px;">Meera &amp; Kiran</h2>
+        <div style="font-size: 13.5px; font-weight: 700; color: #E3C57A; margin-bottom: 18px;">Married January 2026 · Guruvayur Temple</div>
+        <p style="font-size: 16px; line-height: 1.8; color: #B9C3DD; margin: 0 0 24px;">"Amma created my profile without telling me. The first match she showed me was Kiran — 92% compatible, same district, and our horoscopes matched 9 out of 10 poruthams. Three months later, his family visited ours. The rest is our story."</p>
+        <button style="width: fit-content; padding: 13px 26px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer;" style-hover="background: rgba(255,255,255,0.18);">Read their full story →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY GRID -->
+  <section style="padding: 0 48px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px;">
+      <sc-for list="{{ stories }}" as="s" hint-placeholder-count="6">
+        <div style="background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #F0E9DD; transition: transform 0.25s, box-shadow 0.25s;" style-hover="transform: translateY(-6px); box-shadow: 0 24px 50px rgba(20,39,95,0.1);">
+          <div style="position: relative;">
+            <image-slot id="{{ s.slotId }}" shape="rect" placeholder="Couple photo" style="width: 100%; height: 240px; display: block;"></image-slot>
+            <div style="position: absolute; bottom: 12px; left: 14px; background: rgba(255,255,255,0.94); border-radius: 999px; padding: 5px 13px; font-size: 12px; font-weight: 800; color: #14275F;">💍 {{ s.when }}</div>
+          </div>
+          <div style="padding: 22px 24px;">
+            <div style="font-size: 19px; font-weight: 800; color: #14275F;">{{ s.couple }}</div>
+            <div style="font-size: 12.5px; font-weight: 700; color: #C19A3F; margin: 5px 0 12px;">{{ s.place }}</div>
+            <p style="font-size: 14px; line-height: 1.65; color: #5A6472; margin: 0;">"{{ s.quote }}"</p>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="text-align: center; margin-top: 40px;">
+      <button style="padding: 14px 34px; border-radius: 13px; border: 1.5px solid #E3C57A; background: #ffffff; color: #9A6B2F; font-weight: 800; font-size: 15px; font-family: inherit; cursor: pointer;">Load more stories</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      stories: [
+        { slotId: 'st-1', couple: 'Lakshmi & Hari', when: 'Nov 2025', place: 'Kochi, Ernakulam', quote: 'The horoscope match said 9/10 poruthams. Turns out the algorithm knew before we did.' },
+        { slotId: 'st-2', couple: 'Gauri & Ananthu', when: 'Aug 2025', place: 'Palakkad', quote: 'I loved that photos stayed private until we were ready. It felt safe from day one.' },
+        { slotId: 'st-3', couple: 'Devika & Sreejith', when: 'May 2025', place: 'Thrissur', quote: 'Our fathers turned out to be college classmates. Parinayam just finished what fate started.' },
+        { slotId: 'st-4', couple: 'Parvathy & Rahul', when: 'Feb 2025', place: 'Kozhikode', quote: 'He sent a voice intro in Malayalam quoting my favourite film. That was it for me.' },
+        { slotId: 'st-5', couple: 'Anagha & Vishnu', when: 'Dec 2024', place: 'Kottayam', quote: 'From first interest to wedding in seven months — with both families involved at every step.' },
+        { slotId: 'st-6', couple: 'Nanda & Arun', when: 'Oct 2024', place: 'Kannur', quote: 'We were both NRI professionals. The verified badges gave our parents real confidence.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

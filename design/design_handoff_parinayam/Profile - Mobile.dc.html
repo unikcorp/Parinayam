@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #E9EBF0; }
+    * { box-sizing: border-box; }
+    .pn-scroll-x::-webkit-scrollbar { display: none; }
+  </style>
+</helmet>
+
+<div data-screen-label="Member Profile — Mobile" style="width: 390px; min-height: 844px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; box-shadow: 0 0 60px rgba(20,39,95,0.12); position: relative;">
+
+  <!-- HERO PHOTO -->
+  <div style="position: relative;">
+    <image-slot id="mprof-photo" shape="rect" placeholder="Profile photo — portrait" style="width: 100%; height: 420px; display: block;"></image-slot>
+    <div style="position: absolute; top: 0; left: 0; right: 0; padding: 16px 20px; display: flex; justify-content: space-between; z-index: 2;">
+      <button style="width: 42px; height: 42px; border-radius: 12px; border: none; background: rgba(255,255,255,0.92); color: #14275F; font-size: 16px; font-family: inherit;">←</button>
+      <div style="display: flex; gap: 8px;">
+        <button style="width: 42px; height: 42px; border-radius: 12px; border: none; background: rgba(255,255,255,0.92); color: #14275F; font-size: 15px; font-family: inherit;">↗</button>
+        <button style="width: 42px; height: 42px; border-radius: 12px; border: none; background: rgba(255,255,255,0.92); color: #14275F; font-size: 15px; font-family: inherit;">⋯</button>
+      </div>
+    </div>
+    <div style="position: absolute; bottom: 16px; left: 20px; display: flex; gap: 8px;">
+      <span style="background: rgba(255,255,255,0.94); border-radius: 999px; padding: 6px 13px; font-size: 12px; font-weight: 700; color: #14275F;">📷 12</span>
+      <span style="background: rgba(255,255,255,0.94); border-radius: 999px; padding: 6px 13px; font-size: 12px; font-weight: 700; color: #14275F;">▶ Video</span>
+    </div>
+    <div style="position: absolute; bottom: 16px; right: 20px; background: #14275F; color: #ffffff; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 800;">92% match</div>
+  </div>
+
+  <!-- IDENTITY CARD -->
+  <div style="background: #ffffff; border-radius: 24px 24px 0 0; margin-top: -24px; position: relative; padding: 22px 20px 16px; z-index: 3;">
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <span style="font-size: 23px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; white-space: nowrap;">Arjun Nair, 29</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px; background: #1E3A8A; color: #ffffff; font-size: 10.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px;">✓ Verified</span>
+      <span style="display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #C19A3F, #E3C57A); color: #ffffff; font-size: 10.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px;">★ PREMIUM</span>
+    </div>
+    <div style="font-size: 13.5px; color: #5A6472; margin-top: 7px;">Chartered Accountant · Thrissur · 5'9" · Never married</div>
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #0E9F6E; font-weight: 700; margin-top: 5px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #0E9F6E; display: inline-block;"></span> Online now · Managed by parent</div>
+
+    <!-- compatibility strip -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;">
+      <div style="background: #F6EFDD; border-radius: 12px; padding: 10px 4px; text-align: center;"><div style="font-size: 15px; font-weight: 800; color: #9A6B2F;">9/10</div><div style="font-size: 9.5px; color: #9A6B2F; font-weight: 700;">PORUTHAM</div></div>
+      <div style="background: #E6F6EF; border-radius: 12px; padding: 10px 4px; text-align: center;"><div style="font-size: 15px; font-weight: 800; color: #0E9F6E;">96%</div><div style="font-size: 9.5px; color: #0E9F6E; font-weight: 700;">LIFESTYLE</div></div>
+      <div style="background: #EEF2FB; border-radius: 12px; padding: 10px 4px; text-align: center;"><div style="font-size: 15px; font-weight: 800; color: #1E3A8A;">94</div><div style="font-size: 9.5px; color: #1E3A8A; font-weight: 700;">TRUST</div></div>
+    </div>
+  </div>
+
+  <!-- AI SUMMARY -->
+  <div style="background: #ffffff; padding: 4px 20px 18px;">
+    <div style="background: #F8F6FD; border: 1px solid #EBE4F7; border-radius: 16px; padding: 16px;">
+      <div style="font-size: 11px; font-weight: 800; color: #6B4DB3; letter-spacing: 0.06em; margin-bottom: 7px;">✦ AI SUMMARY</div>
+      <p style="font-size: 13.5px; line-height: 1.65; color: #4A5568; margin: 0;">Thrissur-based CA from a close-knit traditional family. Loves travel and Carnatic music. Family values horoscope compatibility; typically responds within a day.</p>
+    </div>
+  </div>
+
+  <!-- VOICE INTRO -->
+  <div style="background: #ffffff; padding: 0 20px 18px;">
+    <div style="display: flex; align-items: center; gap: 12px; background: #F7F8FA; border-radius: 14px; padding: 12px 14px;">
+      <button style="width: 40px; height: 40px; border-radius: 50%; border: none; background: #1E3A8A; color: #ffffff; font-size: 14px; font-family: inherit; flex-shrink: 0;">▶</button>
+      <div style="flex: 1;">
+        <div style="font-size: 13px; font-weight: 700; color: #14275F;">Voice introduction</div>
+        <div style="height: 18px; display: flex; align-items: center; gap: 2px; margin-top: 4px;">
+          <sc-for list="{{ waveform }}" as="w" hint-placeholder-count="24">
+            <span style="width: 3px; height: {{ w }}px; border-radius: 2px; background: #B3C0E3; display: inline-block;"></span>
+          </sc-for>
+        </div>
+      </div>
+      <span style="font-size: 12px; color: #8A93A6; font-weight: 600;">0:42</span>
+    </div>
+  </div>
+
+  <!-- GALLERY STRIP -->
+  <div style="background: #ffffff; padding: 0 0 20px 20px;">
+    <div class="pn-scroll-x" style="display: flex; gap: 10px; overflow-x: auto; padding-right: 20px; scrollbar-width: none;">
+      <image-slot id="mgal-1" shape="rounded" radius="12" placeholder="photo" style="width: 110px; height: 130px; display: block; flex-shrink: 0;"></image-slot>
+      <image-slot id="mgal-2" shape="rounded" radius="12" placeholder="photo" style="width: 110px; height: 130px; display: block; flex-shrink: 0;"></image-slot>
+      <image-slot id="mgal-3" shape="rounded" radius="12" placeholder="photo" style="width: 110px; height: 130px; display: block; flex-shrink: 0;"></image-slot>
+      <div style="position: relative; flex-shrink: 0;">
+        <image-slot id="mgal-4" shape="rounded" radius="12" placeholder="photo" style="width: 110px; height: 130px; display: block;"></image-slot>
+        <div style="position: absolute; inset: 0; background: rgba(20,39,95,0.55); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 15px; font-weight: 800;">+8</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPANDABLE DETAIL SECTIONS -->
+  <div style="padding: 16px 20px 140px; display: flex; flex-direction: column; gap: 12px;">
+    <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="5">
+      <div style="background: #ffffff; border-radius: 16px; border: 1px solid #EEF0F4; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: {{ sec.bg }}; color: {{ sec.fg }}; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;">{{ sec.icon }}</div>
+          <div style="flex: 1; font-size: 15px; font-weight: 800; color: #14275F;">{{ sec.title }}</div>
+          <span style="color: #8A93A6; font-size: 13px;">{{ sec.chev }}</span>
+        </div>
+        <sc-if value="{{ sec.open }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 18px 16px; display: flex; flex-direction: column; gap: 11px;">
+            <sc-for list="{{ sec.rows }}" as="row" hint-placeholder-count="4">
+              <div style="display: flex; justify-content: space-between; gap: 14px; border-top: 1px solid #F5F6F9; padding-top: 11px;">
+                <span style="font-size: 12.5px; color: #8A93A6; font-weight: 600;">{{ row.k }}</span>
+                <span style="font-size: 13px; color: #14275F; font-weight: 700; text-align: right;">{{ row.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <!-- SIMILAR -->
+    <div style="margin-top: 10px;">
+      <div style="font-size: 16px; font-weight: 800; color: #14275F; margin-bottom: 12px;">Similar profiles</div>
+      <div class="pn-scroll-x" style="display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none;">
+        <sc-for list="{{ similar }}" as="sp" hint-placeholder-count="3">
+          <div style="width: 150px; flex-shrink: 0; background: #ffffff; border-radius: 14px; border: 1px solid #EEF0F4; padding: 14px 12px; text-align: center;">
+            <image-slot id="{{ sp.slotId }}" shape="circle" placeholder="p" style="width: 58px; height: 58px; display: block; margin: 0 auto 9px;"></image-slot>
+            <div style="font-size: 13px; font-weight: 800; color: #14275F; white-space: nowrap;">{{ sp.name }}</div>
+            <div style="font-size: 11px; color: #8A93A6; margin-top: 2px;">{{ sp.meta }}</div>
+            <span style="display: inline-block; margin-top: 8px; background: #EEF2FB; color: #1E3A8A; border-radius: 999px; padding: 3px 10px; font-size: 10.5px; font-weight: 800;">{{ sp.match }}%</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- STICKY ACTION BAR -->
+  <div style="position: sticky; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(14px); border-top: 1px solid #EEF0F4; padding: 12px 20px 22px; display: flex; gap: 10px; z-index: 20;">
+    <button style="width: 50px; height: 52px; border-radius: 13px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 17px; font-family: inherit;">☆</button>
+    <button style="flex: 1; padding: 15px 0; border-radius: 13px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 800; font-size: 15px; font-family: inherit; box-shadow: 0 8px 20px rgba(30,58,138,0.3);">♥ Express Interest</button>
+    <button style="padding: 15px 18px; border-radius: 13px; border: none; background: linear-gradient(135deg, #C19A3F, #D9B75E); color: #ffffff; font-weight: 800; font-size: 15px; font-family: inherit;">📞</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      waveform: [8,13,16,9,17,14,8,13,17,11,15,8,12,17,10,14,9,16,12,9,17,12,8,13],
+      sections: [
+        { icon: '🎓', bg: '#EEF2FB', fg: '#1E3A8A', title: 'Education & career', open: true, chev: '▴', rows: [
+          { k: 'Education', v: 'CA, ICAI Delhi' },
+          { k: 'Occupation', v: 'Chartered Accountant' },
+          { k: 'Income', v: '₹18–22 LPA' },
+          { k: 'Work location', v: 'Thrissur, Kerala' }
+        ]},
+        { icon: '🏠', bg: '#FBEFE6', fg: '#C05A2E', title: 'Family', open: false, chev: '▾', rows: [] },
+        { icon: '🌿', bg: '#E6F6EF', fg: '#0E9F6E', title: 'Lifestyle', open: false, chev: '▾', rows: [] },
+        { icon: '🕉', bg: '#F6EFDD', fg: '#9A6B2F', title: 'Religion & horoscope', open: false, chev: '▾', rows: [] },
+        { icon: '♥', bg: '#FBEFE6', fg: '#C05A2E', title: 'Partner preferences', open: false, chev: '▾', rows: [] }
+      ],
+      similar: [
+        { slotId: 'msim-1', name: 'Kiran P, 31', meta: 'Kozhikode', match: 89 },
+        { slotId: 'msim-2', name: 'Sreejith M, 30', meta: 'Kottayam', match: 87 },
+        { slotId: 'msim-3', name: 'Hari K, 28', meta: 'Palakkad', match: 84 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

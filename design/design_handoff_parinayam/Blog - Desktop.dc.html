@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Blog — Desktop" style="width: 1440px; min-height: 960px; margin: 0 auto; background: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; padding-bottom: 72px;">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+      <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; background: #F7F8FA; border: 1.5px solid #E4E8EF; border-radius: 12px; padding: 11px 16px; width: 300px; font-size: 13.5px; color: #8A93A6;">🔍 Search articles…</div>
+  </header>
+
+  <div style="max-width: 1180px; margin: 0 auto; padding: 44px 24px 0;">
+    <div style="font-size: 13px; font-weight: 700; color: #C19A3F; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px;">The Parinayam Blog</div>
+    <h1 style="font-size: 42px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; margin: 0 0 24px;">Advice for your journey</h1>
+
+    <!-- categories -->
+    <div style="display: flex; gap: 8px; margin-bottom: 36px; flex-wrap: wrap;">
+      <span style="padding: 9px 18px; border-radius: 999px; background: #1E3A8A; color: #ffffff; font-size: 13px; font-weight: 700;">All</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Tradition</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Advice</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Safety</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Weddings</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">For parents</span>
+    </div>
+
+    <!-- FEATURED -->
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 26px; margin-bottom: 44px;">
+      <div style="position: relative; border-radius: 22px; overflow: hidden; cursor: pointer;">
+        <image-slot id="blog-feat" shape="rect" placeholder="Featured article image" style="width: 100%; height: 420px; display: block;"></image-slot>
+        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,29,71,0.88) 0%, rgba(15,29,71,0.1) 55%);"></div>
+        <div style="position: absolute; left: 32px; right: 32px; bottom: 30px; color: #ffffff;">
+          <span style="display: inline-flex; background: linear-gradient(135deg, #C19A3F, #E3C57A); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; padding: 5px 13px; border-radius: 999px; margin-bottom: 14px;">FEATURED</span>
+          <div style="font-size: 27px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.25;">Understanding porutham: a modern guide to horoscope matching</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 10px;">Tradition · 6 min read · Jan 2026</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <sc-for list="{{ side }}" as="s" hint-placeholder-count="3">
+          <div style="display: flex; gap: 16px; align-items: center; cursor: pointer; background: #ffffff; border: 1px solid #EEF0F4; border-radius: 16px; padding: 12px; transition: box-shadow 0.2s;" style-hover="box-shadow: 0 12px 30px rgba(20,39,95,0.09);">
+            <image-slot id="{{ s.slotId }}" shape="rounded" radius="12" placeholder="img" style="width: 120px; height: 96px; display: block; flex-shrink: 0;"></image-slot>
+            <div>
+              <div style="font-size: 11.5px; font-weight: 700; color: #1E3A8A; text-transform: uppercase; letter-spacing: 0.06em;">{{ s.tag }}</div>
+              <div style="font-size: 15.5px; font-weight: 700; color: #14275F; line-height: 1.35; margin-top: 5px;">{{ s.title }}</div>
+              <div style="font-size: 12px; color: #8A93A6; margin-top: 5px;">{{ s.meta }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <h2 style="font-size: 22px; font-weight: 800; color: #14275F; margin: 0 0 20px;">Latest articles</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px;">
+      <sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+        <div style="border-radius: 20px; overflow: hidden; border: 1px solid #EEF0F4; background: #ffffff; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;" style-hover="transform: translateY(-6px); box-shadow: 0 20px 44px rgba(20,39,95,0.1);">
+          <image-slot id="{{ p.slotId }}" shape="rect" placeholder="Article image" style="width: 100%; height: 190px; display: block;"></image-slot>
+          <div style="padding: 22px;">
+            <div style="font-size: 12px; font-weight: 700; color: #1E3A8A; text-transform: uppercase; letter-spacing: 0.08em;">{{ p.tag }}</div>
+            <div style="font-size: 17.5px; font-weight: 700; color: #14275F; margin: 10px 0 8px; line-height: 1.35;">{{ p.title }}</div>
+            <div style="font-size: 13.5px; color: #5A6472; line-height: 1.6; margin-bottom: 12px;">{{ p.excerpt }}</div>
+            <div style="font-size: 12.5px; color: #8A93A6;">{{ p.meta }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      side: [
+        { slotId: 'bs-1', tag: 'Advice', title: 'The first family meeting: questions worth asking', meta: '4 min read · Dec 2025' },
+        { slotId: 'bs-2', tag: 'Safety', title: 'How we verify every profile on Parinayam', meta: '3 min read · Dec 2025' },
+        { slotId: 'bs-3', tag: 'For parents', title: 'Managing your child\u2019s profile — respectfully', meta: '5 min read · Nov 2025' }
+      ],
+      posts: [
+        { slotId: 'bp-1', tag: 'Weddings', title: 'A Guruvayur wedding checklist, from muhurtham to sadhya', excerpt: 'Everything Kerala families plan in the 90 days before the big day.', meta: '7 min read · Jan 2026' },
+        { slotId: 'bp-2', tag: 'Advice', title: 'Writing a profile bio that sounds like you', excerpt: 'Skip the clichés. Three prompts that make bios feel human.', meta: '4 min read · Jan 2026' },
+        { slotId: 'bp-3', tag: 'Tradition', title: 'What the 10 poruthams actually mean', excerpt: 'An astrologer explains each compatibility check in plain language.', meta: '8 min read · Dec 2025' },
+        { slotId: 'bp-4', tag: 'Safety', title: 'Five signs of a suspicious profile', excerpt: 'What our trust & safety team looks for — and what you should too.', meta: '3 min read · Dec 2025' },
+        { slotId: 'bp-5', tag: 'Advice', title: 'Long-distance to lifelong: NRI matches that worked', excerpt: 'How three couples bridged time zones before bridging families.', meta: '6 min read · Nov 2025' },
+        { slotId: 'bp-6', tag: 'For parents', title: 'When to step back: letting your child lead the search', excerpt: 'A counsellor on balancing involvement with independence.', meta: '5 min read · Nov 2025' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

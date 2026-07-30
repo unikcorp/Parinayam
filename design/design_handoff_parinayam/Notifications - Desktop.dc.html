@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #F7F8FA; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Notifications — Desktop" style="width: 1440px; min-height: 960px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233;">
+
+  <!-- APP NAV -->
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 48px; background: #ffffff; border-bottom: 1px solid #EEF0F4;">
+    <div style="display: flex; align-items: center; gap: 40px;">
+      <div style="display: flex; align-items: center; gap: 11px;">
+        <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #1E3A8A, #2B4DB3); display: flex; align-items: center; justify-content: center; color: #F3D68A; font-weight: 800; font-size: 18px;">P</div>
+        <div style="font-weight: 800; font-size: 18px; color: #1E3A8A;">Parinayam</div>
+      </div>
+      <nav style="display: flex; gap: 8px; font-size: 14.5px; font-weight: 600;">
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Home</span>
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Matches</span>
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Search</span>
+        <span style="padding: 9px 18px; border-radius: 10px; color: #5A6472;">Inbox</span>
+      </nav>
+    </div>
+    <image-slot id="notif-avatar" shape="circle" placeholder="you" style="width: 40px; height: 40px; display: block;"></image-slot>
+  </header>
+
+  <div style="max-width: 820px; margin: 0 auto; padding: 36px 24px 64px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: #14275F; margin: 0;">Notifications</h1>
+      <button style="padding: 10px 20px; border-radius: 11px; border: 1.5px solid #D7DCE6; background: #ffffff; color: #1E3A8A; font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer;">Mark all as read</button>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 28px;">
+      <span style="padding: 9px 18px; border-radius: 999px; background: #1E3A8A; color: #ffffff; font-size: 13px; font-weight: 700;">All</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Interests</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Views</span>
+      <span style="padding: 9px 18px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 13px; font-weight: 600;">Account</span>
+    </div>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <div style="font-size: 13px; font-weight: 800; color: #8A93A6; letter-spacing: 0.08em; text-transform: uppercase; margin: 26px 0 14px;">{{ g.label }}</div>
+      <div style="background: #ffffff; border-radius: 20px; border: 1px solid #EEF0F4; overflow: hidden;">
+        <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="3">
+          <div style="display: flex; gap: 16px; padding: 18px 24px; border-top: 1px solid #F5F6F9; background: {{ n.bg }}; align-items: flex-start;">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: {{ n.ibg }}; color: {{ n.ifg }}; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">{{ n.icon }}</div>
+            <div style="flex: 1;">
+              <div style="font-size: 14.5px; color: #1A2233; line-height: 1.5;">{{ n.text }}</div>
+              <div style="font-size: 12px; color: #8A93A6; margin-top: 4px;">{{ n.when }}</div>
+              <sc-if value="{{ n.actions }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                  <button style="padding: 9px 20px; border-radius: 10px; border: none; background: #0E9F6E; color: #ffffff; font-weight: 700; font-size: 12.5px; font-family: inherit; cursor: pointer;">✓ Accept</button>
+                  <button style="padding: 9px 20px; border-radius: 10px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-weight: 700; font-size: 12.5px; font-family: inherit; cursor: pointer;">Decline</button>
+                  <button style="padding: 9px 20px; border-radius: 10px; border: none; background: #EEF2FB; color: #1E3A8A; font-weight: 700; font-size: 12.5px; font-family: inherit; cursor: pointer;">View profile</button>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width: 9px; height: 9px; border-radius: 50%; background: #1E3A8A; margin-top: 8px; flex-shrink: 0;"></span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      groups: [
+        { label: 'Today', items: [
+          { icon: '♥', ibg: '#FBEFE6', ifg: '#C05A2E', text: 'Devika K sent you an interest — "Our families are from the same district!"', when: '12 min ago', unread: true, actions: true, bg: '#FBFCFE' },
+          { icon: '👁', ibg: '#EEF2FB', ifg: '#1E3A8A', text: 'Kiran P viewed your profile', when: '1 hr ago', unread: true, actions: false, bg: '#FBFCFE' },
+          { icon: '✓', ibg: '#E6F6EF', ifg: '#0E9F6E', text: 'Arjun N accepted your interest — you can now chat', when: '3 hr ago', unread: true, actions: false, bg: '#FBFCFE' }
+        ]},
+        { label: 'Yesterday', items: [
+          { icon: '🛡', ibg: '#E6F6EF', ifg: '#0E9F6E', text: 'Your identity verification was approved. The verified badge is now live on your profile.', when: 'Yesterday, 4:20 PM', unread: false, actions: false, bg: '#ffffff' },
+          { icon: '★', ibg: '#F6EFDD', ifg: '#9A6B2F', text: 'Sreejith M shortlisted your profile', when: 'Yesterday, 11:05 AM', unread: false, actions: false, bg: '#ffffff' }
+        ]},
+        { label: 'Earlier this week', items: [
+          { icon: '⏳', ibg: '#FDECEC', ifg: '#C0392B', text: 'Your Premium membership renews in 30 days. Renew early to keep priority placement.', when: 'Tuesday', unread: false, actions: false, bg: '#ffffff' },
+          { icon: '👁', ibg: '#EEF2FB', ifg: '#1E3A8A', text: '6 members viewed your profile this week — see who they are', when: 'Monday', unread: false, actions: false, bg: '#ffffff' }
+        ]}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

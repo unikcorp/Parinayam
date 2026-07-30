@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #E9EBF0; }
+    * { box-sizing: border-box; }
+    .pn-scroll-x::-webkit-scrollbar { display: none; }
+  </style>
+</helmet>
+
+<div data-screen-label="Blog — Mobile" style="width: 390px; min-height: 844px; margin: 0 auto; background: #ffffff; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; box-shadow: 0 0 60px rgba(20,39,95,0.12); display: flex; flex-direction: column;">
+
+  <header style="background: #ffffff; padding: 16px 20px 12px; border-bottom: 1px solid #EEF0F4; position: sticky; top: 0; z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+      <button style="width: 38px; height: 38px; border-radius: 10px; border: none; background: #F3F5F9; color: #14275F; font-size: 15px; font-family: inherit;">←</button>
+      <div style="font-size: 18px; font-weight: 800; color: #14275F;">Blog</div>
+    </div>
+    <div class="pn-scroll-x" style="display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;">
+      <span style="flex-shrink: 0; padding: 8px 16px; border-radius: 999px; background: #1E3A8A; color: #ffffff; font-size: 12px; font-weight: 700;">All</span>
+      <span style="flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 12px; font-weight: 600;">Tradition</span>
+      <span style="flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 12px; font-weight: 600;">Advice</span>
+      <span style="flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 12px; font-weight: 600;">Safety</span>
+      <span style="flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #E4E8EF; background: #ffffff; color: #5A6472; font-size: 12px; font-weight: 600;">For parents</span>
+    </div>
+  </header>
+
+  <main style="flex: 1; padding: 18px 20px 48px;">
+
+    <!-- FEATURED -->
+    <div style="position: relative; border-radius: 20px; overflow: hidden; margin-bottom: 20px;">
+      <image-slot id="mblog-feat" shape="rect" placeholder="Featured article image" style="width: 100%; height: 260px; display: block;"></image-slot>
+      <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,29,71,0.9) 0%, rgba(15,29,71,0.05) 55%);"></div>
+      <div style="position: absolute; left: 18px; right: 18px; bottom: 18px; color: #ffffff;">
+        <span style="display: inline-flex; background: linear-gradient(135deg, #C19A3F, #E3C57A); font-size: 10px; font-weight: 800; letter-spacing: 0.08em; padding: 4px 11px; border-radius: 999px; margin-bottom: 10px;">FEATURED</span>
+        <div style="font-size: 18px; font-weight: 800; line-height: 1.3;">Understanding porutham: a modern guide to horoscope matching</div>
+        <div style="font-size: 11.5px; color: rgba(255,255,255,0.75); margin-top: 7px;">Tradition · 6 min read</div>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+        <div style="display: flex; gap: 14px; align-items: center; background: #ffffff; border: 1px solid #EEF0F4; border-radius: 16px; padding: 12px;">
+          <image-slot id="m{{ p.slotId }}" shape="rounded" radius="12" placeholder="img" style="width: 100px; height: 88px; display: block; flex-shrink: 0;"></image-slot>
+          <div style="flex: 1;">
+            <div style="font-size: 10.5px; font-weight: 700; color: #1E3A8A; text-transform: uppercase; letter-spacing: 0.06em;">{{ p.tag }}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #14275F; line-height: 1.35; margin-top: 4px;">{{ p.title }}</div>
+            <div style="font-size: 11px; color: #8A93A6; margin-top: 5px;">{{ p.meta }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <button style="width: 100%; margin-top: 20px; padding: 14px 0; border-radius: 12px; border: 1.5px solid #D7DCE6; background: #ffffff; color: #1E3A8A; font-weight: 700; font-size: 14px; font-family: inherit;">Load more articles</button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      posts: [
+        { slotId: 'bp-1', tag: 'Advice', title: 'The first family meeting: questions worth asking', meta: '4 min read · Dec 2025' },
+        { slotId: 'bp-2', tag: 'Safety', title: 'How we verify every profile on Parinayam', meta: '3 min read · Dec 2025' },
+        { slotId: 'bp-3', tag: 'Weddings', title: 'A Guruvayur wedding checklist, muhurtham to sadhya', meta: '7 min read · Jan 2026' },
+        { slotId: 'bp-4', tag: 'Advice', title: 'Writing a profile bio that sounds like you', meta: '4 min read · Jan 2026' },
+        { slotId: 'bp-5', tag: 'Tradition', title: 'What the 10 poruthams actually mean', meta: '8 min read · Dec 2025' },
+        { slotId: 'bp-6', tag: 'For parents', title: 'When to step back: letting your child lead', meta: '5 min read · Nov 2025' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

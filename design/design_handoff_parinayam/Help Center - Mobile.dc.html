@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #E9EBF0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div data-screen-label="Help Center — Mobile" style="width: 390px; min-height: 844px; margin: 0 auto; background: #F7F8FA; font-family: 'Plus Jakarta Sans', sans-serif; color: #1A2233; box-shadow: 0 0 60px rgba(20,39,95,0.12); display: flex; flex-direction: column;">
+
+  <!-- HERO -->
+  <div style="background: linear-gradient(160deg, #14275F 0%, #1E3A8A 100%); color: #ffffff; padding: 24px 20px 56px; border-radius: 0 0 28px 28px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 22px;">
+      <button style="width: 38px; height: 38px; border-radius: 10px; border: none; background: rgba(255,255,255,0.12); color: #ffffff; font-size: 15px; font-family: inherit;">←</button>
+      <div style="font-size: 18px; font-weight: 800;">Help Center</div>
+    </div>
+    <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 16px;">How can we help?</h1>
+    <div style="display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 14px; padding: 14px 16px;">
+      <span style="font-size: 15px;">🔍</span>
+      <span style="flex: 1; font-size: 14px; color: #8A93A6;">Try "photo privacy" or "refund"…</span>
+    </div>
+  </div>
+
+  <main style="flex: 1; padding: 0 20px 48px; margin-top: -28px;">
+
+    <!-- CHANNELS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 26px;">
+      <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="4">
+        <div style="background: #ffffff; border-radius: 16px; border: 1px solid #EEF0F4; padding: 16px; box-shadow: 0 8px 24px rgba(20,39,95,0.07);">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: {{ ch.bg }}; color: {{ ch.fg }}; display: flex; align-items: center; justify-content: center; font-size: 17px; margin-bottom: 10px;">{{ ch.icon }}</div>
+          <div style="font-size: 14px; font-weight: 800; color: #14275F;">{{ ch.title }}</div>
+          <div style="font-size: 11.5px; color: #8A93A6; margin-top: 3px;">{{ ch.desc }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- FAQ -->
+    <div style="font-size: 17px; font-weight: 800; color: #14275F; margin-bottom: 12px;">Frequently asked</div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="5">
+        <div style="background: #ffffff; border-radius: 14px; border: 1px solid {{ f.border }}; overflow: hidden;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; gap: 12px;">
+            <span style="font-size: 13.5px; font-weight: 700; color: #14275F;">{{ f.q }}</span>
+            <span style="color: #8A93A6; font-size: 12px; flex-shrink: 0;">{{ f.chev }}</span>
+          </div>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 0 18px 15px; font-size: 13px; line-height: 1.65; color: #5A6472;">{{ f.a }}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- RAISE TICKET CTA -->
+    <div style="margin-top: 24px; background: #ffffff; border-radius: 18px; border: 1px solid #EEF0F4; padding: 20px;">
+      <div style="font-size: 15px; font-weight: 800; color: #14275F;">Still stuck?</div>
+      <div style="font-size: 12.5px; color: #8A93A6; margin: 4px 0 14px;">Raise a ticket — we reply within 4 working hours.</div>
+      <button style="width: 100%; padding: 14px 0; border-radius: 12px; border: none; background: #1E3A8A; color: #ffffff; font-weight: 800; font-size: 14.5px; font-family: inherit; box-shadow: 0 8px 20px rgba(30,58,138,0.25);">Raise a ticket</button>
+      <div style="text-align: center; font-size: 11.5px; color: #8A93A6; margin-top: 12px;">Or call <b style="color: #14275F;">1800-425-77-99</b> (9 AM – 9 PM)</div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      channels: [
+        { icon: '💬', bg: '#EEF2FB', fg: '#1E3A8A', title: 'Live chat', desc: 'Under 2 min wait' },
+        { icon: '📞', bg: '#E6F6EF', fg: '#0E9F6E', title: 'Call us', desc: '9 AM – 9 PM IST' },
+        { icon: '✉️', bg: '#F6EFDD', fg: '#9A6B2F', title: 'Email', desc: '4 hr reply time' },
+        { icon: '🟢', bg: '#E9F9EF', fg: '#128C4B', title: 'WhatsApp', desc: 'മലയാളം / English' }
+      ],
+      faqs: [
+        { q: 'How does photo privacy work?', a: 'Photos are hidden by default. Only members you approve can view them; revoke access anytime from Settings → Privacy.', open: true, chev: '▴', border: '#D7DFF0' },
+        { q: 'How do I get the verified badge?', a: '', open: false, chev: '▾', border: '#EEF0F4' },
+        { q: 'Can my parents manage my profile?', a: '', open: false, chev: '▾', border: '#EEF0F4' },
+        { q: 'What is the refund policy?', a: '', open: false, chev: '▾', border: '#EEF0F4' },
+        { q: 'How do I report a profile?', a: '', open: false, chev: '▾', border: '#EEF0F4' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
