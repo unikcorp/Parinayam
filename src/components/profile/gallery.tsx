@@ -1,5 +1,5 @@
-import { ImageSlot } from "@/components/parinayam/image-slot";
-import { VoiceWave } from "@/components/parinayam/voice-wave";
+import { ImageSlot } from "@/components/shared/image-slot";
+import { VoiceWave } from "@/components/shared/voice-wave";
 
 export function Gallery({ photoCount }: { photoCount: number }) {
   const extra = Math.max(photoCount - 4, 0);

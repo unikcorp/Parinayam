@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { RangeFilter } from "@/components/parinayam/range-filter";
-import { FilterChip } from "@/components/parinayam/filter-chip";
+import { RangeFilter } from "@/components/shared/range-filter";
+import { FilterChip } from "@/components/shared/filter-chip";
 
 const selectFields: { label: string; options: string[] }[] = [
   { label: "Religion", options: ["Hindu", "Christian", "Muslim", "Any"] },

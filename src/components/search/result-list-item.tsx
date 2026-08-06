@@ -1,7 +1,7 @@
 import { Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ImageSlot } from "@/components/parinayam/image-slot";
-import type { SearchResult } from "./result-card";
+import { ImageSlot } from "@/components/shared/image-slot";
+import type { SearchResult } from "@/types/profile";
 
 export function SearchResultListItem({ result }: { result: SearchResult }) {
   return (

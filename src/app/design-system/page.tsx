@@ -13,7 +13,7 @@ import {
   User,
 } from "lucide-react";
 
-import { brand } from "@/lib/brand.config";
+import { brand } from "@/data/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,22 +46,22 @@ import {
   NewMemberBadge,
   TrustBadge,
   MatchBadge,
-} from "@/components/parinayam/badges";
-import { ProfileCard } from "@/components/parinayam/profile-card";
-import { StatTile } from "@/components/parinayam/stat-tile";
-import { ProgressRing } from "@/components/parinayam/progress-ring";
-import { ProgressBar } from "@/components/parinayam/progress-bar";
-import { ChatBubble, TypingDots } from "@/components/parinayam/chat-bubble";
-import { VoiceWave } from "@/components/parinayam/voice-wave";
-import { NotificationItem } from "@/components/parinayam/notification-item";
-import { MembershipCard } from "@/components/parinayam/membership-card";
-import { PlanCard } from "@/components/parinayam/plan-card";
-import { FilterChip } from "@/components/parinayam/filter-chip";
-import { SegmentedControl } from "@/components/parinayam/segmented-control";
-import { Pagination } from "@/components/parinayam/pagination";
-import { EmptyState } from "@/components/parinayam/empty-state";
-import { RangeFilter } from "@/components/parinayam/range-filter";
-import { BottomNav } from "@/components/parinayam/bottom-nav";
+} from "@/components/profile/badges";
+import { ProfileCard } from "@/components/profile/profile-card";
+import { StatTile } from "@/components/shared/stat-tile";
+import { ProgressRing } from "@/components/shared/progress-ring";
+import { ProgressBar } from "@/components/shared/progress-bar";
+import { ChatBubble, TypingDots } from "@/components/shared/chat-bubble";
+import { VoiceWave } from "@/components/shared/voice-wave";
+import { NotificationItem } from "@/components/shared/notification-item";
+import { MembershipCard } from "@/components/shared/membership-card";
+import { PlanCard } from "@/components/shared/plan-card";
+import { FilterChip } from "@/components/shared/filter-chip";
+import { SegmentedControl } from "@/components/shared/segmented-control";
+import { Pagination } from "@/components/shared/pagination";
+import { EmptyState } from "@/components/shared/empty-state";
+import { RangeFilter } from "@/components/shared/range-filter";
+import { BottomNav } from "@/components/shared/bottom-nav";
 
 const colorTokens = [
   { name: "Primary — Deep Red", hex: "#B91C1C", token: "primary" },

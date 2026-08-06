@@ -1,4 +1,4 @@
-import { ProgressRing } from "@/components/parinayam/progress-ring";
+import { ProgressRing } from "@/components/shared/progress-ring";
 
 export function CompatibilityCard({
   matchPercent,

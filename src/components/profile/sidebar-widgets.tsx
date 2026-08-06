@@ -1,4 +1,4 @@
-import { ImageSlot } from "@/components/parinayam/image-slot";
+import { ImageSlot } from "@/components/shared/image-slot";
 
 export function MutualConnectionsCard({ count }: { count: number }) {
   return (

@@ -1,7 +1,7 @@
 import { Camera, PlayCircle, Heart, Phone, Star, Share2, MoreHorizontal, ArrowLeft } from "lucide-react";
-import { ImageSlot } from "@/components/parinayam/image-slot";
+import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
-import type { MockProfile } from "@/lib/mock/profile";
+import type { MockProfile } from "@/data/profile.data";
 
 export function ProfileHeader({ profile }: { profile: MockProfile }) {
   return (

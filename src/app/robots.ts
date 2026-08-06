@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,8 +7,17 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: [
+          "/dashboard",
+          "/messages",
+          "/notifications",
+          "/settings",
+          "/checkout",
+          "/profile",
+          "/design-system",
+        ],
       },
     ],
-    sitemap: "https://parinayam.example.com/sitemap.xml",
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
