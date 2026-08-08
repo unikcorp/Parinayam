@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SegmentedControl } from "@/components/parinayam/segmented-control";
-import { brand } from "@/lib/brand.config";
+import { SegmentedControl } from "@/components/shared/segmented-control";
+import { brand } from "@/data/brand";
 
 const communities = [brand.community, "Nair", "Ezhava", "Iyer", "Any community"];
 

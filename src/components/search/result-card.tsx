@@ -1,18 +1,8 @@
 import { Heart, MessageCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ImageSlot } from "@/components/parinayam/image-slot";
-
-export interface SearchResult {
-  name: string;
-  age: number;
-  job: string;
-  height: string;
-  place: string;
-  match: number;
-  premium?: boolean;
-  online?: boolean;
-}
+import { ImageSlot } from "@/components/shared/image-slot";
+import type { SearchResult } from "@/types/profile";
 
 export function SearchResultCard({
   result,

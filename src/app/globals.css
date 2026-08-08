@@ -1,3 +1,11 @@
+/**
+ * Single global stylesheet — imported once from app/layout.tsx.
+ * This is the Next.js equivalent of a CRA `index.css`: design tokens (colors,
+ * radii, shadows), the Tailwind import, resets, and shared keyframes/utility
+ * classes live here ONLY. Everything else in the app is styled with Tailwind
+ * utility classes directly on elements — do not add component-level *.css or
+ * *.module.css files; colocated CSS files fragment the token system above.
+ */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

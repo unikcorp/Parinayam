@@ -1,0 +1,7 @@
+export interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  avatarInitials: string;
+  premium: boolean;
+}
