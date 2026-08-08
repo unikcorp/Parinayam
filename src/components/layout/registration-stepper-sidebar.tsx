@@ -3,7 +3,14 @@ import { brand } from "@/data/brand";
 import { registrationSteps } from "@/data/registration/types";
 import { cn } from "@/lib/utils";
 
-export function StepperSidebar({ activeIndex }: { activeIndex: number }) {
+export function StepperSidebar({
+  activeIndex,
+  onStepClick,
+}: {
+  activeIndex: number;
+  /** Omit to keep the sidebar a static display (e.g. before the account is verified). */
+  onStepClick?: (index: number) => void;
+}) {
   return (
     <aside className="bg-dark-panel-gradient hidden flex-col p-11 text-white lg:flex">
       <div className="mb-12 flex items-center gap-3">
@@ -24,8 +31,15 @@ export function StepperSidebar({ activeIndex }: { activeIndex: number }) {
         {registrationSteps.map((step, i) => {
           const done = i < activeIndex;
           const active = i === activeIndex;
+          const clickable = !!onStepClick;
           return (
-            <div key={step.key} className="flex gap-4">
+            <button
+              key={step.key}
+              type="button"
+              disabled={!clickable}
+              onClick={() => onStepClick?.(i)}
+              className={cn("flex gap-4 text-left", clickable ? "cursor-pointer" : "cursor-default")}
+            >
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
@@ -54,7 +68,7 @@ export function StepperSidebar({ activeIndex }: { activeIndex: number }) {
                   <div className="mt-0.5 text-[12.5px] text-white/70">{step.sub}</div>
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

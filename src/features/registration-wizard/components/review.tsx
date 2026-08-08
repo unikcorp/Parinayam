@@ -46,21 +46,41 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
   return (
     <div className="flex flex-col gap-6">
       <ReviewSection
-        title="Personal details"
+        title="Account info"
         onEdit={() => onEditStep(0)}
         rows={[
-          ["Name", data.fullName],
+          ["Profile created by", data.profileCreatedBy],
+          ["Name", `${data.firstName} ${data.lastName}`.trim()],
           ["Gender", data.gender === "female" ? "Female" : "Male"],
-          ["Date of birth", data.dob],
-          ["Height", data.height],
+          ["Date of birth", [data.dobDay, data.dobMonth, data.dobYear].filter(Boolean).join(" ")],
+          ["Mobile", `${data.mobileCountryCode} ${data.mobileNumber}`.trim()],
+          ["Email", data.email],
+          ["Religion", data.religion],
           ["Marital status", data.maritalStatus],
-          ["Religion & caste", `${data.religion} · ${data.caste}`],
+        ]}
+      />
+      <ReviewSection
+        title="Personal details"
+        onEdit={() => onEditStep(1)}
+        rows={[
+          ["Height", data.height],
+          ["Weight", data.weight],
+          ["Body type", data.bodyType],
+          ["Complexion", data.complexion],
+          ["Physical status", data.physicalStatus],
+          ["Blood group", data.bloodGroup],
+          ["Mother tongue", data.motherTongue],
+          ["Caste", `${data.caste}${data.subCaste ? ` · ${data.subCaste}` : ""}`],
+          ["Willing to marry outside caste", data.willingToMarryOtherCaste ? "Yes" : "No"],
+          ["Diet", data.diet],
+          ["Smoking", data.smokingHabits],
+          ["Drinking", data.drinkingHabits],
           ["Location", `${data.district}, ${data.state}`],
         ]}
       />
       <ReviewSection
         title="Education & career"
-        onEdit={() => onEditStep(1)}
+        onEdit={() => onEditStep(2)}
         rows={[
           ["Education", data.highestEducation],
           ["Occupation", data.occupation],
@@ -70,7 +90,7 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
       />
       <ReviewSection
         title="Family details"
-        onEdit={() => onEditStep(2)}
+        onEdit={() => onEditStep(3)}
         rows={[
           ["Family type", data.familyType],
           ["Family values", data.familyValues],
@@ -80,7 +100,7 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
       />
       <ReviewSection
         title="Horoscope"
-        onEdit={() => onEditStep(3)}
+        onEdit={() => onEditStep(4)}
         rows={[
           ["Star", data.star ?? ""],
           ["Dosham", data.dosham ?? ""],
@@ -89,7 +109,7 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
       />
       <ReviewSection
         title="Partner preferences"
-        onEdit={() => onEditStep(4)}
+        onEdit={() => onEditStep(5)}
         rows={[
           ["Age range", `${data.partnerAgeMin} – ${data.partnerAgeMax}`],
           ["Religion", data.partnerReligion ?? ""],
@@ -98,10 +118,11 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
       />
       <ReviewSection
         title="Photos & verification"
-        onEdit={() => onEditStep(5)}
+        onEdit={() => onEditStep(6)}
         rows={[
           ["Photos added", `${data.photoCount} of 6`],
           ["ID type", data.idType],
+          ["ID document", data.idDocumentUploaded ? "Uploaded" : "Not uploaded"],
           ["Selfie", data.selfieCaptured ? "Captured" : "Not captured"],
         ]}
       />

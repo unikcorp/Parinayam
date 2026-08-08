@@ -1,12 +1,76 @@
 "use client";
 
-import { Camera, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { Camera, FileText, ShieldCheck, UploadCloud, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { FieldGroup, SelectField, TextField } from "@/components/forms/form-fields";
+import { FieldGroup, SelectField } from "@/components/forms/form-fields";
 import { Button } from "@/components/ui/button";
 import type { RegistrationFormValues } from "../schema";
 
-const idTypes = ["Aadhaar", "Passport", "PAN card", "Driving licence"];
+const idTypes = ["Aadhaar", "Passport", "PAN", "Other Documents"];
+
+function IdentityDocumentUpload() {
+  const { setValue } = useFormContext<RegistrationFormValues>();
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFile = (file: File | undefined) => {
+    if (!file) return;
+    setFileName(file.name);
+    setValue("idDocumentUploaded", true);
+  };
+
+  const handleRemove = () => {
+    setFileName(null);
+    setValue("idDocumentUploaded", false);
+  };
+
+  if (fileName) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-card-border px-4 py-3">
+        <span className="flex items-center gap-2 truncate text-sm font-semibold text-ink">
+          <FileText className="size-4 shrink-0 text-primary" />
+          {fileName}
+        </span>
+        <button
+          type="button"
+          onClick={handleRemove}
+          className="flex size-7 shrink-0 items-center justify-center rounded-full text-faint transition-colors hover:bg-danger-bg hover:text-danger"
+        >
+          <X className="size-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <label
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        handleFile(e.dataTransfer.files?.[0]);
+      }}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-8 transition-colors ${
+        dragOver ? "border-primary bg-surface-blue" : "border-input hover:border-primary"
+      }`}
+    >
+      <UploadCloud className="size-5 text-primary" />
+      <p className="text-sm font-semibold text-primary-deep">Drag &amp; drop, or click to upload</p>
+      <p className="text-xs text-faint">A clear photo or scan of your ID</p>
+      <input
+        type="file"
+        accept="image/*,.pdf"
+        className="hidden"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+    </label>
+  );
+}
 
 export function VerificationStep() {
   const { watch, setValue } = useFormContext<RegistrationFormValues>();
@@ -15,10 +79,10 @@ export function VerificationStep() {
   return (
     <div className="flex flex-col gap-7">
       <FieldGroup title="Government ID">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="mb-4">
           <SelectField<RegistrationFormValues> name="idType" label="ID type" required options={idTypes} />
-          <TextField<RegistrationFormValues> name="idNumber" label="ID number" required placeholder="XXXX XXXX XXXX" />
         </div>
+        <IdentityDocumentUpload />
       </FieldGroup>
 
       <FieldGroup title="Live selfie">

@@ -1,16 +1,34 @@
-import type { RegistrationData } from "@/types/registration";
+import type { RegistrationFormValues } from "@/features/registration-wizard/schema";
 
-export const initialRegistrationData: RegistrationData = {
-  profileFor: "Myself",
-  fullName: "",
+export const initialRegistrationData: RegistrationFormValues = {
+  profileCreatedBy: "Self",
+  firstName: "",
+  lastName: "",
   gender: "female",
-  dob: "",
-  height: "",
-  maritalStatus: "Never married",
-  motherTongue: "Malayalam",
+  dobDay: "",
+  dobMonth: "",
+  dobYear: "",
+  mobileCountryCode: "+91",
+  mobileNumber: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
   religion: "Hindu",
+  maritalStatus: "Never married",
+
+  height: "",
+  weight: "",
+  bodyType: "",
+  complexion: "",
+  physicalStatus: "",
+  bloodGroup: "",
+  motherTongue: "Malayalam",
   caste: "Nair",
   subCaste: "Veluthedathu Nair",
+  willingToMarryOtherCaste: false,
+  diet: "",
+  smokingHabits: "",
+  drinkingHabits: "",
   country: "India",
   state: "Kerala",
   district: "Ernakulam",
@@ -46,12 +64,13 @@ export const initialRegistrationData: RegistrationData = {
   photoCount: 0,
 
   idType: "Aadhaar",
-  idNumber: "",
+  idDocumentUploaded: false,
   selfieCaptured: false,
 };
 
 export const registrationSteps = [
-  { key: "personal", title: "Personal details", sub: "Name, birth, community, location" },
+  { key: "account", title: "Account info", sub: "Name, contact & login details" },
+  { key: "personal", title: "Personal details", sub: "Community, appearance, location" },
   { key: "education", title: "Education & career", sub: "Degree, occupation, income" },
   { key: "family", title: "Family details", sub: "Parents, siblings, family values" },
   { key: "horoscope", title: "Horoscope", sub: "Star, dosham, birth details" },

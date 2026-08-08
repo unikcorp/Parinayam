@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Controller, useFormContext, type FieldValues, type Path } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,6 +87,54 @@ export function TextField<TFieldValues extends FieldValues = FieldValues>({
             onBlur={field.onBlur}
             className="h-auto rounded-xl px-4 py-3.5 text-[15px]"
           />
+        )}
+      />
+    </Field>
+  );
+}
+
+export function PasswordField<TFieldValues extends FieldValues = FieldValues>({
+  name,
+  label,
+  required,
+  placeholder,
+  className,
+}: {
+  name: Path<TFieldValues>;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+  className?: string;
+}) {
+  const { control, formState: { errors } } = useFormContext<TFieldValues>();
+  const error = errors[name]?.message as string | undefined;
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Field label={label} required={required} error={error} className={className}>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <div className="relative">
+            <Input
+              type={visible ? "text" : "password"}
+              value={String(field.value ?? "")}
+              placeholder={placeholder}
+              onChange={(e) => field.onChange(e.target.value)}
+              onBlur={field.onBlur}
+              className="h-auto rounded-xl px-4 py-3.5 pr-11 text-[15px]"
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setVisible((v) => !v)}
+              aria-label={visible ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-faint hover:text-primary"
+            >
+              {visible ? <EyeOff className="size-4.5" /> : <Eye className="size-4.5" />}
+            </button>
+          </div>
         )}
       />
     </Field>

@@ -1,50 +1,41 @@
 "use client";
 
 import { Controller, useFormContext } from "react-hook-form";
-import {
-  ChipGroup,
-  Field,
-  FieldGroup,
-  SelectField,
-  TextField,
-} from "@/components/forms/form-fields";
+import { Field, FieldGroup, SelectField, TextField } from "@/components/forms/form-fields";
 import type { RegistrationFormValues } from "../schema";
-import { cn } from "@/lib/utils";
 
 const heights = ["4' 10\"", "5' 0\"", "5' 2\"", "5' 4\" (163 cm)", "5' 6\"", "5' 8\"", "6' 0\""];
-const maritalStatuses = ["Never married", "Divorced", "Widowed", "Awaiting divorce"];
+const weights = ["30 Kg", "40 Kg", "50 Kg", "60 Kg", "70 Kg", "80 Kg", "90 Kg", "100+ Kg"];
+const bodyTypes = ["Slim", "Athletic", "Average", "Heavy"];
+const complexions = ["Very Fair", "Fair", "Wheatish", "Dark"];
+const physicalStatuses = ["Normal", "Physically Challenged"];
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const languages = ["Malayalam", "Tamil", "Kannada", "Telugu", "Hindi", "English"];
-const religions = ["Hindu", "Christian", "Muslim", "Other"];
 const castes = ["Nair", "Ezhava", "Iyer", "Menon", "Other"];
 const subCastes = ["Veluthedathu Nair", "Illam", "Other"];
+const diets = ["Vegetarian", "Non-Vegetarian", "Eggetarian", "Vegan"];
+const smokingOptions = ["No", "Occasionally", "Yes"];
+const drinkingOptions = ["No", "Occasionally", "Yes"];
 const states = ["Kerala", "Tamil Nadu", "Karnataka"];
 const districts = ["Ernakulam", "Thrissur", "Kozhikode", "Thiruvananthapuram", "Kottayam"];
 
-function GenderField() {
+function WillingToMarryOtherCasteField() {
   const { control } = useFormContext<RegistrationFormValues>();
   return (
-    <Field label="Gender" required>
+    <Field label="Willing to marry outside caste?">
       <Controller
-        name="gender"
+        name="willingToMarryOtherCaste"
         control={control}
         render={({ field }) => (
-          <div className="flex overflow-hidden rounded-xl border border-input">
-            {(["female", "male"] as const).map((o) => (
-              <button
-                key={o}
-                type="button"
-                onClick={() => field.onChange(o)}
-                className={cn(
-                  "flex-1 py-3.5 text-sm font-bold",
-                  field.value === o
-                    ? "bg-surface-blue text-primary"
-                    : "bg-card text-muted-foreground"
-                )}
-              >
-                {o === "female" ? "Female" : "Male"}
-              </button>
-            ))}
-          </div>
+          <label className="flex items-center gap-2.5 py-2 text-sm font-semibold text-ink">
+            <input
+              type="checkbox"
+              checked={field.value}
+              onChange={(e) => field.onChange(e.target.checked)}
+              className="size-4.5 rounded border-input accent-primary"
+            />
+            Yes, open to other castes
+          </label>
         )}
       />
     </Field>
@@ -55,29 +46,8 @@ export function PersonalStep() {
   return (
     <div className="flex flex-col gap-7">
       <FieldGroup title="">
-        <ChipGroup<RegistrationFormValues>
-          name="profileFor"
-          label="Profile created for"
-          required
-          options={["Myself", "My daughter", "My son", "Sibling", "Relative"]}
-          className="mb-7"
-        />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <TextField<RegistrationFormValues>
-            name="fullName"
-            label="Full name"
-            required
-            placeholder="Anjali Menon"
-          />
-          <GenderField />
-          <TextField<RegistrationFormValues> name="dob" label="Date of birth" required type="date" />
           <SelectField<RegistrationFormValues> name="height" label="Height" required options={heights} />
-          <SelectField<RegistrationFormValues>
-            name="maritalStatus"
-            label="Marital status"
-            required
-            options={maritalStatuses}
-          />
           <SelectField<RegistrationFormValues>
             name="motherTongue"
             label="Mother tongue"
@@ -87,11 +57,33 @@ export function PersonalStep() {
         </div>
       </FieldGroup>
 
-      <FieldGroup title="Religion & community">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          <SelectField<RegistrationFormValues> name="religion" label="Religion" required options={religions} />
+      <FieldGroup title="Physical attributes">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <SelectField<RegistrationFormValues> name="weight" label="Weight" options={weights} />
+          <SelectField<RegistrationFormValues> name="bodyType" label="Body type" options={bodyTypes} />
+          <SelectField<RegistrationFormValues> name="complexion" label="Complexion" options={complexions} />
+          <SelectField<RegistrationFormValues>
+            name="physicalStatus"
+            label="Physical status"
+            options={physicalStatuses}
+          />
+          <SelectField<RegistrationFormValues> name="bloodGroup" label="Blood group" options={bloodGroups} />
+        </div>
+      </FieldGroup>
+
+      <FieldGroup title="Community">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <SelectField<RegistrationFormValues> name="caste" label="Caste" required options={castes} />
           <SelectField<RegistrationFormValues> name="subCaste" label="Sub caste" options={subCastes} />
+          <WillingToMarryOtherCasteField />
+        </div>
+      </FieldGroup>
+
+      <FieldGroup title="Lifestyle">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <SelectField<RegistrationFormValues> name="diet" label="Diet" options={diets} />
+          <SelectField<RegistrationFormValues> name="smokingHabits" label="Smoking" options={smokingOptions} />
+          <SelectField<RegistrationFormValues> name="drinkingHabits" label="Drinking" options={drinkingOptions} />
         </div>
       </FieldGroup>
 
