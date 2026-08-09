@@ -165,7 +165,7 @@ export function SelectField<TFieldValues extends FieldValues = FieldValues>({
         render={({ field }) => (
           <Select value={String(field.value ?? "")} onValueChange={(v) => v && field.onChange(v)}>
             <SelectTrigger className="h-auto w-full rounded-xl px-4 py-3.5 text-[15px] font-semibold">
-              <SelectValue />
+              <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
               {options.map((o) => (

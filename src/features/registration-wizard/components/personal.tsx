@@ -1,8 +1,9 @@
 "use client";
 
 import { Controller, useFormContext } from "react-hook-form";
-import { Field, FieldGroup, SelectField, TextField } from "@/components/forms/form-fields";
+import { Field, FieldGroup, SelectField } from "@/components/forms/form-fields";
 import type { RegistrationFormValues } from "../schema";
+import type { RegistrationLookups } from "../use-registration-lookups";
 
 const heights = ["4' 10\"", "5' 0\"", "5' 2\"", "5' 4\" (163 cm)", "5' 6\"", "5' 8\"", "6' 0\""];
 const weights = ["30 Kg", "40 Kg", "50 Kg", "60 Kg", "70 Kg", "80 Kg", "90 Kg", "100+ Kg"];
@@ -10,14 +11,9 @@ const bodyTypes = ["Slim", "Athletic", "Average", "Heavy"];
 const complexions = ["Very Fair", "Fair", "Wheatish", "Dark"];
 const physicalStatuses = ["Normal", "Physically Challenged"];
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-const languages = ["Malayalam", "Tamil", "Kannada", "Telugu", "Hindi", "English"];
-const castes = ["Nair", "Ezhava", "Iyer", "Menon", "Other"];
-const subCastes = ["Veluthedathu Nair", "Illam", "Other"];
 const diets = ["Vegetarian", "Non-Vegetarian", "Eggetarian", "Vegan"];
 const smokingOptions = ["No", "Occasionally", "Yes"];
 const drinkingOptions = ["No", "Occasionally", "Yes"];
-const states = ["Kerala", "Tamil Nadu", "Karnataka"];
-const districts = ["Ernakulam", "Thrissur", "Kozhikode", "Thiruvananthapuram", "Kottayam"];
 
 function WillingToMarryOtherCasteField() {
   const { control } = useFormContext<RegistrationFormValues>();
@@ -42,7 +38,13 @@ function WillingToMarryOtherCasteField() {
   );
 }
 
-export function PersonalStep() {
+export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
+  const { watch } = useFormContext<RegistrationFormValues>();
+  const religion = watch("religion");
+  const caste = watch("caste");
+  const country = watch("country");
+  const state = watch("state");
+
   return (
     <div className="flex flex-col gap-7">
       <FieldGroup title="">
@@ -52,7 +54,7 @@ export function PersonalStep() {
             name="motherTongue"
             label="Mother tongue"
             required
-            options={languages}
+            options={lookups.motherTongueOptions}
           />
         </div>
       </FieldGroup>
@@ -73,8 +75,17 @@ export function PersonalStep() {
 
       <FieldGroup title="Community">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <SelectField<RegistrationFormValues> name="caste" label="Caste" required options={castes} />
-          <SelectField<RegistrationFormValues> name="subCaste" label="Sub caste" options={subCastes} />
+          <SelectField<RegistrationFormValues>
+            name="caste"
+            label="Caste"
+            required
+            options={lookups.casteOptions(religion)}
+          />
+          <SelectField<RegistrationFormValues>
+            name="subCaste"
+            label="Sub caste"
+            options={lookups.subCasteOptions(caste)}
+          />
           <WillingToMarryOtherCasteField />
         </div>
       </FieldGroup>
@@ -89,9 +100,24 @@ export function PersonalStep() {
 
       <FieldGroup title="Location">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          <TextField<RegistrationFormValues> name="country" label="Country" required />
-          <SelectField<RegistrationFormValues> name="state" label="State" required options={states} />
-          <SelectField<RegistrationFormValues> name="district" label="District" required options={districts} />
+          <SelectField<RegistrationFormValues>
+            name="country"
+            label="Country"
+            required
+            options={lookups.countryOptions}
+          />
+          <SelectField<RegistrationFormValues>
+            name="state"
+            label="State"
+            required
+            options={lookups.stateOptions(country)}
+          />
+          <SelectField<RegistrationFormValues>
+            name="district"
+            label="District"
+            required
+            options={lookups.districtOptions(state)}
+          />
         </div>
       </FieldGroup>
     </div>

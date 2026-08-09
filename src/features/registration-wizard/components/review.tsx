@@ -108,8 +108,13 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
         ]}
       />
       <ReviewSection
-        title="Partner preferences"
+        title="About you"
         onEdit={() => onEditStep(5)}
+        rows={[["About you", data.aboutMe ?? ""]]}
+      />
+      <ReviewSection
+        title="Partner preferences"
+        onEdit={() => onEditStep(6)}
         rows={[
           ["Age range", `${data.partnerAgeMin} – ${data.partnerAgeMax}`],
           ["Religion", data.partnerReligion ?? ""],
@@ -118,12 +123,11 @@ export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void
       />
       <ReviewSection
         title="Photos & verification"
-        onEdit={() => onEditStep(6)}
+        onEdit={() => onEditStep(7)}
         rows={[
           ["Photos added", `${data.photoCount} of 6`],
           ["ID type", data.idType],
           ["ID document", data.idDocumentUploaded ? "Uploaded" : "Not uploaded"],
-          ["Selfie", data.selfieCaptured ? "Captured" : "Not captured"],
         ]}
       />
     </div>

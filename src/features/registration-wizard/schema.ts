@@ -70,7 +70,10 @@ export const registrationSchema = z
     dosham: optionalString,
     horoscopeNote: optionalString,
 
-    // Step 6 — Partner preferences
+    // Step 6 — About you
+    aboutMe: optionalString,
+
+    // Step 7 — Partner preferences
     partnerAgeMin: z.number(),
     partnerAgeMax: z.number(),
     partnerHeightMin: optionalString,
@@ -80,15 +83,14 @@ export const registrationSchema = z
     partnerLocation: optionalString,
     partnerAbout: optionalString,
 
-    // Step 7 — Photos
+    // Step 8 — Photos
     photoCount: z.number().min(0),
 
-    // Step 8 — Identity verification
+    // Step 9 — Identity verification
     idType: requiredString("ID type"),
     idDocumentUploaded: z.boolean(),
-    selfieCaptured: z.boolean(),
 
-    // Step 9 — Review & submit has no fields of its own
+    // Step 10 — Review & submit has no fields of its own
   })
   .superRefine((data, ctx) => {
     if (data.confirmPassword !== data.password) {
@@ -118,6 +120,7 @@ export const registrationFieldsByStep: (keyof RegistrationFormValues)[][] = [
   ["height", "motherTongue", "caste", "country", "state", "district"],
   ["highestEducation", "occupation", "annualIncome"],
   ["familyType", "familyValues"],
+  [],
   [],
   [],
   [],

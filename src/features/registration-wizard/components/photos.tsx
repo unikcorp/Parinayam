@@ -1,18 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { X, ImagePlus } from "lucide-react";
+import { Loader2, X, ImagePlus } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { ImageCropUpload, ImageCropperDialog, validateImageFile, type CroppedImageResult } from "@/components/image-crop-upload";
+import { uploadGalleryPhotoRequest, uploadProfilePhotoRequest } from "../api";
+import { ApiError } from "@/lib/api";
 import type { RegistrationFormValues } from "../schema";
 import { MAX_REGISTRATION_PHOTOS as MAX_PHOTOS } from "@/constants/registration";
 
 const MAX_GALLERY_PHOTOS = MAX_PHOTOS - 1;
 
-export function PhotosStep() {
+export function PhotosStep({ memberId }: { memberId: number | null }) {
   const { setValue } = useFormContext<RegistrationFormValues>();
   const [profileImage, setProfileImage] = useState<CroppedImageResult | null>(null);
+  const [profileUploading, setProfileUploading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<CroppedImageResult[]>([]);
+  const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryDragOver, setGalleryDragOver] = useState(false);
 
   const [pendingGallerySrc, setPendingGallerySrc] = useState<string | null>(null);
@@ -23,9 +28,23 @@ export function PhotosStep() {
     setValue("photoCount", (hasProfile ? 1 : 0) + galleryCount);
   };
 
-  const handleProfileImageChange = (result: CroppedImageResult | null) => {
+  // Uploads happen the moment a photo is cropped, not deferred to the final
+  // submit — same rule admin's wizard follows — so the photo already exists
+  // even if the member exits right after this step.
+  const handleProfileImageChange = async (result: CroppedImageResult | null) => {
     setProfileImage(result);
     syncPhotoCount(!!result, galleryImages.length);
+    setProfileError(null);
+    if (!result || !memberId) return;
+
+    setProfileUploading(true);
+    try {
+      await uploadProfilePhotoRequest(memberId, result.file);
+    } catch (error) {
+      setProfileError(error instanceof ApiError ? error.message : "Could not upload the profile photo.");
+    } finally {
+      setProfileUploading(false);
+    }
   };
 
   const handleGalleryFileSelect = (files: FileList | null) => {
@@ -49,11 +68,21 @@ export function PhotosStep() {
     setPendingGallerySrc(null);
   };
 
-  const handleGalleryCropSave = (result: CroppedImageResult) => {
+  const handleGalleryCropSave = async (result: CroppedImageResult) => {
     const next = [...galleryImages, result];
     setGalleryImages(next);
     closeGalleryCropper();
     syncPhotoCount(!!profileImage, next.length);
+    if (!memberId) return;
+
+    setGalleryUploading(true);
+    try {
+      await uploadGalleryPhotoRequest(memberId, result.file);
+    } catch (error) {
+      setGalleryError(error instanceof ApiError ? error.message : "Could not upload the gallery photo.");
+    } finally {
+      setGalleryUploading(false);
+    }
   };
 
   const removeGalleryPhoto = (url: string) => {
@@ -76,13 +105,21 @@ export function PhotosStep() {
           aspect={1}
           shape="rect"
           label="Upload profile photo"
+          disabled={profileUploading}
         />
+        {profileUploading && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-faint">
+            <Loader2 className="size-3.5 animate-spin" /> Uploading…
+          </p>
+        )}
+        {profileError && <p className="mt-2 text-xs font-semibold text-destructive">{profileError}</p>}
       </div>
 
       <div>
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[13px] font-bold text-primary-deep">Gallery photos</p>
-          <span className="text-[13px] font-semibold text-faint">
+          <span className="flex items-center gap-1.5 text-[13px] font-semibold text-faint">
+            {galleryUploading && <Loader2 className="size-3.5 animate-spin" />}
             {galleryImages.length} / {MAX_GALLERY_PHOTOS}
           </span>
         </div>

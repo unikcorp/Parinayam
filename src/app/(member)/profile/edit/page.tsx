@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormProvider } from "react-hook-form";
 import { registrationSteps } from "@/data/registration/types";
 import { useRegistrationForm } from "@/features/registration-wizard/hooks/use-registration-form";
-import { submitRegistrationProfile } from "@/features/registration-wizard/api";
+import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,17 @@ import { ReviewStep } from "@/features/registration-wizard/components/review";
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { form, step, setStep, lastStep, goNext, goBack, clearDraft } = useRegistrationForm();
+  const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
+  const lookups = useRegistrationLookups();
 
   const percent = Math.round(((step + 1) / registrationSteps.length) * 100);
 
+  // TODO: this page (editing an already-registered member's profile) isn't
+  // wired to the real API yet — only the initial /register flow is.
   async function handleNext() {
     if (lastStep) {
       const valid = await form.trigger();
       if (!valid) return;
-      await submitRegistrationProfile(form.getValues());
-      clearDraft();
       router.push("/dashboard");
       return;
     }
@@ -80,13 +81,13 @@ export default function ProfileEditPage() {
             </p>
 
             <div className="rounded-2xl border border-card-border bg-card p-5 shadow-[0_8px_30px_rgba(127,29,29,0.05)] lg:rounded-[20px] lg:p-10">
-              {step === 0 && <PersonalStep />}
-              {step === 1 && <EducationStep />}
+              {step === 0 && <PersonalStep lookups={lookups} />}
+              {step === 1 && <EducationStep lookups={lookups} />}
               {step === 2 && <FamilyStep />}
-              {step === 3 && <HoroscopeStep />}
-              {step === 4 && <PreferencesStep />}
-              {step === 5 && <PhotosStep />}
-              {step === 6 && <VerificationStep />}
+              {step === 3 && <HoroscopeStep lookups={lookups} />}
+              {step === 4 && <PreferencesStep lookups={lookups} />}
+              {step === 5 && <PhotosStep memberId={null} />}
+              {step === 6 && <VerificationStep memberId={null} />}
               {step === 7 && <ReviewStep onEditStep={setStep} />}
             </div>
 
