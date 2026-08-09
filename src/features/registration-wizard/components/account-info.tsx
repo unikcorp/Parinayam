@@ -5,6 +5,7 @@ import { ChipGroup, Field, FieldGroup, PasswordField, SelectField, TextField } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { RegistrationFormValues } from "../schema";
+import type { RegistrationLookups } from "../use-registration-lookups";
 
 const countryCodes = ["+91", "+1", "+44", "+61", "+971"];
 const dobDays = Array.from({ length: 31 }, (_, i) => String(i + 1));
@@ -14,8 +15,7 @@ const dobMonths = [
 ];
 const CURRENT_YEAR = new Date().getFullYear();
 const dobYears = Array.from({ length: 60 }, (_, i) => String(CURRENT_YEAR - 18 - i));
-const religions = ["Hindu", "Christian", "Muslim", "Other"];
-const maritalStatuses = ["Never married", "Divorced", "Widowed", "Awaiting divorce"];
+const maritalStatuses = ["Never Married", "Divorced", "Widowed", "Awaiting Divorce"];
 
 function GenderField() {
   const { control } = useFormContext<RegistrationFormValues>();
@@ -131,7 +131,7 @@ function MobileField() {
   );
 }
 
-export function AccountInfoStep() {
+export function AccountInfoStep({ lookups }: { lookups: RegistrationLookups }) {
   return (
     <div className="flex flex-col gap-7">
       <FieldGroup title="">
@@ -172,7 +172,12 @@ export function AccountInfoStep() {
 
       <FieldGroup title="Religion & marital status">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <SelectField<RegistrationFormValues> name="religion" label="Religion" required options={religions} />
+          <SelectField<RegistrationFormValues>
+            name="religion"
+            label="Religion"
+            required
+            options={lookups.religionOptions}
+          />
           <SelectField<RegistrationFormValues>
             name="maritalStatus"
             label="Marital status"

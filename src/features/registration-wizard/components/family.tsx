@@ -6,7 +6,7 @@ import {
 } from "@/components/forms/form-fields";
 import type { RegistrationFormValues } from "../schema";
 
-const familyTypes = ["Nuclear family", "Joint family"];
+const familyTypes = ["Nuclear Family", "Joint Family"];
 const familyValueOptions = ["Traditional", "Moderate", "Liberal"];
 
 export function FamilyStep() {
