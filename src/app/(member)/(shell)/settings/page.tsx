@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Pencil } from "lucide-react";
-import { ImageSlot } from "@/components/shared/image-slot";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { useMyProfile } from "@/hooks/use-my-profile";
@@ -36,7 +36,7 @@ export default function ProfileSettingsPage() {
   }
 
   const { member, profileCompletion, photos } = data;
-  const profilePhoto = photos.find((p) => p.is_profile_photo) ?? photos[0];
+  const profilePhoto = photos.find((p) => p.is_profile_photo);
 
   return (
     <div className="flex flex-col gap-5.5">
@@ -48,16 +48,14 @@ export default function ProfileSettingsPage() {
       </div>
 
       <section className="flex items-center gap-4 rounded-2xl border border-card-border bg-card p-5 lg:rounded-[20px] lg:p-7">
-        {profilePhoto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profilePhoto.photo_url}
-            alt={`${member.first_name} ${member.last_name}`}
-            className="size-16 shrink-0 rounded-full border-2 border-gold-light object-cover lg:size-20"
-          />
-        ) : (
-          <ImageSlot label="you" className="size-16 shrink-0 rounded-full border-2 border-gold-light lg:size-20" />
-        )}
+        <MemberProfilePhoto
+          photoUrl={profilePhoto?.photo_url ?? null}
+          approvalStatus={profilePhoto?.approval_status ?? null}
+          gender={member.gender}
+          name={`${member.first_name} ${member.last_name}`}
+          className="size-16 shrink-0 rounded-xl border-2 border-gold-light lg:size-20"
+          showMessage={false}
+        />
         <div className="flex-1">
           <div className="text-base font-extrabold text-primary-deep lg:text-lg">
             {member.first_name} {member.last_name}

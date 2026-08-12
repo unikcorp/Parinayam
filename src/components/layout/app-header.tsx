@@ -7,6 +7,8 @@ import { Bell, ChevronDown, LogOut, Settings, Star, UserRound } from "lucide-rea
 import { brand } from "@/data/brand";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import { useMyProfile } from "@/hooks/use-my-profile";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 
 const navLinks = [
   { label: "Home", href: "/dashboard" },
@@ -19,6 +21,8 @@ export function AppHeader({ notificationCount = 4 }: { notificationCount?: numbe
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { data: profile } = useMyProfile();
+  const profilePhoto = profile?.photos.find((p) => p.is_profile_photo);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -86,9 +90,14 @@ export function AppHeader({ notificationCount = 4 }: { notificationCount?: numbe
             onClick={() => setMenuOpen((v) => !v)}
             className="flex items-center gap-2.5 rounded-full border border-input bg-card py-1.5 pr-2.5 pl-1.5"
           >
-            <span className="flex size-8.5 items-center justify-center rounded-full bg-surface-blue text-xs font-bold text-primary">
-              {user?.avatarInitials ?? "?"}
-            </span>
+            <MemberProfilePhoto
+              photoUrl={profilePhoto?.photo_url ?? null}
+              approvalStatus={profilePhoto?.approval_status ?? null}
+              gender={profile?.member.gender ?? "Male"}
+              name={user?.name}
+              className="size-8.5 shrink-0 rounded-lg"
+              showMessage={false}
+            />
             <span className="text-sm font-bold text-primary-deep">
               {user?.name.split(" ")[0] ?? "Guest"}
             </span>

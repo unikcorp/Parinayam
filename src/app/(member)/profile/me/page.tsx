@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Camera, Check, Pencil, Settings, ShieldCheck } from "lucide-react";
-import { ImageSlot } from "@/components/shared/image-slot";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { DetailSectionCard, DetailAccordion, type DetailSectionData } from "@/components/profile/detail-section";
@@ -28,7 +28,7 @@ export default function MyProfilePage() {
   }
 
   const { member, horoscope, partnerPreference, photos, document, profileCompletion } = data;
-  const profilePhoto = photos.find((p) => p.is_profile_photo) ?? photos[0];
+  const profilePhoto = photos.find((p) => p.is_profile_photo);
   const age = calculateAge(member.dob);
   const location = [member.district_name, member.state_name, member.country_name].filter(Boolean).join(", ");
 
@@ -121,16 +121,13 @@ export default function MyProfilePage() {
       {/* HEADER */}
       <div className="mb-7 flex flex-col items-center gap-5 rounded-[22px] border border-card-border bg-card p-6 text-center lg:flex-row lg:items-start lg:gap-7 lg:p-8 lg:text-left">
         <div className="relative shrink-0">
-          {profilePhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profilePhoto.photo_url}
-              alt={`${member.first_name} ${member.last_name}`}
-              className="size-32 rounded-full border-4 border-white object-cover shadow-[0_10px_30px_rgba(127,29,29,0.15)] lg:size-36"
-            />
-          ) : (
-            <ImageSlot label="Profile photo" className="size-32 rounded-full lg:size-36" />
-          )}
+          <MemberProfilePhoto
+            photoUrl={profilePhoto?.photo_url ?? null}
+            approvalStatus={profilePhoto?.approval_status ?? null}
+            gender={member.gender}
+            name={`${member.first_name} ${member.last_name}`}
+            className="size-32 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)] lg:size-36"
+          />
         </div>
 
         <div className="flex-1">
@@ -138,7 +135,7 @@ export default function MyProfilePage() {
             <span className="text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[30px]">
               {member.first_name} {member.last_name}
             </span>
-            {document && (
+            {document?.status === "APPROVED" && (
               <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-extrabold text-white">
                 <ShieldCheck className="size-3.5" /> Verified
               </span>
@@ -178,12 +175,13 @@ export default function MyProfilePage() {
           </div>
           <div className="flex gap-3 overflow-x-auto">
             {photos.map((p) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <MemberProfilePhoto
                 key={p.id}
-                src={p.photo_url}
-                alt="Gallery"
-                className="h-28 w-28 shrink-0 rounded-xl border border-card-border object-cover"
+                photoUrl={p.photo_url}
+                approvalStatus={p.approval_status}
+                gender={member.gender}
+                className="h-28 w-28 shrink-0 rounded-xl border border-card-border"
+                showMessage={false}
               />
             ))}
           </div>

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
+import { useSearchResults } from "@/hooks/use-search-results";
 import { AppMobileHeader } from "@/components/layout/app-mobile-header";
 import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
@@ -28,12 +29,6 @@ const tiles = [
   { icon: ArrowUpRight, tint: "blue" as const, value: 9, label: "Interests sent" },
   { icon: Eye, tint: "gold" as const, value: 38, label: "Profile visitors" },
   { icon: Star, tint: "success" as const, value: 12, label: "Shortlisted you" },
-];
-
-const matches = [
-  { name: "Arjun N", age: 29, occupation: "Chartered Accountant", place: "Thrissur", match: 92, online: true },
-  { name: "Kiran P", age: 31, occupation: "Civil Engineer", place: "Kozhikode", match: 89, online: false },
-  { name: "Sreejith M", age: 30, occupation: "Bank Manager", place: "Kottayam", match: 87, online: true },
 ];
 
 const recentlyViewed = [
@@ -64,12 +59,27 @@ export default function DashboardPage() {
   const displayName = user?.name ?? "Member";
   const firstName = displayName.split(" ")[0];
   const completion = profile?.profileCompletion ?? 0;
+  const profilePhoto = profile?.photos.find((p) => p.is_profile_photo);
   const hasPhotos = (profile?.photos.length ?? 0) > 0;
   const isVerified = !!profile?.document;
+  const { data: suggested, isLoading: suggestedLoading } = useSearchResults({
+    ageMin: 18,
+    ageMax: 70,
+    sort: "match",
+    page: 1,
+    limit: 3,
+  });
+  const suggestedMatches = suggested?.results ?? [];
 
   return (
     <>
-      <AppMobileHeader greeting="Good morning 🌤" name={displayName} />
+      <AppMobileHeader
+        greeting="Good morning 🌤"
+        name={displayName}
+        photoUrl={profilePhoto?.photo_url ?? null}
+        approvalStatus={profilePhoto?.approval_status ?? null}
+        gender={profile?.member.gender}
+      />
 
       <div className="grid grid-cols-1 gap-6 px-5 py-5 lg:grid-cols-[1fr_360px] lg:items-start lg:gap-7 lg:px-12 lg:py-8">
         {/* MAIN COLUMN */}
@@ -137,22 +147,31 @@ export default function DashboardPage() {
                 See all →
               </Link>
             </div>
-            <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4.5 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
-              {matches.map((m) => (
-                <ProfileCard
-                  key={m.name}
-                  name={m.name}
-                  age={m.age}
-                  occupation={m.occupation}
-                  location={m.place}
-                  matchPercent={m.match}
-                  online={m.online}
-                  verified
-                  className="w-50 shrink-0 lg:w-auto"
-                  photoClassName="h-45 lg:h-52.5"
-                />
-              ))}
-            </div>
+            {suggestedLoading ? (
+              <p className="py-6 text-center text-sm text-faint">Finding matches…</p>
+            ) : suggestedMatches.length === 0 ? (
+              <p className="py-6 text-center text-sm text-faint">
+                No suggestions yet — widen your profile details to find more matches.
+              </p>
+            ) : (
+              <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4.5 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+                {suggestedMatches.map((m) => (
+                  <ProfileCard
+                    key={m.id}
+                    name={m.name}
+                    age={m.age}
+                    occupation={m.occupation ?? "—"}
+                    location={m.place || "—"}
+                    photoUrl={m.photoUrl}
+                    gender={m.gender}
+                    matchPercent={m.match ?? undefined}
+                    verified={m.verified}
+                    className="w-50 shrink-0 lg:w-auto"
+                    photoClassName="h-45 lg:h-52.5"
+                  />
+                ))}
+              </div>
+            )}
           </section>
 
           {/* recently viewed */}

@@ -25,7 +25,7 @@ export function AppMobileHeader({
           approvalStatus={approvalStatus}
           gender={gender}
           name={name}
-          className="size-10.5 shrink-0 rounded-full border-2 border-gold-light"
+          className="size-10.5 shrink-0 rounded-lg border-2 border-gold-light"
           showMessage={false}
         />
         <div>
