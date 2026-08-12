@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Heart,
@@ -9,6 +11,8 @@ import {
   Camera,
   Settings,
 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { useMyProfile } from "@/hooks/use-my-profile";
 import { AppMobileHeader } from "@/components/layout/app-mobile-header";
 import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
@@ -17,6 +21,7 @@ import { ProgressBar } from "@/components/shared/progress-bar";
 import { NotificationItem } from "@/components/shared/notification-item";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const tiles = [
   { icon: Heart, tint: "peach" as const, value: 14, label: "Interests received" },
@@ -54,9 +59,17 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const { data: profile } = useMyProfile();
+  const displayName = user?.name ?? "Member";
+  const firstName = displayName.split(" ")[0];
+  const completion = profile?.profileCompletion ?? 0;
+  const hasPhotos = (profile?.photos.length ?? 0) > 0;
+  const isVerified = !!profile?.document;
+
   return (
     <>
-      <AppMobileHeader greeting="Good morning 🌤" name="Anjali Menon" />
+      <AppMobileHeader greeting="Good morning 🌤" name={displayName} />
 
       <div className="grid grid-cols-1 gap-6 px-5 py-5 lg:grid-cols-[1fr_360px] lg:items-start lg:gap-7 lg:px-12 lg:py-8">
         {/* MAIN COLUMN */}
@@ -65,7 +78,7 @@ export default function DashboardPage() {
           <div className="bg-dark-panel-gradient hidden items-center justify-between rounded-[22px] px-8.5 py-7.5 text-white lg:flex">
             <div>
               <div className="text-2xl font-extrabold tracking-[-0.01em]">
-                Good morning, Anjali 🌤
+                Good morning, {firstName} 🌤
               </div>
               <div className="mt-1.5 text-[14.5px] text-white/70">
                 You have <b className="text-gold-light">3 new interests</b> and{" "}
@@ -104,12 +117,12 @@ export default function DashboardPage() {
             href="/settings"
             className="flex items-center gap-4 rounded-2xl border border-card-border bg-card p-4.5 lg:hidden"
           >
-            <ProgressRing percent={85} size={62} strokeWidth={7} color="#0E9F6E" label="85%" />
+            <ProgressRing percent={completion} size={62} strokeWidth={7} color="#0E9F6E" label={`${completion}%`} />
             <div className="flex-1">
               <div className="text-[15px] font-extrabold text-primary-deep">
-                Profile strength: Strong
+                Profile strength: {strengthLabel(completion)}
               </div>
-              <div className="mt-0.5 text-xs text-faint">Add a voice intro for +10%</div>
+              <div className="mt-0.5 text-xs text-faint">{nextStepHint(hasPhotos, isVerified)}</div>
             </div>
             <span className="text-faint">›</span>
           </Link>
@@ -173,29 +186,49 @@ export default function DashboardPage() {
         <aside className="hidden flex-col gap-5 lg:flex">
           <div className="rounded-[20px] border border-card-border bg-card p-6">
             <div className="mb-4.5 flex items-center gap-4">
-              <ProgressRing percent={85} size={74} strokeWidth={8} color="#0E9F6E" label="85%" />
+              <ProgressRing percent={completion} size={74} strokeWidth={8} color="#0E9F6E" label={`${completion}%`} />
               <div>
                 <div className="text-base font-extrabold text-primary-deep">
                   Profile strength
                 </div>
-                <div className="mt-0.5 text-[13px] text-faint">Strong — almost there!</div>
+                <div className="mt-0.5 text-[13px] text-faint">{strengthLabel(completion)}</div>
               </div>
             </div>
             <div className="flex flex-col gap-2.5">
-              <div className="flex items-center gap-2.5 text-[13.5px] text-muted-foreground">
-                <Check className="size-4 text-success" /> Photos added
+              <div
+                className={cn(
+                  "flex items-center gap-2.5 text-[13.5px]",
+                  hasPhotos ? "text-muted-foreground" : "text-faint"
+                )}
+              >
+                {hasPhotos ? <Check className="size-4 text-success" /> : <span className="size-4" />} Photos added
               </div>
-              <div className="flex items-center gap-2.5 text-[13.5px] text-muted-foreground">
-                <Check className="size-4 text-success" /> ID verified
+              <div
+                className={cn(
+                  "flex items-center gap-2.5 text-[13.5px]",
+                  isVerified ? "text-muted-foreground" : "text-faint"
+                )}
+              >
+                {isVerified ? <Check className="size-4 text-success" /> : <span className="size-4" />} ID verified
               </div>
-              <div className="flex items-center justify-between rounded-[11px] bg-peach-bg px-3.5 py-2.5 text-[13.5px] font-bold text-primary-deep">
-                <span>＋ Add voice introduction</span>
-                <span className="text-peach-text">+10%</span>
-              </div>
-              <div className="flex items-center justify-between rounded-[11px] bg-surface-cream-2 px-3.5 py-2.5 text-[13.5px] font-bold text-primary-deep">
-                <span>＋ Add horoscope details</span>
-                <span className="text-gold-text">+5%</span>
-              </div>
+              {!hasPhotos && (
+                <Link
+                  href="/profile/edit"
+                  className="flex items-center justify-between rounded-[11px] bg-peach-bg px-3.5 py-2.5 text-[13.5px] font-bold text-primary-deep"
+                >
+                  <span>＋ Add photos</span>
+                  <span className="text-peach-text">+9%</span>
+                </Link>
+              )}
+              {!isVerified && (
+                <Link
+                  href="/profile/edit"
+                  className="flex items-center justify-between rounded-[11px] bg-surface-cream-2 px-3.5 py-2.5 text-[13.5px] font-bold text-primary-deep"
+                >
+                  <span>＋ Verify your identity</span>
+                  <span className="text-gold-text">+9%</span>
+                </Link>
+              )}
             </div>
           </div>
 
@@ -263,4 +296,16 @@ export default function DashboardPage() {
       </div>
     </>
   );
+}
+
+function strengthLabel(percent: number) {
+  if (percent >= 85) return "Strong — almost there!";
+  if (percent >= 50) return "Getting there";
+  return "Just started";
+}
+
+function nextStepHint(hasPhotos: boolean, isVerified: boolean) {
+  if (!hasPhotos) return "Add photos for +9%";
+  if (!isVerified) return "Verify your identity for +9%";
+  return "Keep filling in your profile for better matches";
 }

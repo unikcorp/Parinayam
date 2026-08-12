@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { OTP_LENGTH } from "@/constants/auth";
+import { mobileField } from "@/validation/rules";
 
 export const loginSchema = z
   .object({
     mode: z.enum(["otp", "password"]),
-    phone: z.string().min(10, "Enter a valid 10-digit mobile number"),
+    phone: mobileField,
     otp: z.string(),
     password: z.string(),
   })
@@ -21,7 +22,7 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const loginDefaultValues: LoginFormValues = {
   mode: "otp",
-  phone: "98470 12345",
-  otp: "472",
+  phone: "",
+  otp: "",
   password: "",
 };

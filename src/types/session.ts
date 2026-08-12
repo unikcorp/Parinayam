@@ -4,4 +4,5 @@ export interface SessionUser {
   email: string;
   avatarInitials: string;
   premium: boolean;
+  memberCode: string | null;
 }

@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Star } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, ChevronDown, LogOut, Settings, Star, UserRound } from "lucide-react";
 import { brand } from "@/data/brand";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 const navLinks = [
   { label: "Home", href: "/dashboard" },
@@ -15,6 +17,27 @@ const navLinks = [
 
 export function AppHeader({ notificationCount = 4 }: { notificationCount?: number }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [menuOpen]);
+
+  function handleLogout() {
+    logout();
+    setMenuOpen(false);
+    router.push("/login");
+  }
 
   return (
     <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-card-border bg-card px-12 py-3.5 lg:flex">
@@ -57,15 +80,47 @@ export function AppHeader({ notificationCount = 4 }: { notificationCount?: numbe
             </span>
           )}
         </Link>
-        <Link
-          href="/settings"
-          className="flex items-center gap-2.5 rounded-full border border-input bg-card py-1.5 pr-2.5 pl-1.5"
-        >
-          <span className="flex size-8.5 items-center justify-center rounded-full bg-surface-blue text-xs font-bold text-primary">
-            A
-          </span>
-          <span className="text-sm font-bold text-primary-deep">Anjali</span>
-        </Link>
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex items-center gap-2.5 rounded-full border border-input bg-card py-1.5 pr-2.5 pl-1.5"
+          >
+            <span className="flex size-8.5 items-center justify-center rounded-full bg-surface-blue text-xs font-bold text-primary">
+              {user?.avatarInitials ?? "?"}
+            </span>
+            <span className="text-sm font-bold text-primary-deep">
+              {user?.name.split(" ")[0] ?? "Guest"}
+            </span>
+            <ChevronDown className="size-3.5 text-faint" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full z-40 mt-2 w-48 overflow-hidden rounded-xl border border-card-border bg-card py-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+              <Link
+                href="/profile/me"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-primary-deep hover:bg-surface"
+              >
+                <UserRound className="size-4 text-faint" /> My Profile
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-primary-deep hover:bg-surface"
+              >
+                <Settings className="size-4 text-faint" /> Settings
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-destructive hover:bg-surface"
+              >
+                <LogOut className="size-4" /> Log out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

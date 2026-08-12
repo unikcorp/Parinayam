@@ -13,9 +13,23 @@ import { ImageSlot } from "@/components/shared/image-slot";
 import { brand } from "@/data/brand";
 import { loginSchema, loginDefaultValues, type LoginFormValues } from "@/validation/auth.schema";
 import { OTP_LENGTH } from "@/constants/auth";
+import { api, ApiError, setAccessToken } from "@/lib/api";
+import { useAuth } from "@/context/auth-context";
+import { useState } from "react";
+
+interface MemberLoginResponse {
+  user: { id: number; email: string; roleId: number; memberId: number };
+  accessToken: string;
+}
+
+interface MemberProfileResponse {
+  member: { first_name: string; last_name: string; member_code: string };
+}
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -27,8 +41,50 @@ export default function LoginPage() {
   });
   const mode = watch("mode");
 
-  async function onSubmit() {
+  async function completeLogin({ user, accessToken }: MemberLoginResponse) {
+    // Set before the profile fetch below so it goes out with the right
+    // Authorization header instead of round-tripping through a 401 + refresh.
+    setAccessToken(accessToken);
+
+    let name = user.email;
+    let avatarInitials = user.email.slice(0, 2).toUpperCase();
+    let memberCode: string | null = null;
+    try {
+      const profile = await api.get<MemberProfileResponse>(`/api/members/${user.memberId}`);
+      name = `${profile.member.first_name} ${profile.member.last_name}`.trim();
+      avatarInitials = `${profile.member.first_name[0] ?? ""}${profile.member.last_name[0] ?? ""}`.toUpperCase();
+      memberCode = profile.member.member_code;
+    } catch {
+      // Profile fetch is a display-name nicety — login already succeeded, don't block on it.
+    }
+
+    login({ id: String(user.memberId), name, email: user.email, avatarInitials, premium: false, memberCode }, accessToken);
     router.push("/dashboard");
+  }
+
+  async function onSubmit(values: LoginFormValues) {
+    setFormError(null);
+
+    try {
+      if (values.mode === "otp") {
+        // The OTP digits themselves are still a client-side dummy check (no
+        // SMS provider wired up) — but the mobile number is validated
+        // server-side against real members, same as password login.
+        const data = await api.post<MemberLoginResponse>("/api/members/login/otp", {
+          mobileNumber: values.phone,
+        });
+        await completeLogin(data);
+        return;
+      }
+
+      const data = await api.post<MemberLoginResponse>("/api/members/login", {
+        mobileNumber: values.phone,
+        password: values.password,
+      });
+      await completeLogin(data);
+    } catch (error) {
+      setFormError(error instanceof ApiError ? error.message : "Something went wrong. Please try again.");
+    }
   }
 
   return (
@@ -191,6 +247,10 @@ export default function LoginPage() {
               </Link>
             </div>
           </>
+        )}
+
+        {formError && (
+          <p className="mb-4 text-xs font-semibold text-destructive">{formError}</p>
         )}
 
         <Button size="cta" type="submit" disabled={isSubmitting} className="w-full text-base">

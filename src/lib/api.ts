@@ -50,7 +50,9 @@ client.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const isAuthRoute =
-      originalRequest?.url?.includes("/api/auth/login") || originalRequest?.url?.includes("/api/members/register");
+      originalRequest?.url?.includes("/api/auth/login") ||
+      originalRequest?.url?.includes("/api/members/register") ||
+      originalRequest?.url?.includes("/api/members/login");
 
     if (error.response?.status !== 401 || isAuthRoute || originalRequest?._retried) {
       return Promise.reject(error);
@@ -101,6 +103,14 @@ export const api = {
   async put<T>(path: string, body?: unknown): Promise<T> {
     try {
       const { data } = await client.put(path, body);
+      return data.data as T;
+    } catch (error) {
+      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+    }
+  },
+  async delete<T>(path: string): Promise<T> {
+    try {
+      const { data } = await client.delete(path);
       return data.data as T;
     } catch (error) {
       throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
