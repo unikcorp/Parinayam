@@ -116,4 +116,16 @@ export const api = {
       throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
     }
   },
+  // Same as get, but keeps the `pagination` envelope instead of unwrapping
+  // to just `data` — for paginated list endpoints.
+  async getPaginated<T>(
+    path: string,
+  ): Promise<{ data: T; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+    try {
+      const { data } = await client.get(path);
+      return { data: data.data as T, pagination: data.pagination };
+    } catch (error) {
+      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+    }
+  },
 };

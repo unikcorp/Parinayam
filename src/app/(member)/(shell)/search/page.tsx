@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FilterChip } from "@/components/shared/filter-chip";
 import { Pagination } from "@/components/shared/pagination";
 import { FiltersSidebar } from "@/components/search/filters-sidebar";
 import { SearchResultCard } from "@/components/search/result-card";
@@ -18,19 +17,38 @@ import { SearchResultListItem } from "@/components/search/result-list-item";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSearchResults } from "@/hooks/use-search-results";
-import { searchSortOptions } from "@/data/search-results.data";
+import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
+import type { SearchFilters } from "@/types/profile";
+
+const sortOptions: { label: string; value: SearchFilters["sort"] }[] = [
+  { label: "Best match", value: "match" },
+  { label: "Newest first", value: "newest" },
+];
+
+const defaultFilters: SearchFilters = { ageMin: 21, ageMax: 45, sort: "match", page: 1, limit: 12 };
 
 export default function SearchPage() {
-  const { data: results = [], isLoading } = useSearchResults();
+  const lookups = useRegistrationLookups();
+  const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
+  const { data, isLoading, isError } = useSearchResults(filters);
   const [view, setView] = useState<"grid" | "list">("list");
-  const [sort, setSort] = useState(searchSortOptions[0]);
-  const [page, setPage] = useState(1);
-  const [chips, setChips] = useState([
-    "Age 26–34",
-    "Ernakulam",
-    "Never married",
-    "No dosham",
-  ]);
+
+  const results = data?.results ?? [];
+  const pagination = data?.pagination;
+  const sortLabel = sortOptions.find((o) => o.value === filters.sort)?.label ?? "Best match";
+
+  function applyFilters(next: SearchFilters) {
+    setFilters({ ...next, sort: filters.sort, page: 1, limit: filters.limit });
+  }
+
+  function setSort(sort: SearchFilters["sort"]) {
+    setFilters((f) => ({ ...f, sort, page: 1 }));
+  }
+
+  function setPage(page: number) {
+    setFilters((f) => ({ ...f, page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
     <div className="lg:grid lg:grid-cols-[316px_1fr] lg:items-start lg:gap-7 lg:px-12 lg:py-7">
@@ -38,7 +56,7 @@ export default function SearchPage() {
       <header className="sticky top-0 z-20 border-b border-card-border bg-card px-5 pt-4 pb-3.5 lg:hidden">
         <div className="mb-3.5 flex items-center justify-between">
           <div className="text-xl font-extrabold text-primary-deep">Search</div>
-          <div className="text-[12.5px] font-bold text-primary">248 matches</div>
+          <div className="text-[12.5px] font-bold text-primary">{pagination?.total ?? 0} matches</div>
         </div>
         <div className="flex gap-2.5">
           <div className="flex flex-1 items-center gap-2.5 rounded-[13px] border border-input bg-surface px-4 py-3.5 text-sm text-faint">
@@ -54,40 +72,26 @@ export default function SearchPage() {
               }
             >
               <Settings2 className="size-[18px]" />
-              <span className="absolute -top-1 -right-1 flex size-4.5 items-center justify-center rounded-full bg-peach text-[10px] font-extrabold text-white">
-                4
-              </span>
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl p-6">
               <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-input" />
-              <FiltersSidebar />
+              <FiltersSidebar lookups={lookups} onApply={applyFilters} />
             </SheetContent>
           </Sheet>
         </div>
       </header>
 
-      {/* MOBILE FILTER CHIPS + SORT */}
-      <div className="pn-scroll-x flex gap-2 overflow-x-auto px-5 pt-3 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
-        {chips.map((c, i) => (
-          <FilterChip
-            key={c}
-            active
-            onRemove={() => setChips((cs) => cs.filter((_, ci) => ci !== i))}
-            className="shrink-0 px-4 py-2 text-[12.5px]"
-          >
-            {c}
-          </FilterChip>
-        ))}
-      </div>
       <div className="flex items-center justify-between px-5 py-3 lg:hidden">
         <div className="text-[12.5px] font-semibold text-faint">
-          Sorted by <b className="text-primary-deep">{sort}</b> ▾
+          Sorted by <b className="text-primary-deep">{sortLabel}</b>
         </div>
         <ViewToggle view={view} setView={setView} />
       </div>
 
       {/* DESKTOP SIDEBAR */}
       <FiltersSidebar
+        lookups={lookups}
+        onApply={applyFilters}
         className="sticky top-24.5 hidden rounded-[20px] border border-card-border bg-card p-6 lg:block"
       />
 
@@ -96,22 +100,19 @@ export default function SearchPage() {
         <div className="mb-4 hidden items-center justify-between lg:flex">
           <div>
             <div className="text-[22px] font-extrabold text-primary-deep">
-              248 matches found
-            </div>
-            <div className="mt-0.5 text-[13.5px] text-faint">
-              Grooms · 26–34 yrs · Kerala · Veluthedathu Nair
+              {pagination ? `${pagination.total} match${pagination.total === 1 ? "" : "es"} found` : "Searching…"}
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={sort} onValueChange={(v) => v && setSort(v)}>
+            <Select value={filters.sort} onValueChange={(v) => v && setSort(v as SearchFilters["sort"])}>
               <SelectTrigger className="h-auto rounded-xl border-input px-4 py-2.5 text-[13.5px] font-bold text-primary-deep">
                 <span className="text-faint">Sort:</span>
-                <SelectValue />
+                <SelectValue>{sortLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {searchSortOptions.map((o) => (
-                  <SelectItem key={o} value={o}>
-                    {o}
+                {sortOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value!}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -120,42 +121,45 @@ export default function SearchPage() {
           </div>
         </div>
 
-        <div className="mb-5 hidden flex-wrap gap-2 lg:flex">
-          {chips.map((c, i) => (
-            <FilterChip
-              key={c}
-              active
-              onRemove={() => setChips((cs) => cs.filter((_, ci) => ci !== i))}
-              className="px-4 py-2 text-[12.5px]"
-            >
-              {c}
-            </FilterChip>
-          ))}
-        </div>
-
         {isLoading ? (
           <p className="py-16 text-center text-sm text-faint">Loading matches…</p>
+        ) : isError ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <p className="text-sm font-semibold text-destructive">Unable to load search results.</p>
+            <p className="text-sm text-faint">Please try again.</p>
+          </div>
+        ) : results.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center">
+            <p className="text-sm font-semibold text-ink">No matches found</p>
+            <p className="text-sm text-faint">Try widening your filters.</p>
+          </div>
         ) : view === "grid" ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((r) => (
-              <SearchResultCard key={r.name} result={r} />
+              <SearchResultCard key={r.id} result={r} />
             ))}
           </div>
         ) : (
           <div className="flex flex-col gap-3.5">
             {results.map((r) => (
-              <SearchResultListItem key={r.name} result={r} />
+              <SearchResultListItem key={r.id} result={r} />
             ))}
           </div>
         )}
 
-        <div className="mt-9 hidden justify-center lg:flex">
-          <Pagination page={page} totalPages={42} onPageChange={setPage} />
-        </div>
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-9 hidden justify-center lg:flex">
+            <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} />
+          </div>
+        )}
 
-        <div className="mt-2 flex justify-center lg:hidden">
-          <Button variant="outline">Load more profiles</Button>
-        </div>
+        {pagination && pagination.page < pagination.totalPages && (
+          <div className="mt-2 flex justify-center lg:hidden">
+            <Button variant="outline" onClick={() => setPage((filters.page ?? 1) + 1)}>
+              Load more profiles
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

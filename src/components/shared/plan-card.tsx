@@ -1,13 +1,21 @@
-import { Check } from "lucide-react";
+import { Check, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+export interface PlanFeatureRow {
+  label: string;
+  included: boolean;
+}
 
 export interface PlanCardProps {
   name: string;
   price: string;
   period?: string;
   tagline?: string;
-  features: string[];
+  /** Plain strings are always shown as included (legacy behavior). Pass
+   *  `{ label, included }` rows to also render greyed-out unavailable
+   *  features, so every card in a comparison lines up the same rows. */
+  features: (string | PlanFeatureRow)[];
   highlighted?: boolean;
   dark?: boolean;
   badge?: string;
@@ -60,25 +68,7 @@ export function PlanCard({
             {period}
           </span>
         </div>
-        {tagline && (
-          <div className={cn("mt-1 text-sm", dark ? "text-white/60" : "text-muted-foreground")}>
-            {tagline}
-          </div>
-        )}
       </div>
-      <ul className="flex flex-1 flex-col gap-3">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2.5 text-sm">
-            <Check
-              className={cn(
-                "mt-0.5 size-4 shrink-0",
-                dark ? "text-gold-light" : "text-success"
-              )}
-            />
-            <span className={dark ? "text-white/85" : "text-foreground"}>{f}</span>
-          </li>
-        ))}
-      </ul>
       <Button
         onClick={onSelect}
         variant={dark ? "gold" : highlighted ? "default" : "outline"}
@@ -87,6 +77,35 @@ export function PlanCard({
       >
         {ctaLabel}
       </Button>
+      {tagline && (
+        <div className={cn("-mt-3 text-sm", dark ? "text-white/60" : "text-muted-foreground")}>
+          {tagline}
+        </div>
+      )}
+      <ul className="flex flex-1 flex-col gap-3">
+        {features.map((f) => {
+          const row: PlanFeatureRow = typeof f === "string" ? { label: f, included: true } : f;
+          return (
+            <li key={row.label} className="flex items-start gap-2.5 text-sm">
+              {row.included ? (
+                <Check
+                  className={cn("mt-0.5 size-4 shrink-0", dark ? "text-gold-light" : "text-success")}
+                />
+              ) : (
+                <Minus className={cn("mt-0.5 size-4 shrink-0", dark ? "text-white/30" : "text-faint/60")} />
+              )}
+              <span
+                className={cn(
+                  !row.included && (dark ? "text-white/35" : "text-faint"),
+                  row.included && (dark ? "text-white/85" : "text-foreground")
+                )}
+              >
+                {row.label}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

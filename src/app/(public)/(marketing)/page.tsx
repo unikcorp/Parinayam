@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { ProfileCard } from "@/components/profile/profile-card";
-import { PlanCard } from "@/components/shared/plan-card";
+import { PlansCarousel } from "@/components/marketing/plans-carousel";
 import { HeroSearchCard } from "@/components/marketing/hero-search-card";
 import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Reveal } from "@/components/shared/reveal";
@@ -134,7 +134,34 @@ function StoryCard({
   );
 }
 
-export default function LandingPage() {
+interface MarketingPlan {
+  plan_id: number;
+  plan_name: string;
+  plan_amount: string;
+  plan_duration: number;
+  plan_contacts: number;
+  profile: number;
+  plan_msg: number;
+  chat: boolean;
+  video: boolean;
+  plan_offers: string;
+}
+
+async function fetchActivePlans(): Promise<MarketingPlan[]> {
+  try {
+    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+    const res = await fetch(`${base}/api/membership-plans/public`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const body = await res.json();
+    return body.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function LandingPage() {
+  const plans = await fetchActivePlans();
+
   return (
     <>
       <JsonLd data={organizationJsonLd} />
@@ -444,8 +471,8 @@ export default function LandingPage() {
       </section>
 
       {/* PLANS */}
-      <section id="plans" className="bg-card px-5 py-9 lg:px-18 lg:py-24">
-        <div className="mb-8 lg:mb-16 lg:flex lg:items-end lg:justify-between lg:gap-10">
+      <section id="plans" className="bg-card py-9 lg:py-24">
+        <div className="mb-8 px-5 lg:mb-14 lg:flex lg:items-end lg:justify-between lg:gap-10 lg:px-18">
           <div>
             <div className="mb-2 text-xs font-bold tracking-[0.12em] text-gold uppercase lg:mb-3 lg:text-[13px]">
               Membership
@@ -458,54 +485,15 @@ export default function LandingPage() {
             Start free. Upgrade when you&apos;re ready to connect.
           </p>
         </div>
-        <div className="mx-auto flex max-w-[1120px] flex-col gap-4.5 lg:grid lg:grid-cols-3 lg:items-center lg:gap-7">
-          <Reveal delay={0}>
-            <PlanCard
-              name="Free"
-              price="₹0"
-              period="forever"
-              ctaLabel="Get started"
-              features={[
-                "Create a full profile",
-                "Browse verified profiles",
-                "5 interests per month",
-                "Daily match suggestions",
-              ]}
-            />
-          </Reveal>
-          <Reveal delay={120} className="lg:z-10 lg:scale-[1.05]">
-            <PlanCard
-              name="Premium"
-              price="₹2,900"
-              period="/ 3 months"
-              badge="Most popular"
-              dark
-              ctaLabel="Go Premium"
-              features={[
-                "Unlimited interests & chat",
-                "View contact numbers",
-                "See who visited you",
-                "Horoscope match reports",
-                "Priority in search results",
-              ]}
-            />
-          </Reveal>
-          <Reveal delay={240}>
-            <PlanCard
-              name="Elite"
-              price="₹7,500"
-              period="/ 6 months"
-              ctaLabel="Talk to us"
-              className="border-gold-light"
-              features={[
-                "Everything in Premium",
-                "Dedicated relationship manager",
-                "Handpicked weekly matches",
-                "Profile highlight & Elite badge",
-                "Family meeting coordination",
-              ]}
-            />
-          </Reveal>
+        {plans.length === 0 ? (
+          <p className="px-5 text-center text-sm text-faint">Plans coming soon.</p>
+        ) : (
+          <PlansCarousel plans={plans} />
+        )}
+        <div className="mt-8 px-5 text-center lg:mt-12">
+          <Link href="/plans" className="text-sm font-bold text-primary">
+            See all plans →
+          </Link>
         </div>
       </section>
 

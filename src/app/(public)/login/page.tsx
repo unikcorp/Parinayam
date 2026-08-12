@@ -7,11 +7,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Heart, Lock, Check, ChevronDown, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { brand } from "@/data/brand";
-import { loginSchema, loginDefaultValues, type LoginFormValues } from "@/validation/auth.schema";
+import {
+  loginSchema,
+  loginDefaultValues,
+  type LoginFormValues,
+} from "@/validation/auth.schema";
 import { OTP_LENGTH } from "@/constants/auth";
 import { api, ApiError, setAccessToken } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
@@ -50,15 +58,28 @@ export default function LoginPage() {
     let avatarInitials = user.email.slice(0, 2).toUpperCase();
     let memberCode: string | null = null;
     try {
-      const profile = await api.get<MemberProfileResponse>(`/api/members/${user.memberId}`);
+      const profile = await api.get<MemberProfileResponse>(
+        `/api/members/${user.memberId}`,
+      );
       name = `${profile.member.first_name} ${profile.member.last_name}`.trim();
-      avatarInitials = `${profile.member.first_name[0] ?? ""}${profile.member.last_name[0] ?? ""}`.toUpperCase();
+      avatarInitials =
+        `${profile.member.first_name[0] ?? ""}${profile.member.last_name[0] ?? ""}`.toUpperCase();
       memberCode = profile.member.member_code;
     } catch {
       // Profile fetch is a display-name nicety — login already succeeded, don't block on it.
     }
 
-    login({ id: String(user.memberId), name, email: user.email, avatarInitials, premium: false, memberCode }, accessToken);
+    login(
+      {
+        id: String(user.memberId),
+        name,
+        email: user.email,
+        avatarInitials,
+        premium: false,
+        memberCode,
+      },
+      accessToken,
+    );
     router.push("/dashboard");
   }
 
@@ -70,9 +91,12 @@ export default function LoginPage() {
         // The OTP digits themselves are still a client-side dummy check (no
         // SMS provider wired up) — but the mobile number is validated
         // server-side against real members, same as password login.
-        const data = await api.post<MemberLoginResponse>("/api/members/login/otp", {
-          mobileNumber: values.phone,
-        });
+        const data = await api.post<MemberLoginResponse>(
+          "/api/members/login/otp",
+          {
+            mobileNumber: values.phone,
+          },
+        );
         await completeLogin(data);
         return;
       }
@@ -83,7 +107,11 @@ export default function LoginPage() {
       });
       await completeLogin(data);
     } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : "Something went wrong. Please try again.");
+      setFormError(
+        error instanceof ApiError
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
     }
   }
 
@@ -112,8 +140,12 @@ export default function LoginPage() {
                 <Heart className="size-4 fill-current" />
               </span>
               <div>
-                <div className="text-[13px] font-extrabold">Meera &amp; Kiran</div>
-                <div className="text-[11px] text-faint">Married Jan 2026 · Guruvayur</div>
+                <div className="text-[13px] font-extrabold">
+                  Meera &amp; Kiran
+                </div>
+                <div className="text-[11px] text-faint">
+                  Married Jan 2026 · Guruvayur
+                </div>
               </div>
             </div>
           </div>
@@ -179,7 +211,9 @@ export default function LoginPage() {
           />
         </div>
         {errors.phone && (
-          <p className="mb-4 text-xs font-semibold text-destructive">{errors.phone.message}</p>
+          <p className="mb-4 text-xs font-semibold text-destructive">
+            {errors.phone.message}
+          </p>
         )}
 
         {mode === "otp" ? (
@@ -194,21 +228,30 @@ export default function LoginPage() {
               name="otp"
               control={control}
               render={({ field }) => (
-                <InputOTP maxLength={OTP_LENGTH} value={field.value} onChange={field.onChange} containerClassName="mb-3">
+                <InputOTP
+                  maxLength={OTP_LENGTH}
+                  value={field.value}
+                  onChange={field.onChange}
+                  containerClassName="mb-3"
+                >
                   <InputOTPGroup className="w-full justify-between gap-2 lg:gap-3">
-                    {Array.from({ length: OTP_LENGTH }, (_, i) => i).map((i) => (
-                      <InputOTPSlot
-                        key={i}
-                        index={i}
-                        className="h-13.5 flex-1 rounded-[13px]! border-input text-xl font-extrabold text-primary-deep data-[active=true]:border-primary data-[active=true]:ring-4 data-[active=true]:ring-surface-blue lg:h-15"
-                      />
-                    ))}
+                    {Array.from({ length: OTP_LENGTH }, (_, i) => i).map(
+                      (i) => (
+                        <InputOTPSlot
+                          key={i}
+                          index={i}
+                          className="h-13.5 flex-1 rounded-[13px]! border-input text-xl font-extrabold text-primary-deep data-[active=true]:border-primary data-[active=true]:ring-4 data-[active=true]:ring-surface-blue lg:h-15"
+                        />
+                      ),
+                    )}
                   </InputOTPGroup>
                 </InputOTP>
               )}
             />
             {errors.otp && (
-              <p className="mb-2 text-xs font-semibold text-destructive">{errors.otp.message}</p>
+              <p className="mb-2 text-xs font-semibold text-destructive">
+                {errors.otp.message}
+              </p>
             )}
             <div className="mb-7 flex justify-between text-[13px]">
               <span className="text-faint">
@@ -249,44 +292,14 @@ export default function LoginPage() {
           </>
         )}
 
-        {formError && (
-          <p className="mb-4 text-xs font-semibold text-destructive">{formError}</p>
-        )}
-
-        <Button size="cta" type="submit" disabled={isSubmitting} className="w-full text-base">
+        <Button
+          size="cta"
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full text-base"
+        >
           Sign in
         </Button>
-
-        <div className="my-6 flex items-center gap-4">
-          <div className="h-px flex-1 bg-card-border" />
-          <span className="text-[13px] font-semibold text-faint">
-            or continue with
-          </span>
-          <div className="h-px flex-1 bg-card-border" />
-        </div>
-
-        <div className="flex gap-2.5">
-          <Button variant="outline" type="button" className="flex-1 gap-2 py-3.5 text-[14.5px]">
-            <span
-              className="inline-block size-5 rounded-full"
-              style={{
-                background:
-                  "conic-gradient(#4285F4 0 90deg, #34A853 90deg 180deg, #FBBC05 180deg 270deg, #EA4335 270deg 360deg)",
-              }}
-            />
-            Google
-          </Button>
-          <Button variant="outline" type="button" className="flex-1 gap-2 py-3.5 text-[14.5px]">
-            <Apple className="size-4.5 fill-current" /> Apple
-          </Button>
-        </div>
-
-        <div className="mt-8 text-center text-[14.5px] text-muted-foreground">
-          New to {brand.name}?{" "}
-          <Link href="/register" className="font-extrabold text-primary">
-            Register free →
-          </Link>
-        </div>
 
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-faint lg:hidden">
           <Lock className="size-3.5" /> Privacy protected

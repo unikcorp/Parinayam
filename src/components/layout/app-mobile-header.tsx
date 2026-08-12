@@ -1,21 +1,33 @@
 import Link from "next/link";
 import { Bell } from "lucide-react";
+import { MemberProfilePhoto, type PhotoApprovalStatus } from "@/components/shared/member-profile-photo";
 
 export function AppMobileHeader({
   greeting,
   name,
   notificationCount = 4,
+  photoUrl = null,
+  approvalStatus = null,
+  gender = "Male",
 }: {
   greeting: string;
   name: string;
   notificationCount?: number;
+  photoUrl?: string | null;
+  approvalStatus?: PhotoApprovalStatus;
+  gender?: "Male" | "Female" | string;
 }) {
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between border-b border-card-border bg-card px-5 py-4 lg:hidden">
       <div className="flex items-center gap-3">
-        <span className="flex size-10.5 items-center justify-center rounded-full border-2 border-gold-light bg-surface-blue text-sm font-bold text-primary">
-          {name.charAt(0)}
-        </span>
+        <MemberProfilePhoto
+          photoUrl={photoUrl}
+          approvalStatus={approvalStatus}
+          gender={gender}
+          name={name}
+          className="size-10.5 shrink-0 rounded-full border-2 border-gold-light"
+          showMessage={false}
+        />
         <div>
           <div className="text-xs font-semibold text-faint">{greeting}</div>
           <div className="text-base font-extrabold text-primary-deep">{name}</div>
