@@ -121,6 +121,20 @@ function errorMessage(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
 }
 
+// Mirrors stepHeadings above — lets links like /profile/edit?step=photos
+// jump straight to a section instead of always starting at step 0.
+const editStepKeys = [
+  "personal",
+  "education",
+  "family",
+  "horoscope",
+  "about",
+  "preferences",
+  "photos",
+  "verification",
+  "review",
+] as const;
+
 export default function ProfileEditPage() {
   const router = useRouter();
   const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
@@ -130,6 +144,21 @@ export default function ProfileEditPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  // True when we arrived via a single-section "Edit" link from My Profile
+  // (e.g. /profile/edit?step=education) rather than the full wizard — in
+  // that case Save should return to My Profile instead of advancing steps.
+  const [isSingleSectionEdit, setIsSingleSectionEdit] = useState(false);
+
+  useEffect(() => {
+    const requestedStep = new URLSearchParams(window.location.search).get("step");
+    const index = editStepKeys.indexOf(requestedStep as (typeof editStepKeys)[number]);
+    if (index !== -1) {
+      setStep(index);
+      setIsSingleSectionEdit(true);
+    }
+    // Only read the deep link once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -203,6 +232,10 @@ export default function ProfileEditPage() {
     setIsSaving(true);
     try {
       await saveCurrentStep();
+      if (isSingleSectionEdit) {
+        router.push("/profile/me");
+        return;
+      }
       const advanced = await goNext();
       if (advanced) window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -304,7 +337,7 @@ export default function ProfileEditPage() {
                   </Button>
                 )}
                 <Button size="cta" onClick={handleNext} disabled={isSaving}>
-                  {lastStep ? "Done" : "Save & Continue"}
+                  {lastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
                 </Button>
               </div>
             </div>
@@ -318,7 +351,7 @@ export default function ProfileEditPage() {
               </Button>
             )}
             <Button size="cta" className="flex-1" onClick={handleNext} disabled={isSaving}>
-              {lastStep ? "Done" : "Save & Continue"}
+              {lastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
             </Button>
           </div>
         </div>

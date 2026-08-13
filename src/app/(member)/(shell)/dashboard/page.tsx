@@ -19,16 +19,17 @@ import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { ProgressBar } from "@/components/shared/progress-bar";
-import { NotificationItem } from "@/components/shared/notification-item";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Interests, profile visitors, and shortlists aren't tracked by the backend
+// yet — showing 0 rather than fabricated numbers until those features exist.
 const tiles = [
-  { icon: Heart, tint: "peach" as const, value: 14, label: "Interests received" },
-  { icon: ArrowUpRight, tint: "blue" as const, value: 9, label: "Interests sent" },
-  { icon: Eye, tint: "gold" as const, value: 38, label: "Profile visitors" },
-  { icon: Star, tint: "success" as const, value: 12, label: "Shortlisted you" },
+  { icon: Heart, tint: "peach" as const, value: 0, label: "Interests received" },
+  { icon: ArrowUpRight, tint: "blue" as const, value: 0, label: "Interests sent" },
+  { icon: Eye, tint: "gold" as const, value: 0, label: "Profile visitors" },
+  { icon: Star, tint: "success" as const, value: 0, label: "Shortlisted you" },
 ];
 
 const recentlyViewed = [
@@ -39,18 +40,11 @@ const recentlyViewed = [
   { name: "Deepak M, 31", place: "Thrissur" },
 ];
 
-const notifications = [
-  { icon: Heart, tint: "peach" as const, text: <><b>Arjun N</b> sent you an interest</>, when: "12 min ago", unread: true },
-  { icon: Eye, tint: "blue" as const, text: <><b>Kiran P</b> viewed your profile</>, when: "1 hr ago", unread: true },
-  { icon: Check, tint: "success" as const, text: <><b>Sreejith M</b> accepted your interest</>, when: "Yesterday", unread: false },
-  { icon: Star, tint: "gold" as const, text: "Your membership renews in 30 days", when: "2 days ago", unread: false },
-];
-
 const quickActions = [
-  { icon: Pencil, label: "Edit profile", tint: "bg-surface-blue text-primary" },
-  { icon: Camera, label: "Add photos", tint: "bg-peach-bg text-peach-text" },
-  { icon: Star, label: "Horoscope", tint: "bg-surface-cream-2 text-gold-text" },
-  { icon: Settings, label: "Preferences", tint: "bg-success-bg text-success" },
+  { icon: Pencil, label: "Edit profile", tint: "bg-surface-blue text-primary", href: "/profile/edit" },
+  { icon: Camera, label: "Add photos", tint: "bg-peach-bg text-peach-text", href: "/profile/edit?step=photos" },
+  { icon: Star, label: "Horoscope", tint: "bg-surface-cream-2 text-gold-text", href: "/profile/edit?step=horoscope" },
+  { icon: Settings, label: "Preferences", tint: "bg-success-bg text-success", href: "/profile/edit?step=preferences" },
 ];
 
 export default function DashboardPage() {
@@ -91,8 +85,7 @@ export default function DashboardPage() {
                 Good morning, {firstName} 🌤
               </div>
               <div className="mt-1.5 text-[14.5px] text-white/70">
-                You have <b className="text-gold-light">3 new interests</b> and{" "}
-                <b className="text-gold-light">12 new matches</b> today.
+                Keep your profile updated to get noticed by more matches.
               </div>
             </div>
             <Button variant="outline" className="border-white/20 bg-white/12 text-white hover:bg-white/20">
@@ -102,9 +95,9 @@ export default function DashboardPage() {
 
           {/* welcome banner (mobile) */}
           <div className="bg-dark-panel-gradient rounded-2xl p-5 text-white lg:hidden">
-            <div className="text-[15px] font-bold">3 new interests · 12 new matches</div>
+            <div className="text-[15px] font-bold">Welcome back, {firstName}</div>
             <div className="mt-1 mb-3.5 text-xs text-white/70">
-              Your profile is getting noticed today.
+              Keep your profile updated to get noticed by more matches.
             </div>
             <Button
               size="sm"
@@ -272,42 +265,19 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-[20px] border border-card-border bg-card p-5.5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="text-base font-extrabold text-primary-deep">Notifications</div>
-              <Link href="/notifications" className="text-[13px] font-bold text-primary">
-                All →
-              </Link>
-            </div>
-            <div className="flex flex-col">
-              {notifications.map((n, i) => (
-                <div key={i} className="border-t border-[#F3F5F9] py-3 first:border-t-0 first:pt-0">
-                  <NotificationItem
-                    icon={n.icon}
-                    tint={n.tint}
-                    title={n.text}
-                    time={n.when}
-                    unread={n.unread}
-                    className="border-0 p-0"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[20px] border border-card-border bg-card p-5.5">
             <div className="mb-3.5 text-base font-extrabold text-primary-deep">
               Quick actions
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               {quickActions.map((a) => (
-                <button
+                <Link
                   key={a.label}
-                  type="button"
+                  href={a.href}
                   className={`rounded-xl px-2 py-3.5 text-center text-[12.5px] font-bold ${a.tint}`}
                 >
                   <a.icon className="mx-auto mb-1.5 size-4" />
                   {a.label}
-                </button>
+                </Link>
               ))}
             </div>
           </div>

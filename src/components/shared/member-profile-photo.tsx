@@ -38,7 +38,10 @@ export function MemberProfilePhoto({
   // just blurred, with an explicit status overlay instead of silently
   // showing it as if nothing were wrong.
   if (approvalStatus !== "APPROVED") {
-    const message = approvalStatus === "REJECTED" ? "Photo rejected — please re-upload" : "Wait for the admin approval";
+    const message =
+      approvalStatus === "REJECTED"
+        ? "Rejected by admin — please upload a different photo"
+        : "Admin approval pending";
     return (
       <div className={cn("relative overflow-hidden", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
