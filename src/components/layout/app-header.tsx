@@ -3,21 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ChevronDown, LogOut, Settings, Star, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, Settings, Star, UserRound } from "lucide-react";
 import { brand } from "@/data/brand";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { NotificationBell } from "@/features/notifications/components/NotificationBell";
 
 const navLinks = [
   { label: "Home", href: "/dashboard" },
-  { label: "Matches", href: "/dashboard" },
+  { label: "Interests", href: "/interests" },
   { label: "Search", href: "/search" },
   { label: "Messages", href: "/messages" },
 ];
 
-export function AppHeader({ notificationCount = 4 }: { notificationCount?: number }) {
+export function AppHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -73,17 +74,7 @@ export function AppHeader({ notificationCount = 4 }: { notificationCount?: numbe
         <span className="bg-gold-gradient inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-white">
           <Star className="size-3 fill-current" /> Premium
         </span>
-        <Link
-          href="/notifications"
-          className="relative flex size-10.5 items-center justify-center rounded-xl border border-input bg-card"
-        >
-          <Bell className="size-4.5 text-primary-deep" />
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex min-w-4.5 items-center justify-center rounded-full bg-peach px-1 text-[10.5px] font-extrabold text-white">
-              {notificationCount}
-            </span>
-          )}
-        </Link>
+        <NotificationBell />
         <div className="relative" ref={menuRef}>
           <button
             type="button"

@@ -2,6 +2,7 @@ import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { InterestButton } from "@/features/interests/components/InterestButton";
 
 export interface ProfileCardProps {
   name: string;
@@ -15,7 +16,8 @@ export interface ProfileCardProps {
   online?: boolean;
   matchPercent?: number;
   shortlisted?: boolean;
-  onInterest?: () => void;
+  /** Real member id — when present the Interest button actually sends one. Omit for demo/marketing cards. */
+  memberId?: number;
   onShortlist?: () => void;
   className?: string;
   photoClassName?: string;
@@ -33,7 +35,7 @@ export function ProfileCard({
   online,
   matchPercent,
   shortlisted,
-  onInterest,
+  memberId,
   onShortlist,
   className,
   photoClassName,
@@ -96,9 +98,13 @@ export function ProfileCard({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onInterest} className="flex-1" size="sm">
-            <Heart className="size-3.5" /> Interest
-          </Button>
+          {memberId != null ? (
+            <InterestButton memberId={memberId} className="flex-1" />
+          ) : (
+            <Button className="flex-1" size="sm" disabled>
+              <Heart className="size-3.5" /> Interest
+            </Button>
+          )}
           <Button
             onClick={onShortlist}
             variant="outline"

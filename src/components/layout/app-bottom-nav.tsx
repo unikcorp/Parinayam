@@ -25,8 +25,8 @@ export function AppBottomNav() {
 
       <button
         type="button"
-        onClick={() => router.push("/dashboard")}
-        aria-label="Matches"
+        onClick={() => router.push("/interests")}
+        aria-label="Interests"
         className="bg-gold-gradient -mt-6.5 flex size-13.5 shrink-0 items-center justify-center rounded-full border-4 border-surface text-white shadow-cta-gold"
       >
         <Heart className="size-5.5 fill-current" />

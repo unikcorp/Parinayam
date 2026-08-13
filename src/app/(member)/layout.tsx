@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { useNotificationSocket } from "@/features/notifications/use-notification-socket";
 
 // Every route under (member) — dashboard, search, messages, settings,
 // checkout, profile — requires a logged-in member. Without this, visiting
@@ -13,6 +14,12 @@ import { useAuth } from "@/context/auth-context";
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isRestoring } = useAuth();
   const router = useRouter();
+
+  // One socket connection for the whole authenticated session — mounted
+  // here (not inside NotificationBell) since the header renders two bell
+  // instances at once (desktop + mobile, CSS-toggled), and each would
+  // otherwise open its own connection and double-apply every event.
+  useNotificationSocket();
 
   useEffect(() => {
     if (!isRestoring && !isAuthenticated) {

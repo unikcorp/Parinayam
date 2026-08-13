@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { useSearchResults } from "@/hooks/use-search-results";
+import { useReceivedInterests, useSentInterests } from "@/features/interests/use-interests";
 import { AppMobileHeader } from "@/components/layout/app-mobile-header";
 import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
@@ -23,14 +24,9 @@ import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Interests, profile visitors, and shortlists aren't tracked by the backend
-// yet — showing 0 rather than fabricated numbers until those features exist.
-const tiles = [
-  { icon: Heart, tint: "peach" as const, value: 0, label: "Interests received" },
-  { icon: ArrowUpRight, tint: "blue" as const, value: 0, label: "Interests sent" },
-  { icon: Eye, tint: "gold" as const, value: 0, label: "Profile visitors" },
-  { icon: Star, tint: "success" as const, value: 0, label: "Shortlisted you" },
-];
+// Profile visitors and shortlists aren't tracked by the backend yet —
+// showing 0 rather than fabricated numbers until those features exist.
+// Interests received/sent are real (see features/interests).
 
 const recentlyViewed = [
   { name: "Vishnu P, 30", place: "Trivandrum" },
@@ -64,6 +60,16 @@ export default function DashboardPage() {
     limit: 3,
   });
   const suggestedMatches = suggested?.results ?? [];
+
+  const { data: receivedInterests } = useReceivedInterests();
+  const { data: sentInterests } = useSentInterests();
+
+  const tiles = [
+    { icon: Heart, tint: "peach" as const, value: receivedInterests?.length ?? 0, label: "Interests received", href: "/interests" },
+    { icon: ArrowUpRight, tint: "blue" as const, value: sentInterests?.length ?? 0, label: "Interests sent", href: "/interests" },
+    { icon: Eye, tint: "gold" as const, value: 0, label: "Profile visitors" },
+    { icon: Star, tint: "success" as const, value: 0, label: "Shortlisted you" },
+  ];
 
   return (
     <>
@@ -110,9 +116,15 @@ export default function DashboardPage() {
 
           {/* stat tiles */}
           <div className="grid grid-cols-4 gap-2.5 lg:gap-4.5">
-            {tiles.map((t) => (
-              <StatTile key={t.label} {...t} className="p-3 text-center lg:p-5 lg:text-left" />
-            ))}
+            {tiles.map(({ href, ...t }) =>
+              href ? (
+                <Link key={t.label} href={href}>
+                  <StatTile {...t} className="p-3 text-center transition-shadow hover:shadow-card-hover lg:p-5 lg:text-left" />
+                </Link>
+              ) : (
+                <StatTile key={t.label} {...t} className="p-3 text-center lg:p-5 lg:text-left" />
+              )
+            )}
           </div>
 
           {/* profile strength (mobile only, inline card) */}
@@ -151,6 +163,7 @@ export default function DashboardPage() {
                 {suggestedMatches.map((m) => (
                   <ProfileCard
                     key={m.id}
+                    memberId={m.id}
                     name={m.name}
                     age={m.age}
                     occupation={m.occupation ?? "—"}
