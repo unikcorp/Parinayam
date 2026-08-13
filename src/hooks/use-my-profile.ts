@@ -49,6 +49,59 @@ export function useDeleteAccount() {
   });
 }
 
+interface UploadPhotoResult {
+  photoId: number;
+  photoUrl: string;
+}
+
+export function useUploadProfilePhoto(memberId: number | null) {
+  const invalidate = useInvalidateProfile();
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return api.post<UploadPhotoResult>(`/api/members/${memberId}/photos/profile`, form, { isFormData: true });
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useUploadGalleryPhoto(memberId: number | null) {
+  const invalidate = useInvalidateProfile();
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      return api.post<UploadPhotoResult>(`/api/members/${memberId}/photos/gallery`, form, { isFormData: true });
+    },
+    onSuccess: invalidate,
+  });
+}
+
+// Replaces the image on an existing photo (profile or gallery) in place —
+// goes back to PENDING for re-review, same as a fresh upload.
+export function useUpdatePhoto(memberId: number | null) {
+  const invalidate = useInvalidateProfile();
+  return useMutation({
+    mutationFn: ({ photoId, file }: { photoId: number; file: File }) => {
+      const form = new FormData();
+      form.append("file", file);
+      return api.put<UploadPhotoResult>(`/api/members/${memberId}/photos/${photoId}`, form);
+    },
+    onSuccess: invalidate,
+  });
+}
+
+// Works for either the profile photo or a gallery photo — both are rows in
+// the same member_photos table on the server.
+export function useDeletePhoto(memberId: number | null) {
+  const invalidate = useInvalidateProfile();
+  return useMutation({
+    mutationFn: (photoId: number) => api.delete(`/api/members/${memberId}/photos/${photoId}`),
+    onSuccess: invalidate,
+  });
+}
+
 export function useUpdatePrivacyPreferences() {
   const invalidate = useInvalidateProfile();
   return useMutation({

@@ -1,4 +1,5 @@
-import { GraduationCap, Home, Leaf, Sparkle, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { GraduationCap, Home, Leaf, Pencil, Sparkle, type LucideIcon } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -19,6 +20,22 @@ export interface DetailSectionData {
   icon: string;
   title: string;
   rows: readonly (readonly [string, string])[];
+  /** Deep-links into the relevant step of /profile/edit — lets each section be edited on its own. */
+  editHref?: string;
+}
+
+function EditLink({ href, className }: { href: string; className?: string }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-1.5 rounded-full border border-input px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-surface-blue",
+        className
+      )}
+    >
+      <Pencil className="size-3.5" /> Edit
+    </Link>
+  );
 }
 
 function SectionIcon({ iconKey }: { iconKey: string }) {
@@ -55,9 +72,12 @@ function RowGrid({ rows, dense }: { rows: readonly (readonly [string, string])[]
 export function DetailSectionCard({ section }: { section: DetailSectionData }) {
   return (
     <div className="rounded-[20px] border border-card-border bg-card p-7">
-      <div className="mb-5 flex items-center gap-3">
-        <SectionIcon iconKey={section.icon} />
-        <div className="text-lg font-extrabold text-primary-deep">{section.title}</div>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <SectionIcon iconKey={section.icon} />
+          <div className="text-lg font-extrabold text-primary-deep">{section.title}</div>
+        </div>
+        {section.editHref && <EditLink href={section.editHref} />}
       </div>
       <RowGrid rows={section.rows} />
     </div>
@@ -80,6 +100,11 @@ export function DetailAccordion({ sections }: { sections: DetailSectionData[] })
             </span>
           </AccordionTrigger>
           <AccordionContent className="px-4.5 pb-4">
+            {s.editHref && (
+              <div className="mb-3 flex justify-end">
+                <EditLink href={s.editHref} />
+              </div>
+            )}
             <RowGrid rows={s.rows} dense />
           </AccordionContent>
         </AccordionItem>

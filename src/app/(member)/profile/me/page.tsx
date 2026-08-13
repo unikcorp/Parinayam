@@ -1,18 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Camera, Check, Pencil, Settings, ShieldCheck } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Pencil, Settings, ShieldCheck, Trash2, X } from "lucide-react";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { DetailSectionCard, DetailAccordion, type DetailSectionData } from "@/components/profile/detail-section";
-import { useMyProfile } from "@/hooks/use-my-profile";
+import { ImageCropperDialog, validateImageFile, type CroppedImageResult } from "@/components/image-crop-upload";
+import {
+  useMyProfile,
+  useUploadProfilePhoto,
+  useUploadGalleryPhoto,
+  useUpdatePhoto,
+  useDeletePhoto,
+} from "@/hooks/use-my-profile";
 import { calculateAge } from "@/types/member-profile";
+import { ApiError } from "@/lib/api";
+import { MAX_REGISTRATION_PHOTOS } from "@/constants/registration";
+import { cn } from "@/lib/utils";
+
+const MAX_GALLERY_PHOTOS = MAX_REGISTRATION_PHOTOS - 1;
 
 const fallback = (v: string | number | null | undefined) => (v === null || v === undefined || v === "" ? "Not added yet" : String(v));
 
 export default function MyProfilePage() {
   const { data, isLoading, isError } = useMyProfile();
+  const memberId = data?.member.id ?? null;
+
+  const uploadProfilePhoto = useUploadProfilePhoto(memberId);
+  const uploadGalleryPhoto = useUploadGalleryPhoto(memberId);
+  const updatePhoto = useUpdatePhoto(memberId);
+  const deletePhoto = useDeletePhoto(memberId);
+
+  const [pendingProfileSrc, setPendingProfileSrc] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [pendingGallerySrc, setPendingGallerySrc] = useState<string | null>(null);
+  // Set when the crop dialog was opened from a photo's own Update button —
+  // routes the save to updatePhoto (replace in place) instead of add-new.
+  const [pendingUpdatePhotoId, setPendingUpdatePhotoId] = useState<number | null>(null);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-24 text-sm text-faint">Loading your profile…</div>;
@@ -29,14 +56,100 @@ export default function MyProfilePage() {
 
   const { member, horoscope, partnerPreference, photos, document, profileCompletion } = data;
   const profilePhoto = photos.find((p) => p.is_profile_photo);
+  const galleryPhotos = photos.filter((p) => !p.is_profile_photo);
   const age = calculateAge(member.dob);
   const location = [member.district_name, member.state_name, member.country_name].filter(Boolean).join(", ");
+
+  const openProfilePicker = (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setProfileError(validationError);
+      return;
+    }
+    setProfileError(null);
+    setPendingProfileSrc(URL.createObjectURL(file));
+  };
+
+  const closeProfileCropper = () => {
+    if (pendingProfileSrc) URL.revokeObjectURL(pendingProfileSrc);
+    setPendingProfileSrc(null);
+  };
+
+  const handleProfileCropSave = async (result: CroppedImageResult) => {
+    closeProfileCropper();
+    try {
+      await uploadProfilePhoto.mutateAsync(result.file);
+    } catch (error) {
+      setProfileError(error instanceof ApiError ? error.message : "Could not upload the profile photo.");
+    }
+  };
+
+  const handleDeleteProfilePhoto = () => {
+    if (!profilePhoto) return;
+    if (!window.confirm("Remove your profile photo?")) return;
+    deletePhoto.mutate(profilePhoto.id);
+  };
+
+  const openGalleryPicker = (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    if (galleryPhotos.length >= MAX_GALLERY_PHOTOS) return;
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setGalleryError(validationError);
+      return;
+    }
+    setGalleryError(null);
+    setPendingUpdatePhotoId(null);
+    setPendingGallerySrc(URL.createObjectURL(file));
+  };
+
+  const openGalleryUpdatePicker = (photoId: number, files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setGalleryError(validationError);
+      return;
+    }
+    setGalleryError(null);
+    setPendingUpdatePhotoId(photoId);
+    setPendingGallerySrc(URL.createObjectURL(file));
+  };
+
+  const closeGalleryCropper = () => {
+    if (pendingGallerySrc) URL.revokeObjectURL(pendingGallerySrc);
+    setPendingGallerySrc(null);
+    setPendingUpdatePhotoId(null);
+  };
+
+  const handleGalleryCropSave = async (result: CroppedImageResult) => {
+    const updatePhotoId = pendingUpdatePhotoId;
+    closeGalleryCropper();
+    try {
+      if (updatePhotoId != null) {
+        await updatePhoto.mutateAsync({ photoId: updatePhotoId, file: result.file });
+      } else {
+        await uploadGalleryPhoto.mutateAsync(result.file);
+      }
+    } catch (error) {
+      setGalleryError(error instanceof ApiError ? error.message : "Could not save the gallery photo.");
+    }
+  };
+
+  const handleDeleteGalleryPhoto = (photoId: number) => {
+    if (!window.confirm("Delete this photo?")) return;
+    deletePhoto.mutate(photoId);
+  };
 
   const sections: DetailSectionData[] = [
     {
       key: "personal",
       icon: "lifestyle",
       title: "Personal details",
+      editHref: "/profile/edit?step=personal",
       rows: [
         ["Height", fallback(member.height)],
         ["Weight", fallback(member.weight)],
@@ -52,6 +165,7 @@ export default function MyProfilePage() {
       key: "religion",
       icon: "religion",
       title: "Religion & community",
+      editHref: "/profile/edit?step=personal",
       rows: [
         ["Religion", fallback(member.religion_name)],
         ["Caste", fallback(member.caste_name)],
@@ -63,6 +177,7 @@ export default function MyProfilePage() {
       key: "education",
       icon: "education",
       title: "Education & career",
+      editHref: "/profile/edit?step=education",
       rows: [
         ["Highest education", fallback(member.highest_education_name)],
         ["Field of study", fallback(member.field_of_study)],
@@ -75,6 +190,7 @@ export default function MyProfilePage() {
       key: "family",
       icon: "family",
       title: "Family details",
+      editHref: "/profile/edit?step=family",
       rows: [
         ["Family type", fallback(member.family_type)],
         ["Family values", fallback(member.family_value)],
@@ -87,6 +203,7 @@ export default function MyProfilePage() {
       key: "lifestyle",
       icon: "lifestyle",
       title: "Lifestyle",
+      editHref: "/profile/edit?step=personal",
       rows: [
         ["Diet", fallback(member.diet)],
         ["Smoking", fallback(member.smoking_habits)],
@@ -97,6 +214,7 @@ export default function MyProfilePage() {
       key: "horoscope",
       icon: "religion",
       title: "Horoscope",
+      editHref: "/profile/edit?step=horoscope",
       rows: [
         ["Star", fallback(horoscope?.star_name)],
         ["Dosham", fallback(horoscope?.dosh_name)],
@@ -108,6 +226,7 @@ export default function MyProfilePage() {
       key: "preferences",
       icon: "family",
       title: "Partner preferences",
+      editHref: "/profile/edit?step=preferences",
       rows: [
         ["Age range", partnerPreference ? `${fallback(partnerPreference.age_from)} - ${fallback(partnerPreference.age_to)}` : "Not added yet"],
         ["Min height", fallback(partnerPreference?.height_from)],
@@ -128,9 +247,44 @@ export default function MyProfilePage() {
             name={`${member.first_name} ${member.last_name}`}
             className="size-32 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)] lg:size-36"
           />
+
+          <div className="absolute -right-1.5 -bottom-1.5 flex items-center gap-1.5">
+            {profilePhoto && (
+              <button
+                type="button"
+                onClick={handleDeleteProfilePhoto}
+                disabled={deletePhoto.isPending}
+                aria-label="Remove profile photo"
+                className="flex size-8 items-center justify-center rounded-full border-2 border-white bg-destructive text-white shadow-md transition-transform hover:scale-105 disabled:opacity-60"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            )}
+            <label
+              aria-label={profilePhoto ? "Change profile photo" : "Upload profile photo"}
+              className="flex size-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-md transition-transform hover:scale-105"
+            >
+              {uploadProfilePhoto.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Camera className="size-3.5" />
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  openProfilePicker(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          </div>
         </div>
 
         <div className="flex-1">
+          {profileError && <p className="mb-2 text-xs font-semibold text-destructive">{profileError}</p>}
+
           <div className="flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
             <span className="text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[30px]">
               {member.first_name} {member.last_name}
@@ -168,25 +322,89 @@ export default function MyProfilePage() {
         </div>
       </div>
 
-      {photos.length > 0 && (
-        <div className="mb-7">
-          <div className="mb-3 flex items-center gap-2 text-lg font-extrabold text-primary-deep">
-            <Camera className="size-4.5" /> Photos ({photos.length})
+      {/* GALLERY — kept separate from the profile detail cards below */}
+      <div className="mb-7 rounded-[20px] border border-card-border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-lg font-extrabold text-primary-deep">
+            <Camera className="size-4.5" /> Gallery
           </div>
-          <div className="flex gap-3 overflow-x-auto">
-            {photos.map((p) => (
+          <span className="text-[13px] font-semibold text-faint">
+            {galleryPhotos.length} / {MAX_GALLERY_PHOTOS}
+          </span>
+        </div>
+
+        {galleryError && <p className="mb-3 text-xs font-semibold text-destructive">{galleryError}</p>}
+
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {galleryPhotos.map((p) => (
+            <div key={p.id} className="group relative aspect-square overflow-hidden rounded-xl border border-card-border">
               <MemberProfilePhoto
-                key={p.id}
                 photoUrl={p.photo_url}
                 approvalStatus={p.approval_status}
                 gender={member.gender}
-                className="h-28 w-28 shrink-0 rounded-xl border border-card-border"
-                showMessage={false}
+                className="size-full rounded-none"
               />
-            ))}
-          </div>
+              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <label
+                  aria-label="Update photo"
+                  className="flex size-6 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white"
+                >
+                  {updatePhoto.isPending && updatePhoto.variables?.photoId === p.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Camera className="size-3.5" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      openGalleryUpdatePicker(p.id, e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteGalleryPhoto(p.id)}
+                  disabled={deletePhoto.isPending}
+                  aria-label="Delete photo"
+                  className="flex size-6 items-center justify-center rounded-full bg-black/60 text-white disabled:opacity-60"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {galleryPhotos.length < MAX_GALLERY_PHOTOS && (
+            <label
+              aria-label="Add gallery photo"
+              className={cn(
+                "flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-input text-faint transition-colors hover:border-primary hover:text-primary"
+              )}
+            >
+              {uploadGalleryPhoto.isPending ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <>
+                  <ImagePlus className="size-5" />
+                  <span className="text-[11px] font-bold">Add photo</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  openGalleryPicker(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          )}
         </div>
-      )}
+      </div>
 
       {/* desktop cards */}
       <div className="hidden flex-col gap-6 lg:flex">
@@ -199,6 +417,30 @@ export default function MyProfilePage() {
       <div className="lg:hidden">
         <DetailAccordion sections={sections} />
       </div>
+
+      {pendingProfileSrc && (
+        <ImageCropperDialog
+          open
+          imageSrc={pendingProfileSrc}
+          aspect={1}
+          shape="rect"
+          fileName="profile-photo.jpg"
+          onCancel={closeProfileCropper}
+          onSave={handleProfileCropSave}
+        />
+      )}
+
+      {pendingGallerySrc && (
+        <ImageCropperDialog
+          open
+          imageSrc={pendingGallerySrc}
+          aspect={1}
+          shape="rect"
+          fileName="gallery-photo.jpg"
+          onCancel={closeGalleryCropper}
+          onSave={handleGalleryCropSave}
+        />
+      )}
     </div>
   );
 }
