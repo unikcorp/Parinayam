@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Heart, MessageCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ImageSlot } from "@/components/shared/image-slot";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultCard({
@@ -20,12 +20,15 @@ export function SearchResultCard({
       )}
     >
       <Link href={`/profile/${result.id}`} className="relative block h-55 w-full">
-        {result.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={result.photoUrl} alt={result.name} className="absolute inset-0 h-full w-full object-cover" />
-        ) : (
-          <ImageSlot label="Profile photo" className="absolute inset-0" />
-        )}
+        <MemberProfilePhoto
+          photoUrl={result.photoUrl}
+          // Search only ever returns approved photos for other members (see
+          // member-search.repository.ts) — never expose a pending upload.
+          approvalStatus={result.photoUrl ? "APPROVED" : null}
+          gender={result.gender}
+          name={result.name}
+          className="absolute inset-0 h-full w-full"
+        />
         {result.match != null && (
           <span className="absolute right-2.5 bottom-2.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11.5px] font-extrabold text-white">
             {result.match}% match

@@ -7,6 +7,7 @@ interface SearchResultRow {
   member_code: string;
   first_name: string;
   last_name: string;
+  gender: "Male" | "Female" | string;
   height: string | null;
   age: number;
   marital_status: string | null;
@@ -37,6 +38,7 @@ function toSearchResult(row: SearchResultRow): SearchResult {
     memberCode: row.member_code,
     name: `${row.first_name} ${row.last_name}`,
     age: row.age,
+    gender: row.gender,
     height: row.height,
     occupation: row.occupation_name,
     place: [row.district_name, row.state_name].filter(Boolean).join(", "),

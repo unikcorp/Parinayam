@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ImageSlot } from "@/components/shared/image-slot";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultListItem({ result }: { result: SearchResult }) {
   return (
     <div className="flex overflow-hidden rounded-[18px] border border-card-border bg-card shadow-[0_4px_16px_rgba(127,29,29,0.05)]">
       <Link href={`/profile/${result.id}`} className="relative w-31 shrink-0">
-        {result.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={result.photoUrl} alt={result.name} className="h-39 w-full object-cover" />
-        ) : (
-          <ImageSlot label="photo" className="h-39 w-full" />
-        )}
+        <MemberProfilePhoto
+          photoUrl={result.photoUrl}
+          approvalStatus={result.photoUrl ? "APPROVED" : null}
+          gender={result.gender}
+          name={result.name}
+          className="h-39 w-full"
+        />
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
         <Link href={`/profile/${result.id}`} className="flex items-center gap-1.5">

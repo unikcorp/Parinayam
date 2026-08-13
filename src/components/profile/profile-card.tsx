@@ -1,15 +1,15 @@
-import Image from "next/image";
 import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ImageSlot } from "@/components/shared/image-slot";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 
 export interface ProfileCardProps {
   name: string;
   age: number;
   occupation: string;
   location: string;
-  photoUrl?: string;
+  photoUrl?: string | null;
+  gender?: "Male" | "Female" | string;
   verified?: boolean;
   premium?: boolean;
   online?: boolean;
@@ -27,6 +27,7 @@ export function ProfileCard({
   occupation,
   location,
   photoUrl,
+  gender = "Male",
   verified,
   premium,
   online,
@@ -56,16 +57,13 @@ export function ProfileCard({
           photoClassName
         )}
       >
-        {photoUrl ? (
-          <Image
-            src={photoUrl}
-            alt={name}
-            fill
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-          />
-        ) : (
-          <ImageSlot label="profile photo" className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110" />
-        )}
+        <MemberProfilePhoto
+          photoUrl={photoUrl ?? null}
+          approvalStatus={photoUrl ? "APPROVED" : null}
+          gender={gender}
+          name={name}
+          className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
+        />
         {online && (
           <span className="absolute bottom-3 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-success">
             <span className="size-1.5 rounded-full bg-success" /> Online now

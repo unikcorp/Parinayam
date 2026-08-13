@@ -3,6 +3,7 @@ export interface SearchResult {
   memberCode: string;
   name: string;
   age: number;
+  gender: "Male" | "Female" | string;
   height: string | null;
   occupation: string | null;
   place: string;
