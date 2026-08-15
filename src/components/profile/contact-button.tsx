@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Copy, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { VariantProps } from "class-variance-authority";
 import type { buttonVariants } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
@@ -54,7 +55,7 @@ export function ContactButton({ memberId, size = "cta", variant = "gold", iconOn
     }
   }
 
-  return (
+  const button = (
     <Button
       type="button"
       variant={variant}
@@ -73,5 +74,14 @@ export function ContactButton({ memberId, size = "cta", variant = "gold", iconOn
       )}
       {!iconOnly && (contact ? `${contact.mobileCountryCode} ${contact.mobile}` : "View Contact")}
     </Button>
+  );
+
+  if (!iconOnly) return button;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger render={button} />
+      <TooltipContent>View Contact</TooltipContent>
+    </Tooltip>
   );
 }

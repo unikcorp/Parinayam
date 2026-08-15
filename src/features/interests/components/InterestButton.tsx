@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Check, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
 import type { buttonVariants } from "@/components/ui/button";
-import { useSendInterest } from "../use-interests";
+import { useIsInterestSent, useSendInterest } from "../use-interests";
 
 interface InterestButtonProps {
   memberId: number;
@@ -15,16 +14,14 @@ interface InterestButtonProps {
 
 export function InterestButton({ memberId, size = "sm", className }: InterestButtonProps) {
   const sendInterest = useSendInterest();
-  const [sent, setSent] = useState(false);
-
-  const isSent = sent || sendInterest.isSuccess;
+  const isSent = useIsInterestSent(memberId);
 
   return (
     <Button
       size={size}
       className={className}
       disabled={isSent || sendInterest.isPending}
-      onClick={() => sendInterest.mutate(memberId, { onSuccess: () => setSent(true) })}
+      onClick={() => sendInterest.mutate(memberId)}
     >
       {sendInterest.isPending ? (
         <Loader2 className="size-3.5 animate-spin" />

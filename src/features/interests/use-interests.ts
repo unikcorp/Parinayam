@@ -31,6 +31,13 @@ export function useSentInterests() {
   });
 }
 
+// Derived from the same sent-list query rather than local component state —
+// so "Sent" survives a page refresh instead of resetting to "Interest".
+export function useIsInterestSent(memberId: number) {
+  const { data } = useSentInterests();
+  return data?.some((r) => r.member_id === memberId) ?? false;
+}
+
 export function useSendInterest() {
   const queryClient = useQueryClient();
   return useMutation({

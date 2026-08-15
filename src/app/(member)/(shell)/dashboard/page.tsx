@@ -15,26 +15,16 @@ import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { useSearchResults } from "@/hooks/use-search-results";
 import { useReceivedInterests, useSentInterests } from "@/features/interests/use-interests";
+import { useRecentlyViewed, useProfileVisitorCount } from "@/features/profile-views/use-profile-views";
+import { useShortlistedYouCount } from "@/features/shortlist/use-shortlist";
 import { AppMobileHeader } from "@/components/layout/app-mobile-header";
 import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
+import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { ProgressBar } from "@/components/shared/progress-bar";
-import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-// Profile visitors and shortlists aren't tracked by the backend yet —
-// showing 0 rather than fabricated numbers until those features exist.
-// Interests received/sent are real (see features/interests).
-
-const recentlyViewed = [
-  { name: "Vishnu P, 30", place: "Trivandrum" },
-  { name: "Hari K, 28", place: "Palakkad" },
-  { name: "Ananthu R, 32", place: "Kannur" },
-  { name: "Rahul N, 29", place: "Kochi" },
-  { name: "Deepak M, 31", place: "Thrissur" },
-];
 
 const quickActions = [
   { icon: Pencil, label: "Edit profile", tint: "bg-surface-blue text-primary", href: "/profile/edit" },
@@ -57,18 +47,21 @@ export default function DashboardPage() {
     ageMax: 70,
     sort: "match",
     page: 1,
-    limit: 3,
+    limit: 6,
   });
   const suggestedMatches = suggested?.results ?? [];
 
   const { data: receivedInterests } = useReceivedInterests();
   const { data: sentInterests } = useSentInterests();
+  const { data: recentlyViewed = [], isLoading: recentlyViewedLoading } = useRecentlyViewed();
+  const { data: visitorCount } = useProfileVisitorCount();
+  const { data: shortlistedYouCount } = useShortlistedYouCount();
 
   const tiles = [
     { icon: Heart, tint: "peach" as const, value: receivedInterests?.length ?? 0, label: "Interests received", href: "/interests" },
     { icon: ArrowUpRight, tint: "blue" as const, value: sentInterests?.length ?? 0, label: "Interests sent", href: "/interests" },
-    { icon: Eye, tint: "gold" as const, value: 0, label: "Profile visitors" },
-    { icon: Star, tint: "success" as const, value: 0, label: "Shortlisted you" },
+    { icon: Eye, tint: "gold" as const, value: visitorCount ?? 0, label: "Profile visitors" },
+    { icon: Star, tint: "success" as const, value: shortlistedYouCount ?? 0, label: "Shortlisted you" },
   ];
 
   return (
@@ -181,30 +174,46 @@ export default function DashboardPage() {
           </section>
 
           {/* recently viewed */}
-          <section>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-extrabold text-primary-deep lg:text-xl">
-                Recently viewed by you
-              </h2>
-              <Link href="#" className="text-sm font-bold text-primary">
-                See all →
-              </Link>
-            </div>
-            <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
-              {recentlyViewed.map((r) => (
-                <div
-                  key={r.name}
-                  className="w-24.5 shrink-0 rounded-2xl border border-card-border bg-card p-3.5 text-center lg:w-auto lg:p-4"
-                >
-                  <ImageSlot label="photo" className="mx-auto mb-2.5 size-17 rounded-full" />
-                  <div className="truncate text-[13.5px] font-bold text-primary-deep">
-                    {r.name}
-                  </div>
-                  <div className="mt-0.5 truncate text-[11.5px] text-faint">{r.place}</div>
+          {(recentlyViewedLoading || recentlyViewed.length > 0) && (
+            <section>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-primary-deep lg:text-xl">
+                  Recently viewed by you
+                </h2>
+                <Link href="/recently-viewed" className="text-sm font-bold text-primary">
+                  See all →
+                </Link>
+              </div>
+              {recentlyViewedLoading ? (
+                <p className="py-6 text-center text-sm text-faint">Loading…</p>
+              ) : (
+                <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+                  {recentlyViewed.slice(0, 5).map((r) => (
+                    <Link
+                      key={r.id}
+                      href={`/profile/${r.member_id}`}
+                      className="w-24.5 shrink-0 rounded-2xl border border-card-border bg-card p-3.5 text-center transition-shadow hover:shadow-card-hover lg:w-auto lg:p-4"
+                    >
+                      <MemberProfilePhoto
+                        photoUrl={r.photo_url}
+                        approvalStatus={r.photo_url ? "APPROVED" : null}
+                        gender={r.gender}
+                        name={`${r.first_name} ${r.last_name}`}
+                        className="mx-auto mb-2.5 size-17 rounded-full"
+                        showMessage={false}
+                      />
+                      <div className="truncate text-[13.5px] font-bold text-primary-deep">
+                        {r.first_name} {r.last_name}
+                      </div>
+                      <div className="mt-0.5 truncate text-[11.5px] text-faint">
+                        {[r.district_name, r.state_name].filter(Boolean).join(", ") || "—"}
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              )}
+            </section>
+          )}
         </div>
 
         {/* RIGHT SIDEBAR (desktop only) */}

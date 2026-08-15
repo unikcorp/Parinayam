@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { SearchFilters, SearchResult } from "@/types/profile";
 
@@ -59,5 +59,23 @@ export function useSearchResults(filters: SearchFilters) {
       );
       return { results: data.map(toSearchResult), pagination };
     },
+  });
+}
+
+// "See all" destinations (currently /search) — loads page 1 up front, then
+// pulls in the next page automatically as the user scrolls near the bottom,
+// accumulating every match instead of paging through them.
+export function useInfiniteSearchResults(filters: Omit<SearchFilters, "page">) {
+  return useInfiniteQuery({
+    queryKey: ["search-results-infinite", filters],
+    queryFn: async ({ pageParam }) => {
+      const { data, pagination } = await api.getPaginated<SearchResultRow[]>(
+        `/api/members/search?${buildQueryString({ ...filters, page: pageParam })}`
+      );
+      return { results: data.map(toSearchResult), pagination };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.totalPages ? lastPage.pagination.page + 1 : undefined,
   });
 }

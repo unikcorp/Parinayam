@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Search as SearchIcon, Settings2, LayoutGrid, List } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Search as SearchIcon, Settings2, LayoutGrid, List } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Select,
@@ -10,13 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pagination } from "@/components/shared/pagination";
 import { FiltersSidebar } from "@/components/search/filters-sidebar";
 import { SearchResultCard } from "@/components/search/result-card";
 import { SearchResultListItem } from "@/components/search/result-list-item";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useSearchResults } from "@/hooks/use-search-results";
+import { useInfiniteSearchResults } from "@/hooks/use-search-results";
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import type { SearchFilters } from "@/types/profile";
 
@@ -25,29 +23,45 @@ const sortOptions: { label: string; value: SearchFilters["sort"] }[] = [
   { label: "Newest first", value: "newest" },
 ];
 
-const defaultFilters: SearchFilters = { ageMin: 21, ageMax: 45, sort: "match", page: 1, limit: 12 };
+const defaultFilters: Omit<SearchFilters, "page"> = { ageMin: 21, ageMax: 45, sort: "match", limit: 12 };
 
 export default function SearchPage() {
   const lookups = useRegistrationLookups();
-  const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
-  const { data, isLoading, isError } = useSearchResults(filters);
+  const [filters, setFilters] = useState<Omit<SearchFilters, "page">>(defaultFilters);
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteSearchResults(filters);
   const [view, setView] = useState<"grid" | "list">("list");
 
-  const results = data?.results ?? [];
-  const pagination = data?.pagination;
+  const results = data?.pages.flatMap((p) => p.results) ?? [];
+  const total = data?.pages[0]?.pagination.total;
   const sortLabel = sortOptions.find((o) => o.value === filters.sort)?.label ?? "Best match";
 
+  // Loads the next page automatically once the sentinel below the results
+  // scrolls near the viewport — "See all" means everything shows up as you
+  // scroll, not a page-number picker.
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "600px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   function applyFilters(next: SearchFilters) {
-    setFilters({ ...next, sort: filters.sort, page: 1, limit: filters.limit });
+    const { page: _page, ...rest } = next;
+    setFilters({ ...rest, sort: filters.sort, limit: filters.limit });
   }
 
   function setSort(sort: SearchFilters["sort"]) {
-    setFilters((f) => ({ ...f, sort, page: 1 }));
-  }
-
-  function setPage(page: number) {
-    setFilters((f) => ({ ...f, page }));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setFilters((f) => ({ ...f, sort }));
   }
 
   return (
@@ -56,7 +70,7 @@ export default function SearchPage() {
       <header className="sticky top-0 z-20 border-b border-card-border bg-card px-5 pt-4 pb-3.5 lg:hidden">
         <div className="mb-3.5 flex items-center justify-between">
           <div className="text-xl font-extrabold text-primary-deep">Search</div>
-          <div className="text-[12.5px] font-bold text-primary">{pagination?.total ?? 0} matches</div>
+          <div className="text-[12.5px] font-bold text-primary">{total ?? 0} matches</div>
         </div>
         <div className="flex gap-2.5">
           <div className="flex flex-1 items-center gap-2.5 rounded-[13px] border border-input bg-surface px-4 py-3.5 text-sm text-faint">
@@ -100,7 +114,7 @@ export default function SearchPage() {
         <div className="mb-4 hidden items-center justify-between lg:flex">
           <div>
             <div className="text-[22px] font-extrabold text-primary-deep">
-              {pagination ? `${pagination.total} match${pagination.total === 1 ? "" : "es"} found` : "Searching…"}
+              {total != null ? `${total} match${total === 1 ? "" : "es"} found` : "Searching…"}
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -147,17 +161,16 @@ export default function SearchPage() {
           </div>
         )}
 
-        {pagination && pagination.totalPages > 1 && (
-          <div className="mt-9 hidden justify-center lg:flex">
-            <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={setPage} />
-          </div>
-        )}
-
-        {pagination && pagination.page < pagination.totalPages && (
-          <div className="mt-2 flex justify-center lg:hidden">
-            <Button variant="outline" onClick={() => setPage((filters.page ?? 1) + 1)}>
-              Load more profiles
-            </Button>
+        {/* scroll sentinel — comes into view near the bottom and triggers the next page */}
+        {results.length > 0 && (
+          <div ref={loadMoreRef} className="flex justify-center py-8">
+            {isFetchingNextPage ? (
+              <div className="flex items-center gap-2 text-sm text-faint">
+                <Loader2 className="size-4 animate-spin" /> Loading more…
+              </div>
+            ) : !hasNextPage ? (
+              <p className="text-sm text-faint">You&apos;ve seen every match.</p>
+            ) : null}
           </div>
         )}
       </div>

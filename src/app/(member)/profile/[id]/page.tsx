@@ -6,19 +6,25 @@ import { Gallery } from "@/components/profile/gallery";
 import { DetailSectionCard, DetailAccordion } from "@/components/profile/detail-section";
 import { HoroscopeCard } from "@/components/profile/sidebar-widgets";
 import { ContactButton } from "@/components/profile/contact-button";
+import { BlockedProfileState } from "@/components/profile/blocked-profile-state";
 import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { MessageButton } from "@/features/messaging/components/MessageButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
 import { useProfile } from "@/hooks/use-profile";
 import { buildProfileSections } from "@/lib/profile-sections";
+import { ApiError } from "@/lib/api";
 
 export default function MemberProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { data: profile, isLoading, isError } = useProfile(id);
+  const { data: profile, isLoading, isError, error } = useProfile(id);
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-24 text-sm text-faint">Loading profile…</div>;
+  }
+
+  if (error instanceof ApiError && error.status === 403) {
+    return <BlockedProfileState memberId={Number(id)} />;
   }
 
   if (isError || !profile) {

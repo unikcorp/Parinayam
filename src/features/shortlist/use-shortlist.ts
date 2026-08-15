@@ -2,7 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
-import { addToShortlistRequest, getShortlistRequest, removeFromShortlistRequest } from "./api";
+import {
+  addToShortlistRequest,
+  getShortlistIncomingCountRequest,
+  getShortlistRequest,
+  removeFromShortlistRequest,
+} from "./api";
 
 const SHORTLIST_KEY = ["shortlist"];
 
@@ -21,6 +26,16 @@ export function useShortlist() {
 export function useIsShortlisted(memberId: number) {
   const { data } = useShortlist();
   return data?.some((r) => r.member_id === memberId) ?? false;
+}
+
+export function useShortlistedYouCount() {
+  const { isAuthenticated, isRestoring } = useAuth();
+  return useQuery({
+    queryKey: ["shortlist-incoming-count"],
+    queryFn: getShortlistIncomingCountRequest,
+    enabled: isAuthenticated && !isRestoring,
+    select: (data) => data.count,
+  });
 }
 
 export function useToggleShortlist() {

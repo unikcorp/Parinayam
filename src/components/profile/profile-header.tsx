@@ -1,9 +1,10 @@
 import { Camera, Share2, MoreHorizontal, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { ImageSlot } from "@/components/shared/image-slot";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ContactButton } from "@/components/profile/contact-button";
+import { ProfileMoreMenu } from "@/components/profile/profile-more-menu";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { MessageButton } from "@/features/messaging/components/MessageButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
@@ -38,33 +39,21 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
 
   return (
     <>
-      {/* DESKTOP COVER */}
+      {/* DESKTOP HEADER — plain card, no fake cover banner */}
       <div className="hidden px-12 pt-6 lg:block">
-        <div className="relative">
-          <ImageSlot label="Cover photo — landscape" className="h-70 w-full rounded-3xl" />
-          <div className="absolute bottom-16 left-11 flex items-end gap-6">
-            <div className="relative">
-              <MemberProfilePhoto
-                photoUrl={profilePhoto?.photo_url ?? null}
-                approvalStatus={profilePhoto?.approval_status ?? null}
-                gender={member.gender}
-                name={name}
-                className="size-38 rounded-full border-[6px] border-white shadow-[0_16px_40px_rgba(127,29,29,0.18)]"
-                showMessage={false}
-              />
-            </div>
-          </div>
-          <div className="absolute right-6 bottom-5 flex gap-2.5">
-            <span className="rounded-full bg-white/94 px-4 py-2 text-[13px] font-bold text-primary-deep">
-              <Camera className="mr-1.5 inline size-3.5" /> {photos.length} photos
-            </span>
-          </div>
-        </div>
+        <div className="flex items-start gap-7 rounded-[22px] border border-card-border bg-card p-8">
+          <MemberProfilePhoto
+            photoUrl={profilePhoto?.photo_url ?? null}
+            approvalStatus={profilePhoto?.approval_status ?? null}
+            gender={member.gender}
+            name={name}
+            className="size-36 shrink-0 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)]"
+            showMessage={false}
+          />
 
-        <div className="flex min-h-24 items-start justify-between pt-5 pl-56">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="text-[30px] font-extrabold tracking-[-0.02em] whitespace-nowrap text-primary-deep">
+              <span className="text-[28px] font-extrabold tracking-[-0.02em] whitespace-nowrap text-primary-deep">
                 {name}, {age}
               </span>
               {verified && <Badge tone="primary">✓ Verified</Badge>}
@@ -76,18 +65,42 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
                 {lastActiveLabel}
               </div>
             )}
-          </div>
-          <div className="flex items-center gap-2.5 pt-1.5">
-            <InterestButton memberId={member.id} size="cta" />
-            <ContactButton memberId={member.id} size="cta" />
-            <MessageButton memberId={member.id} size="icon-cta" />
-            <ShortlistButton memberId={member.id} size="icon-cta" />
-            <Button variant="outline" size="icon-cta" aria-label="Share" onClick={() => shareProfile(name)}>
-              <Share2 className="size-4.5" />
-            </Button>
-            <Button variant="outline" size="icon-cta" aria-label="More">
-              <MoreHorizontal className="size-4.5" />
-            </Button>
+            <div className="mt-2.5 flex items-center gap-1.5 text-[13px] font-bold text-primary">
+              <Camera className="size-3.5" /> {photos.length} photo{photos.length === 1 ? "" : "s"}
+            </div>
+
+            <div className="mt-5 flex items-center gap-2.5">
+              <InterestButton memberId={member.id} size="cta" />
+              <ContactButton memberId={member.id} size="cta" />
+              <MessageButton memberId={member.id} size="icon-cta" />
+              <ShortlistButton memberId={member.id} size="icon-cta" />
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="outline" size="icon-cta" aria-label="Share" onClick={() => shareProfile(name)}>
+                      <Share2 className="size-4.5" />
+                    </Button>
+                  }
+                />
+                <TooltipContent>Share</TooltipContent>
+              </Tooltip>
+              <ProfileMoreMenu
+                memberId={member.id}
+                name={name}
+                renderTrigger={({ onClick }) => (
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button variant="outline" size="icon-cta" aria-label="More" onClick={onClick}>
+                          <MoreHorizontal className="size-4.5" />
+                        </Button>
+                      }
+                    />
+                    <TooltipContent>More</TooltipContent>
+                  </Tooltip>
+                )}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -114,9 +127,18 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
               >
                 <Share2 className="size-4" />
               </button>
-              <button className="flex size-10.5 items-center justify-center rounded-xl bg-white/92 text-primary-deep">
-                <MoreHorizontal className="size-4" />
-              </button>
+              <ProfileMoreMenu
+                memberId={member.id}
+                name={name}
+                renderTrigger={({ onClick }) => (
+                  <button
+                    onClick={onClick}
+                    className="flex size-10.5 items-center justify-center rounded-xl bg-white/92 text-primary-deep"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </button>
+                )}
+              />
             </div>
           </div>
           <div className="absolute bottom-4 left-5 flex gap-2">

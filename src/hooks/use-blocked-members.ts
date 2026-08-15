@@ -25,3 +25,11 @@ export function useUnblockMember() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["blocked-members"] }),
   });
 }
+
+export function useBlockMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (memberId: number) => api.post(`/api/members/me/blocks/${memberId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["blocked-members"] }),
+  });
+}

@@ -5,6 +5,10 @@ export function getShortlistRequest() {
   return api.get<ShortlistRecord[]>("/api/members/me/shortlist");
 }
 
+export function getShortlistIncomingCountRequest() {
+  return api.get<{ count: number }>("/api/members/me/shortlist/incoming-count");
+}
+
 export function addToShortlistRequest(memberId: number) {
   return api.post(`/api/members/me/shortlist/${memberId}`);
 }
