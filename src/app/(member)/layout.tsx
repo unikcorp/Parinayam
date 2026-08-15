@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useNotificationSocket } from "@/features/notifications/use-notification-socket";
+import { useMessageSocket } from "@/features/messaging/use-message-socket";
 
 // Every route under (member) — dashboard, search, messages, settings,
 // checkout, profile — requires a logged-in member. Without this, visiting
@@ -20,6 +21,7 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
   // instances at once (desktop + mobile, CSS-toggled), and each would
   // otherwise open its own connection and double-apply every event.
   useNotificationSocket();
+  useMessageSocket();
 
   useEffect(() => {
     if (!isRestoring && !isAuthenticated) {

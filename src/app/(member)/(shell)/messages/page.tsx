@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatWindow } from "@/components/messaging/chat-window";
 import { cn } from "@/lib/utils";
 
-export default function MessagesPage() {
-  const [activeId, setActiveId] = useState("arjun");
-  const [mobileShowChat, setMobileShowChat] = useState(false);
+function MessagesPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeId = searchParams.get("c") ? Number(searchParams.get("c")) : null;
+  const [mobileShowChat, setMobileShowChat] = useState(activeId != null);
 
-  function selectConversation(id: string) {
-    setActiveId(id);
+  function selectConversation(id: number) {
+    router.push(`/messages?c=${id}`);
     setMobileShowChat(true);
   }
 
@@ -35,5 +38,13 @@ export default function MessagesPage() {
         )}
       />
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesPageInner />
+    </Suspense>
   );
 }

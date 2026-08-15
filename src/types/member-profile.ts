@@ -110,6 +110,58 @@ export interface MemberProfileResponse {
   profileCompletion: number;
 }
 
+// GET /api/members/:id/profile — the privacy-safe subset of MemberProfileRow
+// returned when browsing another member (no email/mobile, no raw document
+// contents). See member.service.ts getPublicProfile for the allowlist.
+export interface PublicMemberProfileRow {
+  id: number;
+  member_code: string;
+  profile_created_by: string;
+  first_name: string;
+  last_name: string;
+  dob: string;
+  gender: "Male" | "Female";
+  marital_status: string | null;
+  other_caste_allowed: boolean | null;
+  field_of_study: string | null;
+  company_name: string | null;
+  family_type: string | null;
+  family_value: string | null;
+  father_occupation: string | null;
+  mother_occupation: string | null;
+  siblings: string | null;
+  about_family: string | null;
+  height: string | null;
+  weight: string | null;
+  body_type: string | null;
+  complexion: string | null;
+  physical_status: string | null;
+  blood_group: string | null;
+  diet: string | null;
+  smoking_habits: string | null;
+  drinking_habits: string | null;
+  about_me: string | null;
+  religion_name: string | null;
+  caste_name: string | null;
+  sub_caste_name: string | null;
+  mtongue_name: string | null;
+  country_name: string | null;
+  state_name: string | null;
+  district_name: string | null;
+  highest_education_name: string | null;
+  occupation_name: string | null;
+  annual_income_label: string | null;
+}
+
+export interface PublicMemberProfileResponse {
+  member: PublicMemberProfileRow;
+  horoscope: MemberProfileHoroscope | null;
+  partnerPreference: MemberPartnerPreference | null;
+  photos: MemberProfilePhoto[];
+  verified: boolean;
+  lastLoginAt: string | null;
+}
+
 export function calculateAge(dob: string): number {
   const birth = new Date(dob);
   const today = new Date();

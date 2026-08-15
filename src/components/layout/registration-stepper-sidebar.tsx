@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, ChevronLeft } from "lucide-react";
 import { brand } from "@/data/brand";
 import { registrationSteps } from "@/data/registration/types";
 import { cn } from "@/lib/utils";
@@ -6,18 +6,33 @@ import { cn } from "@/lib/utils";
 export function StepperSidebar({
   activeIndex,
   onStepClick,
+  onExit,
 }: {
   activeIndex: number;
   /** Omit to keep the sidebar a static display (e.g. before the account is verified). */
   onStepClick?: (index: number) => void;
+  /** Omit to hide the exit control — e.g. mid-registration, before there's anywhere useful to exit to. */
+  onExit?: () => void;
 }) {
   return (
     <aside className="bg-dark-panel-gradient hidden flex-col p-11 text-white lg:flex">
-      <div className="mb-12 flex items-center gap-3">
-        <span className="flex size-9.5 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light">
-          {brand.logoLetter}
-        </span>
-        <span className="text-lg font-extrabold">{brand.name}</span>
+      <div className="mb-12 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9.5 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light">
+            {brand.logoLetter}
+          </span>
+          <span className="text-lg font-extrabold">{brand.name}</span>
+        </div>
+        {onExit && (
+          <button
+            type="button"
+            onClick={onExit}
+            aria-label="Exit"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12.5px] font-bold text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            <ChevronLeft className="size-3.5" /> Exit
+          </button>
+        )}
       </div>
 
       <div className="mb-2 text-2xl font-extrabold tracking-[-0.01em]">

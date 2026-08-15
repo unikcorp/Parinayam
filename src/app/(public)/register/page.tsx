@@ -198,7 +198,11 @@ export default function RegisterPage() {
   return (
     <FormProvider {...form}>
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
-        <StepperSidebar activeIndex={step} onStepClick={otpVerified ? handleStepClick : undefined} />
+        <StepperSidebar
+          activeIndex={step}
+          onStepClick={otpVerified ? handleStepClick : undefined}
+          onExit={saveAndExit}
+        />
 
         <div className="flex flex-1 flex-col">
           <MobileStepHeader

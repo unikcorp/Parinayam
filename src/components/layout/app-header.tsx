@@ -105,6 +105,13 @@ export function AppHeader() {
                 <UserRound className="size-4 text-faint" /> My Profile
               </Link>
               <Link
+                href="/shortlist"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-primary-deep hover:bg-surface"
+              >
+                <Star className="size-4 text-faint" /> My Shortlist
+              </Link>
+              <Link
                 href="/settings"
                 onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-primary-deep hover:bg-surface"
