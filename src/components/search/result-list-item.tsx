@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
+import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultListItem({ result }: { result: SearchResult }) {
@@ -41,9 +40,7 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
         )}
         <div className="mt-auto flex gap-2 pt-2.5">
           <InterestButton memberId={result.id} className="flex-1" />
-          <Button variant="outline" size="icon-sm" aria-label="Shortlist">
-            <Star className="size-3.5" />
-          </Button>
+          <ShortlistButton memberId={result.id} />
         </div>
       </div>
     </div>

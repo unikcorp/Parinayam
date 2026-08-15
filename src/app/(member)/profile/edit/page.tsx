@@ -279,7 +279,7 @@ export default function ProfileEditPage() {
         {/* Both sidebars render the full 10-step registration list (incl.
             Account Info, not part of this edit-only wizard), so indices are
             shifted by 1 to line up — see registrationFieldsForStep's comment. */}
-        <StepperSidebar activeIndex={step + 1} onStepClick={(i) => i > 0 && setStep(i - 1)} />
+        <StepperSidebar activeIndex={step + 1} onStepClick={(i) => i > 0 && setStep(i - 1)} onExit={saveAndExit} />
 
         <div className="flex flex-1 flex-col">
           <MobileStepHeader

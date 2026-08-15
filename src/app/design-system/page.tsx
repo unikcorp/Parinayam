@@ -93,7 +93,6 @@ export default function DesignSystemPage() {
     { label: "Postgraduate", active: false },
   ]);
   const [page, setPage] = useState(1);
-  const [shortlisted, setShortlisted] = useState(false);
   const [navTab, setNavTab] = useState("dashboard");
   const [otp, setOtp] = useState("47");
 
@@ -289,8 +288,6 @@ export default function DesignSystemPage() {
             location="Kochi"
             premium
             verified
-            shortlisted={shortlisted}
-            onShortlist={() => setShortlisted((s) => !s)}
           />
 
           <div className="flex flex-col gap-3">

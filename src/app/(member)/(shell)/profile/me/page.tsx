@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Camera, ImagePlus, Loader2, Pencil, Settings, ShieldCheck, Trash2, X } from "lucide-react";
+import { Camera, ImagePlus, Loader2, Pencil, Settings, ShieldCheck, Star, Trash2, X } from "lucide-react";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
-import { DetailSectionCard, DetailAccordion, type DetailSectionData } from "@/components/profile/detail-section";
+import { DetailSectionCard, DetailAccordion } from "@/components/profile/detail-section";
 import { ImageCropperDialog, validateImageFile, type CroppedImageResult } from "@/components/image-crop-upload";
 import {
   useMyProfile,
@@ -19,10 +19,9 @@ import { calculateAge } from "@/types/member-profile";
 import { ApiError } from "@/lib/api";
 import { MAX_REGISTRATION_PHOTOS } from "@/constants/registration";
 import { cn } from "@/lib/utils";
+import { buildProfileSections } from "@/lib/profile-sections";
 
 const MAX_GALLERY_PHOTOS = MAX_REGISTRATION_PHOTOS - 1;
-
-const fallback = (v: string | number | null | undefined) => (v === null || v === undefined || v === "" ? "Not added yet" : String(v));
 
 export default function MyProfilePage() {
   const { data, isLoading, isError } = useMyProfile();
@@ -144,96 +143,7 @@ export default function MyProfilePage() {
     deletePhoto.mutate(photoId);
   };
 
-  const sections: DetailSectionData[] = [
-    {
-      key: "personal",
-      icon: "lifestyle",
-      title: "Personal details",
-      editHref: "/profile/edit?step=personal",
-      rows: [
-        ["Height", fallback(member.height)],
-        ["Weight", fallback(member.weight)],
-        ["Body type", fallback(member.body_type)],
-        ["Complexion", fallback(member.complexion)],
-        ["Physical status", fallback(member.physical_status)],
-        ["Blood group", fallback(member.blood_group)],
-        ["Mother tongue", fallback(member.mtongue_name)],
-        ["Marital status", fallback(member.marital_status)],
-      ],
-    },
-    {
-      key: "religion",
-      icon: "religion",
-      title: "Religion & community",
-      editHref: "/profile/edit?step=personal",
-      rows: [
-        ["Religion", fallback(member.religion_name)],
-        ["Caste", fallback(member.caste_name)],
-        ["Sub caste", fallback(member.sub_caste_name)],
-        ["Willing to marry outside caste", member.other_caste_allowed == null ? "Not added yet" : member.other_caste_allowed ? "Yes" : "No"],
-      ],
-    },
-    {
-      key: "education",
-      icon: "education",
-      title: "Education & career",
-      editHref: "/profile/edit?step=education",
-      rows: [
-        ["Highest education", fallback(member.highest_education_name)],
-        ["Field of study", fallback(member.field_of_study)],
-        ["Occupation", fallback(member.occupation_name)],
-        ["Company", fallback(member.company_name)],
-        ["Annual income", fallback(member.annual_income_label)],
-      ],
-    },
-    {
-      key: "family",
-      icon: "family",
-      title: "Family details",
-      editHref: "/profile/edit?step=family",
-      rows: [
-        ["Family type", fallback(member.family_type)],
-        ["Family values", fallback(member.family_value)],
-        ["Father's occupation", fallback(member.father_occupation)],
-        ["Mother's occupation", fallback(member.mother_occupation)],
-        ["Siblings", fallback(member.siblings)],
-      ],
-    },
-    {
-      key: "lifestyle",
-      icon: "lifestyle",
-      title: "Lifestyle",
-      editHref: "/profile/edit?step=personal",
-      rows: [
-        ["Diet", fallback(member.diet)],
-        ["Smoking", fallback(member.smoking_habits)],
-        ["Drinking", fallback(member.drinking_habits)],
-      ],
-    },
-    {
-      key: "horoscope",
-      icon: "religion",
-      title: "Horoscope",
-      editHref: "/profile/edit?step=horoscope",
-      rows: [
-        ["Star", fallback(horoscope?.star_name)],
-        ["Dosham", fallback(horoscope?.dosh_name)],
-        ["Birth time", fallback(horoscope?.birth_time)],
-        ["Birth place", fallback(horoscope?.birth_place)],
-      ],
-    },
-    {
-      key: "preferences",
-      icon: "family",
-      title: "Partner preferences",
-      editHref: "/profile/edit?step=preferences",
-      rows: [
-        ["Age range", partnerPreference ? `${fallback(partnerPreference.age_from)} - ${fallback(partnerPreference.age_to)}` : "Not added yet"],
-        ["Min height", fallback(partnerPreference?.height_from)],
-        ["About partner", fallback(partnerPreference?.about_partner)],
-      ],
-    },
-  ];
+  const sections = buildProfileSections({ member, horoscope, partnerPreference, editable: true });
 
   return (
     <div className="mx-auto max-w-260 px-5 py-6 lg:px-12 lg:py-8">
@@ -314,6 +224,9 @@ export default function MyProfilePage() {
           <div className="mt-5 flex flex-wrap justify-center gap-2.5 lg:justify-start">
             <Button size="cta" render={<Link href="/profile/edit" />}>
               <Pencil className="size-4" /> Edit Profile
+            </Button>
+            <Button variant="outline" size="cta" render={<Link href="/shortlist" />}>
+              <Star className="size-4" /> My Shortlist
             </Button>
             <Button variant="outline" size="cta" render={<Link href="/settings" />}>
               <Settings className="size-4" /> Settings

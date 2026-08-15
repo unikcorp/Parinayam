@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
 import { Heart, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
+import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
 
 export interface ProfileCardProps {
   name: string;
@@ -15,10 +18,8 @@ export interface ProfileCardProps {
   premium?: boolean;
   online?: boolean;
   matchPercent?: number;
-  shortlisted?: boolean;
-  /** Real member id — when present the Interest button actually sends one. Omit for demo/marketing cards. */
+  /** Real member id — when present the Interest/Shortlist buttons actually work. Omit for demo/marketing cards. */
   memberId?: number;
-  onShortlist?: () => void;
   className?: string;
   photoClassName?: string;
 }
@@ -34,9 +35,7 @@ export function ProfileCard({
   premium,
   online,
   matchPercent,
-  shortlisted,
   memberId,
-  onShortlist,
   className,
   photoClassName,
 }: ProfileCardProps) {
@@ -53,33 +52,33 @@ export function ProfileCard({
         </span>
       )}
 
-      <div
-        className={cn(
-          "relative h-[210px] w-full shrink-0 overflow-hidden",
-          photoClassName
-        )}
-      >
-        <MemberProfilePhoto
-          photoUrl={photoUrl ?? null}
-          approvalStatus={photoUrl ? "APPROVED" : null}
-          gender={gender}
-          name={name}
-          className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
-        />
-        {online && (
-          <span className="absolute bottom-3 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-success">
-            <span className="size-1.5 rounded-full bg-success" /> Online now
-          </span>
-        )}
-        {typeof matchPercent === "number" && (
-          <span className="absolute bottom-3 right-3.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11px] font-extrabold text-white">
-            {matchPercent}% match
-          </span>
-        )}
-      </div>
+      <CardLink memberId={memberId}>
+        <div
+          className={cn(
+            "relative h-[210px] w-full shrink-0 overflow-hidden",
+            photoClassName
+          )}
+        >
+          <MemberProfilePhoto
+            photoUrl={photoUrl ?? null}
+            approvalStatus={photoUrl ? "APPROVED" : null}
+            gender={gender}
+            name={name}
+            className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
+          />
+          {online && (
+            <span className="absolute bottom-3 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-success">
+              <span className="size-1.5 rounded-full bg-success" /> Online now
+            </span>
+          )}
+          {typeof matchPercent === "number" && (
+            <span className="absolute bottom-3 right-3.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11px] font-extrabold text-white">
+              {matchPercent}% match
+            </span>
+          )}
+        </div>
 
-      <div className="flex flex-col gap-3.5 px-4.5 pt-4 pb-4.5">
-        <div>
+        <div className="px-4.5 pt-4">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-base font-extrabold text-primary-deep">
               {name}, {age}
@@ -96,7 +95,9 @@ export function ProfileCard({
             {occupation} · {location}
           </div>
         </div>
+      </CardLink>
 
+      <div className="flex flex-col gap-3.5 px-4.5 pt-3.5 pb-4.5">
         <div className="flex gap-2">
           {memberId != null ? (
             <InterestButton memberId={memberId} className="flex-1" />
@@ -105,17 +106,30 @@ export function ProfileCard({
               <Heart className="size-3.5" /> Interest
             </Button>
           )}
-          <Button
-            onClick={onShortlist}
-            variant="outline"
-            size="icon-sm"
-            aria-label="Shortlist"
-            className={cn(shortlisted && "border-gold text-gold")}
-          >
-            <Star className={cn("size-4", shortlisted && "fill-gold")} />
-          </Button>
+          {memberId != null ? (
+            <ShortlistButton memberId={memberId} />
+          ) : (
+            <Button variant="outline" size="icon-sm" aria-label="Shortlist" disabled>
+              <Star className="size-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+function CardLink({
+  memberId,
+  children,
+}: {
+  memberId?: number;
+  children: ReactNode;
+}) {
+  if (memberId == null) return <>{children}</>;
+  return (
+    <Link href={`/profile/${memberId}`} className="contents">
+      {children}
+    </Link>
   );
 }

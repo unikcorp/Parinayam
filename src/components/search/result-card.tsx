@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { MessageCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
+import { MessageButton } from "@/features/messaging/components/MessageButton";
+import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultCard({
@@ -55,12 +55,8 @@ export function SearchResultCard({
         </div>
         <div className="mt-3.5 flex gap-2">
           <InterestButton memberId={result.id} className="flex-1" />
-          <Button variant="outline" size="icon-sm" aria-label="Shortlist">
-            <Star className="size-4" />
-          </Button>
-          <Button variant="outline" size="icon-sm" aria-label="Message">
-            <MessageCircle className="size-4" />
-          </Button>
+          <ShortlistButton memberId={result.id} />
+          <MessageButton memberId={result.id} />
         </div>
       </div>
     </div>

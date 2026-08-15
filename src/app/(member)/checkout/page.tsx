@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Tag, CreditCard, Landmark, Wallet } from "lucide-react";
+import { ChevronLeft, Star, Tag, CreditCard, Landmark, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,14 @@ export default function CheckoutPage() {
     <div className="mx-auto grid max-w-290 grid-cols-1 gap-6 px-5 pt-6 pb-8 lg:grid-cols-[1fr_420px] lg:items-start lg:gap-8 lg:px-6 lg:pt-10 lg:pb-16">
       {/* PAYMENT METHODS */}
       <main>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex items-center gap-1.5 text-[13.5px] font-bold text-muted-foreground hover:text-primary-deep"
+        >
+          <ChevronLeft className="size-4" /> Back
+        </button>
+
         <h1 className="mb-1.5 text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[28px]">
           Complete your payment
         </h1>
