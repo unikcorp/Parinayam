@@ -18,6 +18,7 @@ interface SearchResultRow {
   district_name: string | null;
   occupation_name: string | null;
   profile_photo_url: string | null;
+  photo_is_blurred: boolean;
   document_status: "PENDING" | "APPROVED" | "REJECTED" | null;
   match_percent: number | null;
 }
@@ -45,6 +46,7 @@ function toSearchResult(row: SearchResultRow): SearchResult {
     religion: row.religion_name,
     caste: [row.caste_name, row.sub_caste_name].filter(Boolean).join(" · ") || null,
     photoUrl: row.profile_photo_url,
+    photoIsBlurred: row.photo_is_blurred,
     verified: row.document_status === "APPROVED",
     match: row.match_percent,
   };

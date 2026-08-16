@@ -13,11 +13,10 @@ export function FamilyStep() {
   return (
     <FieldGroup title="">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <SelectField<RegistrationFormValues> name="familyType" label="Family type" required options={familyTypes} />
+        <SelectField<RegistrationFormValues> name="familyType" label="Family type" options={familyTypes} />
         <SelectField<RegistrationFormValues>
           name="familyValues"
           label="Family values"
-          required
           options={familyValueOptions}
         />
         <TextField<RegistrationFormValues> name="fatherOccupation" label="Father's occupation" />

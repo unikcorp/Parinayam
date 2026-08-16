@@ -47,6 +47,8 @@ export interface MemberProfileRow {
   account_status: "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL";
   show_in_search: boolean;
   show_online_status: boolean;
+  photo_visibility: "ALL_MEMBERS" | "PREMIUM_MEMBERS" | "INTEREST_ACCEPTED";
+  phone_visibility: "ALL_MEMBERS" | "PREMIUM_MEMBERS" | "INTEREST_ACCEPTED";
   current_step: number;
   email: string;
   religion_name: string | null;
@@ -67,6 +69,7 @@ export interface MemberProfilePhoto {
   is_profile_photo: boolean;
   sort_order: number;
   approval_status: "PENDING" | "APPROVED" | "REJECTED";
+  is_blurred?: boolean;
 }
 
 export interface MemberProfileDocument {

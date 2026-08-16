@@ -28,6 +28,7 @@ export function SearchResultCard({
           approvalStatus={result.photoUrl ? "APPROVED" : null}
           gender={result.gender}
           name={result.name}
+          isBlurred={result.photoIsBlurred}
           className="absolute inset-0 h-full w-full"
         />
         {result.match != null && (

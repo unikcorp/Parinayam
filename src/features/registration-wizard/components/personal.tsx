@@ -49,11 +49,10 @@ export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
     <div className="flex flex-col gap-7">
       <FieldGroup title="">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <SelectField<RegistrationFormValues> name="height" label="Height" required options={heights} />
+          <SelectField<RegistrationFormValues> name="height" label="Height" options={heights} />
           <SelectField<RegistrationFormValues>
             name="motherTongue"
             label="Mother tongue"
-            required
             options={lookups.motherTongueOptions}
           />
         </div>
@@ -78,7 +77,6 @@ export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
           <SelectField<RegistrationFormValues>
             name="caste"
             label="Caste"
-            required
             options={lookups.casteOptions(religion)}
           />
           <SelectField<RegistrationFormValues>
@@ -103,19 +101,16 @@ export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
           <SelectField<RegistrationFormValues>
             name="country"
             label="Country"
-            required
             options={lookups.countryOptions}
           />
           <SelectField<RegistrationFormValues>
             name="state"
             label="State"
-            required
             options={lookups.stateOptions(country)}
           />
           <SelectField<RegistrationFormValues>
             name="district"
             label="District"
-            required
             options={lookups.districtOptions(state)}
           />
         </div>

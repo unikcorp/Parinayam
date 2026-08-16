@@ -4,31 +4,10 @@ import { emailField, mobileField, nameField, passwordField } from "@/validation/
 const requiredString = (label: string) => z.string().min(1, `${label} is required`);
 // Not `.optional()` — RHF always supplies a default value ("") for these fields,
 // so the field is simply an unconstrained string as far as validation goes.
+// Every field in steps 2-9 can be filled in independently — a member can
+// save just one field of a step and move on, same as leaving the whole
+// step blank and skipping it.
 const optionalString = z.string();
-
-const isFilled = (value: unknown) => typeof value === "string" && value.trim().length > 0;
-
-// A step is either left completely alone (and skipped) or, the moment the
-// member fills in any one of its fields, the rest of that step's fields
-// (minus any free-text ones passed as `exempt`) become required too — no
-// half-filled steps. Field labels are derived from their camelCase name
-// since these groups don't have per-field custom labels the way the
-// individually-required fields above do.
-function requireGroupIfAnyFilled<T extends Record<string, unknown>>(
-  data: T,
-  ctx: z.RefinementCtx,
-  { fields, exempt = [] }: { fields: (keyof T)[]; exempt?: (keyof T)[] }
-) {
-  const touched = fields.some((f) => isFilled(data[f])) || exempt.some((f) => isFilled(data[f]));
-  if (!touched) return;
-
-  for (const field of fields) {
-    if (!isFilled(data[field])) {
-      const label = String(field).replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
-      ctx.addIssue({ code: "custom", message: `${label} is required`, path: [field as string] });
-    }
-  }
-}
 
 export const registrationSchema = z
   .object({
@@ -125,32 +104,6 @@ export const registrationSchema = z
     if (data.confirmPassword !== data.password) {
       ctx.addIssue({ code: "custom", message: "Passwords do not match", path: ["confirmPassword"] });
     }
-
-    requireGroupIfAnyFilled(data, ctx, {
-      fields: [
-        "height", "weight", "bodyType", "complexion", "physicalStatus", "bloodGroup",
-        "motherTongue", "caste", "diet", "smokingHabits", "drinkingHabits",
-        "country", "state", "district",
-      ],
-      // Not every caste has sub-castes to choose from, so this can't be
-      // required even when the rest of the step is filled in.
-      exempt: ["subCaste"],
-    });
-    requireGroupIfAnyFilled(data, ctx, {
-      fields: ["highestEducation", "fieldOfStudy", "occupation", "employer", "annualIncome"],
-    });
-    requireGroupIfAnyFilled(data, ctx, {
-      fields: ["familyType", "familyValues", "fatherOccupation", "motherOccupation", "siblings"],
-      exempt: ["aboutFamily"],
-    });
-    requireGroupIfAnyFilled(data, ctx, {
-      fields: ["birthTime", "birthPlace", "star", "dosham"],
-      exempt: ["horoscopeNote"],
-    });
-    requireGroupIfAnyFilled(data, ctx, {
-      fields: ["partnerHeightMin", "partnerReligion", "partnerCaste", "partnerEducation", "partnerLocation"],
-      exempt: ["partnerAbout"],
-    });
   });
 
 export type RegistrationFormValues = z.infer<typeof registrationSchema>;

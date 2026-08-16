@@ -17,6 +17,7 @@ function RecentlyViewedRow({ entry }: { entry: RecentlyViewedRecord }) {
       <MemberProfilePhoto
         photoUrl={entry.photo_url}
         approvalStatus={entry.photo_url ? "APPROVED" : null}
+        isBlurred={entry.photo_is_blurred}
         gender={entry.gender}
         name={`${entry.first_name} ${entry.last_name}`}
         className="size-14 shrink-0 rounded-xl"
