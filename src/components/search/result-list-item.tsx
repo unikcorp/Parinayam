@@ -13,6 +13,7 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
           approvalStatus={result.photoUrl ? "APPROVED" : null}
           gender={result.gender}
           name={result.name}
+          isBlurred={result.photoIsBlurred}
           className="h-39 w-full"
         />
       </Link>

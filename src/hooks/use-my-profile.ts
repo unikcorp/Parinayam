@@ -102,11 +102,17 @@ export function useDeletePhoto(memberId: number | null) {
   });
 }
 
+export type ContentVisibility = "ALL_MEMBERS" | "PREMIUM_MEMBERS" | "INTEREST_ACCEPTED";
+
 export function useUpdatePrivacyPreferences() {
   const invalidate = useInvalidateProfile();
   return useMutation({
-    mutationFn: (dto: { showInSearch: boolean; showOnlineStatus: boolean }) =>
-      api.put("/api/members/me/privacy", dto),
+    mutationFn: (dto: {
+      showInSearch: boolean;
+      showOnlineStatus: boolean;
+      photoVisibility: ContentVisibility;
+      phoneVisibility: ContentVisibility;
+    }) => api.put("/api/members/me/privacy", dto),
     onSuccess: invalidate,
   });
 }

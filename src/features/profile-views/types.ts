@@ -11,4 +11,5 @@ export interface RecentlyViewedRecord {
   district_name: string | null;
   state_name: string | null;
   photo_url: string | null;
+  photo_is_blurred: boolean;
 }

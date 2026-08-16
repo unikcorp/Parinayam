@@ -13,6 +13,7 @@ export interface ProfileCardProps {
   occupation: string;
   location: string;
   photoUrl?: string | null;
+  photoIsBlurred?: boolean;
   gender?: "Male" | "Female" | string;
   verified?: boolean;
   premium?: boolean;
@@ -30,6 +31,7 @@ export function ProfileCard({
   occupation,
   location,
   photoUrl,
+  photoIsBlurred,
   gender = "Male",
   verified,
   premium,
@@ -62,6 +64,7 @@ export function ProfileCard({
           <MemberProfilePhoto
             photoUrl={photoUrl ?? null}
             approvalStatus={photoUrl ? "APPROVED" : null}
+            isBlurred={photoIsBlurred}
             gender={gender}
             name={name}
             className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"

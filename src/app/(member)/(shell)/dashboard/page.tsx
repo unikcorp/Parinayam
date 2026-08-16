@@ -162,6 +162,7 @@ export default function DashboardPage() {
                     occupation={m.occupation ?? "—"}
                     location={m.place || "—"}
                     photoUrl={m.photoUrl}
+                    photoIsBlurred={m.photoIsBlurred}
                     gender={m.gender}
                     matchPercent={m.match ?? undefined}
                     verified={m.verified}
@@ -197,6 +198,7 @@ export default function DashboardPage() {
                       <MemberProfilePhoto
                         photoUrl={r.photo_url}
                         approvalStatus={r.photo_url ? "APPROVED" : null}
+                        isBlurred={r.photo_is_blurred}
                         gender={r.gender}
                         name={`${r.first_name} ${r.last_name}`}
                         className="mx-auto mb-2.5 size-17 rounded-full"

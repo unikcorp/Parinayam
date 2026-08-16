@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import { Camera, Share2, MoreHorizontal, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { PhotoLightbox } from "@/components/shared/photo-lightbox";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ContactButton } from "@/components/profile/contact-button";
@@ -36,20 +40,30 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
   const managedByLabel = member.profile_created_by && member.profile_created_by !== "Self" ? member.profile_created_by : null;
   const lastActiveLabel = lastLoginAt ? `Last active ${formatRelativeTime(lastLoginAt)}` : null;
   const profilePhoto = photos.find((p) => p.is_profile_photo) ?? null;
+  const profilePhotoIndex = profilePhoto ? photos.findIndex((p) => p.id === profilePhoto.id) : -1;
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
     <>
       {/* DESKTOP HEADER — plain card, no fake cover banner */}
       <div className="hidden px-12 pt-6 lg:block">
         <div className="flex items-start gap-7 rounded-[22px] border border-card-border bg-card p-8">
-          <MemberProfilePhoto
-            photoUrl={profilePhoto?.photo_url ?? null}
-            approvalStatus={profilePhoto?.approval_status ?? null}
-            gender={member.gender}
-            name={name}
-            className="size-36 shrink-0 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)]"
-            showMessage={false}
-          />
+          <button
+            type="button"
+            className="shrink-0 cursor-zoom-in disabled:cursor-default"
+            onClick={() => setLightboxIndex(profilePhotoIndex)}
+            disabled={!profilePhoto}
+          >
+            <MemberProfilePhoto
+              photoUrl={profilePhoto?.photo_url ?? null}
+              approvalStatus={profilePhoto?.approval_status ?? null}
+              gender={member.gender}
+              name={name}
+              isBlurred={profilePhoto?.is_blurred}
+              className="size-36 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)]"
+              showMessage={false}
+            />
+          </button>
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
@@ -108,14 +122,22 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
       {/* MOBILE HERO */}
       <div className="lg:hidden">
         <div className="relative">
-          <MemberProfilePhoto
-            photoUrl={profilePhoto?.photo_url ?? null}
-            approvalStatus={profilePhoto?.approval_status ?? null}
-            gender={member.gender}
-            name={name}
-            className="h-105 w-full"
-            showMessage={false}
-          />
+          <button
+            type="button"
+            className="block w-full cursor-zoom-in disabled:cursor-default"
+            onClick={() => setLightboxIndex(profilePhotoIndex)}
+            disabled={!profilePhoto}
+          >
+            <MemberProfilePhoto
+              photoUrl={profilePhoto?.photo_url ?? null}
+              approvalStatus={profilePhoto?.approval_status ?? null}
+              isBlurred={profilePhoto?.is_blurred}
+              gender={member.gender}
+              name={name}
+              className="h-105 w-full"
+              showMessage={false}
+            />
+          </button>
           <div className="absolute inset-x-0 top-0 flex justify-between p-4">
             <button className="flex size-10.5 items-center justify-center rounded-xl bg-white/92 text-primary-deep">
               <ArrowLeft className="size-4" />
@@ -168,6 +190,15 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
           )}
         </div>
       </div>
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos.map((p) => ({ url: p.photo_url, isBlurred: p.is_blurred }))}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      )}
     </>
   );
 }

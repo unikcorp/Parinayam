@@ -2,22 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { useMyProfile, useUpdatePrivacyPreferences } from "@/hooks/use-my-profile";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMyProfile, useUpdatePrivacyPreferences, type ContentVisibility } from "@/hooks/use-my-profile";
+
+const VISIBILITY_OPTIONS: { value: ContentVisibility; label: string }[] = [
+  { value: "ALL_MEMBERS", label: "All Members" },
+  { value: "PREMIUM_MEMBERS", label: "All Premium Members" },
+  { value: "INTEREST_ACCEPTED", label: "Only Interest Accepted Members" },
+];
 
 export default function PrivacySettingsPage() {
   const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdatePrivacyPreferences();
   const [showInSearch, setShowInSearch] = useState(true);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
+  const [photoVisibility, setPhotoVisibility] = useState<ContentVisibility>("ALL_MEMBERS");
+  const [phoneVisibility, setPhoneVisibility] = useState<ContentVisibility>("ALL_MEMBERS");
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!data) return;
     setShowInSearch(!!data.member.show_in_search);
     setShowOnlineStatus(!!data.member.show_online_status);
+    setPhotoVisibility(data.member.photo_visibility);
+    setPhoneVisibility(data.member.phone_visibility);
   }, [data]);
 
-  function save(next: { showInSearch: boolean; showOnlineStatus: boolean }) {
+  function save(next: {
+    showInSearch: boolean;
+    showOnlineStatus: boolean;
+    photoVisibility: ContentVisibility;
+    phoneVisibility: ContentVisibility;
+  }) {
     setSavedMessage(null);
     updatePrivacy.mutate(next, {
       onSuccess: () => {
@@ -58,7 +74,7 @@ export default function PrivacySettingsPage() {
             checked={showInSearch}
             onCheckedChange={(v) => {
               setShowInSearch(v);
-              save({ showInSearch: v, showOnlineStatus });
+              save({ showInSearch: v, showOnlineStatus, photoVisibility, phoneVisibility });
             }}
           />
         </div>
@@ -72,17 +88,65 @@ export default function PrivacySettingsPage() {
             checked={showOnlineStatus}
             onCheckedChange={(v) => {
               setShowOnlineStatus(v);
-              save({ showInSearch, showOnlineStatus: v });
+              save({ showInSearch, showOnlineStatus: v, photoVisibility, phoneVisibility });
             }}
           />
         </div>
       </section>
 
-      <section className="rounded-2xl border border-dashed border-card-border bg-card p-5 lg:rounded-[20px] lg:p-7">
-        <div className="text-[14.5px] font-bold text-ink">Photo privacy</div>
-        <p className="mt-1 text-[13px] text-faint">
-          Tiered photo access (everyone / on request / premium only) isn't available yet — coming soon.
-        </p>
+      <section className="rounded-2xl border border-card-border bg-card p-5 lg:rounded-[20px] lg:p-7">
+        <div className="flex items-center justify-between border-b border-[#F5F6F9] py-3.5 first:pt-0">
+          <div>
+            <div className="text-[14.5px] font-bold text-ink">Who can see my photos</div>
+            <div className="mt-0.5 text-[12.5px] text-faint">Applies to your profile photo and gallery, once admin-approved</div>
+          </div>
+          <Select
+            value={photoVisibility}
+            onValueChange={(v) => {
+              if (!v) return;
+              const next = v as ContentVisibility;
+              setPhotoVisibility(next);
+              save({ showInSearch, showOnlineStatus, photoVisibility: next, phoneVisibility });
+            }}
+          >
+            <SelectTrigger className="w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {VISIBILITY_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center justify-between py-3.5 last:pb-0">
+          <div>
+            <div className="text-[14.5px] font-bold text-ink">Who can see my phone number</div>
+            <div className="mt-0.5 text-[12.5px] text-faint">Controls who can reveal your contact number</div>
+          </div>
+          <Select
+            value={phoneVisibility}
+            onValueChange={(v) => {
+              if (!v) return;
+              const next = v as ContentVisibility;
+              setPhoneVisibility(next);
+              save({ showInSearch, showOnlineStatus, photoVisibility, phoneVisibility: next });
+            }}
+          >
+            <SelectTrigger className="w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {VISIBILITY_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </section>
     </div>
   );

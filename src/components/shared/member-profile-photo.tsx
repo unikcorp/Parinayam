@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type PhotoApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | null;
@@ -11,6 +12,8 @@ export interface MemberProfilePhotoProps {
   className?: string;
   /** Hide the "Wait for the admin approval" caption — for small avatars (header, cards) where it can't fit. */
   showMessage?: boolean;
+  /** Approved but blurred by the owner's own photo-visibility setting. */
+  isBlurred?: boolean;
 }
 
 // The one place that decides which of the three real states a member's own
@@ -24,19 +27,29 @@ export function MemberProfilePhoto({
   name,
   className,
   showMessage = true,
+  isBlurred = false,
 }: MemberProfilePhotoProps) {
   const defaultAvatar = gender === "Female" ? "/images/women.png" : "/images/men.png";
   const alt = name ? `${name}'s photo` : "Profile photo";
 
-  // No upload yet — the gender-based default avatar, never a stock/random image.
   if (!photoUrl) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={defaultAvatar} alt={alt} className={cn("object-cover", className)} />;
   }
 
-  // Uploaded but not yet reviewed (or rejected) — still their real photo,
-  // just blurred, with an explicit status overlay instead of silently
-  // showing it as if nothing were wrong.
+  if (approvalStatus === "APPROVED" && isBlurred) {
+    return (
+      <div className={cn("relative overflow-hidden", className)}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photoUrl} alt={alt} className="size-full object-cover blur-md scale-110" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/35 p-1 text-center">
+          <Lock className="size-4 text-white" />
+          {showMessage && <span className="text-[10px] leading-tight font-extrabold text-white">Restricted</span>}
+        </div>
+      </div>
+    );
+  }
+
   if (approvalStatus !== "APPROVED") {
     const message =
       approvalStatus === "REJECTED"

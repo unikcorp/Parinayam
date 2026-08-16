@@ -9,7 +9,6 @@ export function EducationStep({ lookups }: { lookups: RegistrationLookups }) {
         <SelectField<RegistrationFormValues>
           name="highestEducation"
           label="Highest education"
-          required
           options={lookups.educationOptions}
         />
         <TextField<RegistrationFormValues>
@@ -20,7 +19,6 @@ export function EducationStep({ lookups }: { lookups: RegistrationLookups }) {
         <SelectField<RegistrationFormValues>
           name="occupation"
           label="Occupation"
-          required
           options={lookups.occupationOptions}
         />
         <TextField<RegistrationFormValues>
@@ -31,7 +29,6 @@ export function EducationStep({ lookups }: { lookups: RegistrationLookups }) {
         <SelectField<RegistrationFormValues>
           name="annualIncome"
           label="Annual income"
-          required
           options={lookups.incomeOptions}
           className="sm:col-span-2"
         />

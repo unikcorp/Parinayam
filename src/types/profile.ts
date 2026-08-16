@@ -10,6 +10,7 @@ export interface SearchResult {
   religion: string | null;
   caste: string | null;
   photoUrl: string | null;
+  photoIsBlurred: boolean;
   verified: boolean;
   /** null when the viewer hasn't set partner preferences — nothing to score against. */
   match: number | null;
