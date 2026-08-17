@@ -1,29 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PlanCard, type PlanFeatureRow } from "@/components/shared/plan-card";
+import { PlanCard } from "@/components/shared/plan-card";
 import { useMyProfile } from "@/hooks/use-my-profile";
-import { useMembershipPlans, type MembershipPlan } from "@/hooks/use-membership-plans";
-
-function planFeatures(plan: MembershipPlan): PlanFeatureRow[] {
-  return [
-    { label: `${plan.plan_contacts} contact views`, included: plan.plan_contacts > 0 },
-    { label: `${plan.profile} profile views`, included: plan.profile > 0 },
-    { label: `${plan.plan_msg} messages`, included: plan.plan_msg > 0 },
-    { label: "In-app chat", included: !!plan.chat },
-    { label: "Video calling", included: !!plan.video },
-  ];
-}
+import { useMembershipPlans } from "@/hooks/use-membership-plans";
+import { useMembership } from "@/features/membership/use-membership";
+import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
 
 export default function BillingSettingsPage() {
   const router = useRouter();
   const { data: profile } = useMyProfile();
   const { data: plans, isLoading, isError } = useMembershipPlans();
+  const { planName: currentPlanName, isPremium, expiresAt, isLoading: membershipLoading } = useMembership();
 
-  const mostExpensive = plans?.reduce(
-    (max, p) => (Number(p.plan_amount) > Number(max?.plan_amount ?? -1) ? p : max),
-    plans[0]
-  );
+  const badges = getPlanBadges(plans ?? []);
 
   return (
     <div className="flex flex-col gap-5.5">
@@ -31,9 +21,20 @@ export default function BillingSettingsPage() {
 
       <section className="rounded-2xl border border-card-border bg-card p-5 lg:rounded-[20px] lg:p-7">
         <div className="text-[13px] font-bold tracking-wide text-faint uppercase">Current plan</div>
-        <div className="mt-1 text-xl font-extrabold text-primary-deep">Free</div>
+        <div className="mt-1 text-xl font-extrabold text-primary-deep">
+          {membershipLoading ? "…" : (currentPlanName ?? "Free")}
+        </div>
         <p className="mt-1 text-[13px] text-faint">
-          {profile?.member.first_name ? `${profile.member.first_name}, y` : "Y"}ou&apos;re not subscribed to a paid plan yet.
+          {membershipLoading ? (
+            "Loading your plan…"
+          ) : isPremium ? (
+            <>
+              {profile?.member.first_name ?? "You"}&apos;re on a premium plan
+              {expiresAt && ` — renews/expires ${new Date(expiresAt.replace(" ", "T") + "Z").toLocaleDateString("en-IN")}`}.
+            </>
+          ) : (
+            <>{profile?.member.first_name ? `${profile.member.first_name}, y` : "Y"}ou&apos;re not subscribed to a paid plan yet.</>
+          )}
         </p>
       </section>
 
@@ -60,19 +61,26 @@ export default function BillingSettingsPage() {
           <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => {
               const isFree = Number(plan.plan_amount) === 0;
-              const isBestValue = plan.plan_id === mostExpensive?.plan_id && !isFree;
+              const badge = badges.get(plan.plan_id);
+              const isCurrentPlan = !membershipLoading && currentPlanName === plan.plan_name;
               return (
                 <PlanCard
                   key={plan.plan_id}
                   name={plan.plan_name}
                   price={isFree ? "₹0" : `₹${Number(plan.plan_amount).toLocaleString("en-IN")}`}
                   period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
-                  badge={isBestValue ? "Best value" : undefined}
-                  dark={isBestValue}
-                  ctaLabel={isFree ? "Current plan" : `Go ${plan.plan_name}`}
-                  onSelect={isFree ? undefined : () => router.push("/checkout")}
-                  className={!isBestValue && !isFree ? "border-gold-light" : undefined}
-                  features={planFeatures(plan)}
+                  badge={badge}
+                  dark={badge === "Best Value"}
+                  ctaLabel={isCurrentPlan ? "Current Plan" : `Go ${plan.plan_name}`}
+                  onSelect={isCurrentPlan ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
+                  className={
+                    isCurrentPlan
+                      ? "border-success ring-2 ring-success/20"
+                      : badge !== "Best Value" && !isFree
+                        ? "border-gold-light"
+                        : undefined
+                  }
+                  features={getPlanFeatures(plan)}
                 />
               );
             })}

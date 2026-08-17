@@ -4,6 +4,7 @@ import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { MessageButton } from "@/features/messaging/components/MessageButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
+import { PremiumBadge } from "@/features/membership/components/PremiumBadge";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultCard({
@@ -36,6 +37,7 @@ export function SearchResultCard({
             {result.match}% match
           </span>
         )}
+        <PremiumBadge isPremium={result.isPremium} className="absolute top-2.5 left-2.5" />
       </Link>
       <div className="p-4.5">
         <Link href={`/profile/${result.id}`} className="flex items-center gap-1.5">

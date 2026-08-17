@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RangeFilter } from "@/components/shared/range-filter";
+import { useMembership } from "@/features/membership/use-membership";
+import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
 import type { RegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import type { SearchFilters } from "@/types/profile";
 
@@ -38,6 +41,11 @@ export function FiltersSidebar({
   const [country, setCountry] = useState(ANY);
   const [state, setState] = useState(ANY);
   const [district, setDistrict] = useState(ANY);
+  const { isLoading: membershipLoading, canUseAdvancedSearch } = useMembership();
+  // Education / Occupation / Annual Income are the premium-only filters —
+  // still visible and still submit if already set, just locked from new
+  // edits for Free members. Never removed from the form.
+  const advancedLocked = !membershipLoading && !canUseAdvancedSearch;
 
   function resetAll() {
     setAge([21, 45]);
@@ -73,12 +81,21 @@ export function FiltersSidebar({
     });
   }
 
-  function selectField(label: string, value: string, setValue: (v: string) => void, options: string[]) {
+  function selectField(
+    label: string,
+    value: string,
+    setValue: (v: string) => void,
+    options: string[],
+    locked = false
+  ) {
     return (
       <div>
-        <label className="mb-2 block text-[13px] font-bold text-primary-deep">{label}</label>
-        <Select value={value} onValueChange={(v) => v && setValue(v)}>
-          <SelectTrigger className="h-auto w-full rounded-xl px-3.5 py-3 text-sm font-semibold">
+        <label className="mb-2 flex items-center gap-1.5 text-[13px] font-bold text-primary-deep">
+          {label}
+          {locked && <Lock className="size-3 text-gold-text" />}
+        </label>
+        <Select value={value} onValueChange={(v) => v && setValue(v)} disabled={locked}>
+          <SelectTrigger className="h-auto w-full rounded-xl px-3.5 py-3 text-sm font-semibold disabled:opacity-60">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -119,9 +136,15 @@ export function FiltersSidebar({
           setSubCaste(ANY);
         }, religion === ANY ? [] : lookups.casteOptions(religion))}
         {selectField("Sub caste", subCaste, setSubCaste, caste === ANY ? [] : lookups.subCasteOptions(caste))}
-        {selectField("Education", education, setEducation, lookups.educationOptions)}
-        {selectField("Occupation", occupation, setOccupation, lookups.occupationOptions)}
-        {selectField("Annual income", annualIncome, setAnnualIncome, lookups.incomeOptions)}
+        {selectField("Education", education, setEducation, lookups.educationOptions, advancedLocked)}
+        {selectField("Occupation", occupation, setOccupation, lookups.occupationOptions, advancedLocked)}
+        {selectField("Annual income", annualIncome, setAnnualIncome, lookups.incomeOptions, advancedLocked)}
+        {advancedLocked && (
+          <UpgradePrompt
+            feature="Advanced Search"
+            message="Education, occupation, and income filters are available on paid plans."
+          />
+        )}
         {selectField("Marital status", maritalStatus, setMaritalStatus, maritalStatusOptions.filter((o) => o !== ANY))}
         {selectField("Country", country, (v) => {
           setCountry(v);

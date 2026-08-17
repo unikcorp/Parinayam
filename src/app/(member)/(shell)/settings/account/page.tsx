@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Loader2, Pause, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useMyProfile, useUpdateAccountStatus, useDeleteAccount } from "@/hooks/use-my-profile";
 import { useAuth } from "@/context/auth-context";
 import { ApiError } from "@/lib/api";
@@ -18,7 +27,7 @@ export default function AccountSettingsPage() {
 
   const [pauseMessage, setPauseMessage] = useState<string | null>(null);
 
-  const [deleteStep, setDeleteStep] = useState<"idle" | "confirm">("idle");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -51,7 +60,8 @@ export default function AccountSettingsPage() {
     deleteAccount.mutate(deletePassword, {
       onSuccess: () => {
         logout();
-        router.push("/");
+        toast.success("Your account has been scheduled for deletion. You have 30 days to cancel.");
+        router.push("/login");
       },
       onError: (error) => setDeleteError(error instanceof ApiError ? error.message : "Could not delete your account."),
     });
@@ -80,48 +90,64 @@ export default function AccountSettingsPage() {
       <section className="rounded-2xl border border-[#F5D9D6] bg-card p-5 lg:rounded-[20px] lg:p-7">
         <div className="mb-1.5 text-lg font-extrabold text-danger">Delete Account</div>
         <p className="mb-4.5 text-[13.5px] text-faint">
-          This permanently deletes your profile and all associated data. This action cannot be easily undone.
+          Your account will be permanently deleted after 30 days. You can cancel this by logging back in within 30 days.
         </p>
 
-        {deleteStep === "idle" ? (
-          <Button variant="destructive" onClick={() => setDeleteStep("confirm")}>
-            <Trash2 className="size-4" /> Delete account
-          </Button>
-        ) : (
-          <div className="flex max-w-md flex-col gap-3.5">
-            <p className="text-sm font-bold text-danger">
-              Are you sure you want to delete your account? This action cannot be easily undone.
-            </p>
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-primary-deep">
-                Type DELETE to confirm
-              </label>
-              <Input
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                className="h-auto rounded-xl px-3.5 py-2.5"
-              />
+        <Button
+          variant="destructive"
+          onClick={() => {
+            setConfirmText("");
+            setDeletePassword("");
+            setDeleteError(null);
+            setDeleteDialogOpen(true);
+          }}
+        >
+          <Trash2 className="size-4" /> Delete account
+        </Button>
+
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete your account?</DialogTitle>
+              <DialogDescription>
+                Your account will be permanently deleted after 30 days. You can cancel this by logging back in
+                within 30 days.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-3.5">
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-primary-deep">
+                  Type DELETE to confirm
+                </label>
+                <Input
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  className="h-auto rounded-xl px-3.5 py-2.5"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-primary-deep">Confirm your password</label>
+                <Input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="h-auto rounded-xl px-3.5 py-2.5"
+                />
+              </div>
+              {deleteError && <p className="text-xs font-semibold text-destructive">{deleteError}</p>}
             </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-primary-deep">Confirm your password</label>
-              <Input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                className="h-auto rounded-xl px-3.5 py-2.5"
-              />
-            </div>
-            {deleteError && <p className="text-xs font-semibold text-destructive">{deleteError}</p>}
-            <div className="flex gap-2.5">
-              <Button variant="outline" onClick={() => setDeleteStep("idle")}>
-                Cancel
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                No, Keep My Account
               </Button>
               <Button variant="destructive" onClick={handleDelete} disabled={deleteAccount.isPending}>
-                {deleteAccount.isPending && <Loader2 className="size-4 animate-spin" />} Permanently delete
+                {deleteAccount.isPending && <Loader2 className="size-4 animate-spin" />} Yes, Delete My Account
               </Button>
-            </div>
-          </div>
-        )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </section>
     </div>
   );

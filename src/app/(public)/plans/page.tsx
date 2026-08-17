@@ -1,30 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PlanCard, type PlanFeatureRow } from "@/components/shared/plan-card";
-import { useMembershipPlans, type MembershipPlan } from "@/hooks/use-membership-plans";
-
-// Every card renders the same row labels (greyed out when absent) so
-// they line up for comparison, same as the reference layout.
-function planFeatures(plan: MembershipPlan): PlanFeatureRow[] {
-  const rows: PlanFeatureRow[] = [
-    { label: `${plan.plan_contacts} contact views`, included: plan.plan_contacts > 0 },
-    { label: `${plan.profile} profile views`, included: plan.profile > 0 },
-    { label: `${plan.plan_msg} messages`, included: plan.plan_msg > 0 },
-    { label: "In-app chat", included: !!plan.chat },
-    { label: "Video calling", included: !!plan.video },
-  ];
-  return rows;
-}
+import { PlanCard } from "@/components/shared/plan-card";
+import { useMembershipPlans } from "@/hooks/use-membership-plans";
+import { useMembership } from "@/features/membership/use-membership";
+import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
 
 export default function PlansPage() {
   const router = useRouter();
   const { data: plans, isLoading, isError } = useMembershipPlans();
+  const { planName: currentPlanName, isLoading: membershipLoading } = useMembership();
 
-  const mostExpensive = plans?.reduce(
-    (max, p) => (Number(p.plan_amount) > Number(max?.plan_amount ?? -1) ? p : max),
-    plans[0]
-  );
+  const badges = getPlanBadges(plans ?? []);
 
   return (
     <div className="mx-auto max-w-290 px-5 pt-8 pb-10 lg:px-6 lg:pt-12">
@@ -57,7 +44,8 @@ export default function PlansPage() {
         <div className="mb-10 flex flex-col gap-4.5 lg:mb-14 lg:grid lg:grid-cols-4 lg:gap-6.5">
           {plans.map((plan) => {
             const isFree = Number(plan.plan_amount) === 0;
-            const isBestValue = plan.plan_id === mostExpensive?.plan_id && !isFree;
+            const badge = badges.get(plan.plan_id);
+            const isCurrentPlan = !membershipLoading && currentPlanName === plan.plan_name;
             return (
               <PlanCard
                 key={plan.plan_id}
@@ -65,11 +53,12 @@ export default function PlansPage() {
                 price={isFree ? "₹0" : `₹${Number(plan.plan_amount).toLocaleString("en-IN")}`}
                 period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
                 tagline={plan.plan_offers || undefined}
-                badge={isBestValue ? "Best value" : undefined}
-                dark={isBestValue}
-                ctaLabel={isFree ? "Current plan" : `Go ${plan.plan_name}`}
-                onSelect={isFree ? undefined : () => router.push("/checkout")}
-                features={planFeatures(plan)}
+                badge={badge}
+                dark={badge === "Best Value"}
+                ctaLabel={isCurrentPlan ? "Current Plan" : `Go ${plan.plan_name}`}
+                onSelect={isCurrentPlan ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
+                className={isCurrentPlan ? "border-success ring-2 ring-success/20" : undefined}
+                features={getPlanFeatures(plan)}
               />
             );
           })}

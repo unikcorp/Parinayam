@@ -93,7 +93,7 @@ export function PlansCarousel({ plans }: { plans: CarouselPlan[] }) {
                   badge={isBestValue ? "Most popular" : undefined}
                   dark={isBestValue}
                   ctaLabel={isFree ? "Get started" : `Go ${plan.plan_name}`}
-                  onSelect={isFree ? undefined : () => router.push("/checkout")}
+                  onSelect={isFree ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
                   className={cn("h-full", !isBestValue && !isFree && "border-gold-light")}
                   features={planFeatures(plan)}
                 />
