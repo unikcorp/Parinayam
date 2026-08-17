@@ -1,105 +1,139 @@
+"use client";
+
+import { Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Check, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMySubscriptions } from "@/features/subscription/use-subscription";
+import { useMembership } from "@/features/membership/use-membership";
+import { useMyProfile } from "@/hooks/use-my-profile";
 
-const unlocked = [
-  "Unlimited interests & private chat",
-  "100 contact number views",
-  "See who visited your profile",
-  "Horoscope match reports",
-];
+function limitLabel(limit: number | null, noun: string) {
+  return limit === null ? `Unlimited ${noun}` : `${limit} ${noun}`;
+}
 
-export default function OrderSuccessPage() {
+function formatDate(value: string | null) {
+  if (!value) return null;
+  return new Date(value.includes("T") ? value : value.replace(" ", "T") + "Z").toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function OrderSuccessPageInner() {
+  const searchParams = useSearchParams();
+  const subscriptionId = Number(searchParams.get("subscription"));
+
+  const { data: profile } = useMyProfile();
+  const { data: subscriptions, isLoading: subsLoading } = useMySubscriptions();
+  const { limits, canUseChat, canSeeWhoViewedMe, canUseAdvancedSearch, isLoading: membershipLoading } = useMembership();
+
+  const subscription = subscriptions?.find((s) => s.id === subscriptionId);
+
+  if (subsLoading || membershipLoading) {
+    return <div className="py-24 text-center text-sm text-faint">Loading…</div>;
+  }
+
+  if (!subscription) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-5 py-24 text-center">
+        <p className="text-sm font-semibold text-destructive">We couldn&apos;t find this order.</p>
+        <Button size="sm" render={<Link href="/plans" />}>
+          Back to plans
+        </Button>
+      </div>
+    );
+  }
+
+  const paidAmount = Number(subscription.paid_amount);
+  const discountAmount = Number(subscription.discount_amount);
+  const originalPrice = Number(subscription.original_price);
+  const expiresAt = formatDate(subscription.expires_at);
+
+  const unlocked = [
+    limits && limitLabel(limits.interests, "interests"),
+    canUseChat ? "Private chat with matches" : limits && `${limitLabel(limits.messages, "messages")} per member`,
+    limits && `${limitLabel(limits.contactViews, "contact number views")}`,
+    canSeeWhoViewedMe && "See who visited your profile",
+    canUseAdvancedSearch && "Advanced search filters",
+  ].filter((v): v is string => Boolean(v));
+
   return (
-    <div className="flex flex-col">
-      <div className="bg-[linear-gradient(170deg,#0E9F6E_0%,#0B7A55_100%)] relative overflow-hidden px-6 py-16 text-center text-white lg:py-20">
-        <div className="absolute -top-18 -right-18 size-55 rounded-full bg-white/8" />
-        <div className="absolute -bottom-12 -left-12 size-45 rounded-full bg-white/6" />
-        <div className="animate-pop relative mx-auto mb-5 flex size-21 items-center justify-center rounded-full bg-white/18">
-          <span className="flex size-15 items-center justify-center rounded-full bg-white text-success">
-            <Check className="size-7" strokeWidth={3} />
+    <div className="mx-auto max-w-lg px-5 py-10 lg:py-16">
+      <div className="flex flex-col items-center text-center">
+        <span className="flex size-16 items-center justify-center rounded-full bg-success-bg">
+          <Check className="size-8 text-success" strokeWidth={3} />
+        </span>
+        <h1 className="mt-5 text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[28px]">
+          Welcome to {subscription.plan_name_snapshot}
+          {profile?.member.first_name ? `, ${profile.member.first_name}` : ""} ✨
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your payment was successful and your plan is now active.
+        </p>
+      </div>
+
+      <div className="mt-7 rounded-[20px] border border-card-border bg-card p-6 lg:p-7">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="text-[15px] font-extrabold text-primary-deep">{subscription.plan_name_snapshot}</span>
+          <span className="rounded-full bg-success-bg px-2.75 py-1 text-[11px] font-extrabold text-success uppercase">
+            {expiresAt ? `Active till ${expiresAt}` : "Active"}
           </span>
         </div>
-        <div className="relative text-2xl font-extrabold tracking-[-0.01em]">
-          Payment successful!
-        </div>
-        <div className="relative mt-2 text-sm text-white/85">
-          Welcome to Premium, Anjali ✨
+
+        <div className="flex flex-col gap-2.5 text-sm">
+          <Row label="Order ID" value={`PNM-${subscription.id}`} />
+          <Row label="Date" value={formatDate(subscription.started_at) ?? "-"} />
+          <Row label="Plan amount" value={`₹${originalPrice.toLocaleString("en-IN")}`} />
+          {discountAmount > 0 && <Row label="Discount" value={`− ₹${discountAmount.toLocaleString("en-IN")}`} tone="success" />}
+          <div className="flex items-baseline justify-between border-t border-card-border pt-3.5">
+            <span className="text-[15px] font-extrabold text-primary-deep">Amount paid</span>
+            <span className="text-xl font-extrabold text-primary-deep">₹{paidAmount.toLocaleString("en-IN")}</span>
+          </div>
         </div>
       </div>
 
-      <main className="relative -mt-13 mx-auto w-full max-w-125 flex-1 px-5 pb-10 lg:pb-16">
-        <div className="rounded-[20px] border border-[#F0F1F5] bg-card p-5.5 shadow-[0_16px_44px_rgba(127,29,29,0.12)] lg:p-7">
-          <div className="mb-5 flex items-center gap-3.5 rounded-2xl bg-primary-deep p-4 text-white">
-            <span className="bg-gold-gradient flex size-10 shrink-0 items-center justify-center rounded-[11px] text-lg">
-              ★
-            </span>
-            <div className="flex-1">
-              <div className="text-[14.5px] font-extrabold">Premium — 6 months</div>
-              <div className="mt-0.5 text-[11.5px] text-white/70">Active till 6 Jan 2027</div>
-            </div>
-            <span className="rounded-full bg-white/15 px-2.75 py-1 text-[10.5px] font-extrabold text-[#7BD3B0]">
-              ACTIVE
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-2.75 text-[13.5px]">
-            <Row label="Order ID" value="PNM-ORD-88214" />
-            <Row label="Paid via" value="UPI · GPay" />
-            <Row label="Date" value="6 Jul 2026, 11:42 AM" />
-            <Row label="Plan amount" value="₹5,900" />
-            <Row label="Coupon FIRSTMATCH" value="− ₹1,180" tone="success" />
-            <Row label="GST (18%)" value="₹850" />
-            <div className="flex items-baseline justify-between border-t border-dashed border-input pt-3.5">
-              <span className="text-[14.5px] font-extrabold text-primary-deep">Total paid</span>
-              <span className="text-[23px] font-extrabold text-success">₹5,570</span>
-            </div>
-          </div>
-
-          <Button variant="outline" className="mt-5 w-full">
-            <Download className="size-4" /> Download GST invoice
-          </Button>
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-card-border bg-card p-5">
-          <div className="mb-3 text-[14.5px] font-extrabold text-primary-deep">
-            Now unlocked for you
-          </div>
-          <div className="flex flex-col gap-2.5 text-[13.5px] text-[#4A5568]">
-            {unlocked.map((u) => (
-              <div key={u} className="flex items-center gap-2.5">
+      {unlocked.length > 0 && (
+        <div className="mt-6 rounded-[20px] border border-card-border bg-card p-6 lg:p-7">
+          <div className="mb-3.5 text-[15px] font-extrabold text-primary-deep">Now unlocked for you</div>
+          <ul className="flex flex-col gap-2.5">
+            {unlocked.map((item) => (
+              <li key={item} className="flex items-center gap-2.5 text-sm text-ink">
                 <Check className="size-4 shrink-0 text-success" />
-                {u}
-              </div>
+                {item}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
+      )}
 
-        <div className="mt-6">
-          <Button size="cta" className="w-full" render={<Link href="/dashboard" />}>
-            Start exploring matches →
-          </Button>
-        </div>
-      </main>
+      <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+        <Button variant="outline" className="flex-1 gap-2" type="button">
+          <Download className="size-4" /> Download invoice
+        </Button>
+        <Button className="flex-1" render={<Link href="/dashboard" />}>
+          Go to dashboard
+        </Button>
+      </div>
     </div>
   );
 }
 
-function Row({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "success";
-}) {
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="py-24 text-center text-sm text-faint">Loading…</div>}>
+      <OrderSuccessPageInner />
+    </Suspense>
+  );
+}
+
+function Row({ label, value, tone }: { label: string; value: string; tone?: "success" }) {
   return (
     <div className="flex justify-between">
-      <span className="text-faint">{label}</span>
-      <span className={tone === "success" ? "font-bold text-success" : "font-bold text-primary-deep"}>
-        {value}
-      </span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className={tone === "success" ? "font-bold text-success" : "font-bold text-primary-deep"}>{value}</span>
     </div>
   );
 }

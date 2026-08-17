@@ -1,26 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { ChevronLeft, Star, Tag, CreditCard, Landmark, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ApiError } from "@/lib/api";
+import { useMembershipPlans } from "@/hooks/use-membership-plans";
+import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
 
 type Method = "upi" | "card" | "netbanking" | "wallet";
 const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
 
-export default function CheckoutPage() {
+function CheckoutPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planId = Number(searchParams.get("plan"));
+
+  const { data: plans, isLoading: plansLoading, isError: plansError } = useMembershipPlans();
+  const plan = plans?.find((p) => p.plan_id === planId);
+
+  const initiate = useInitiateSubscription();
+  const confirm = useConfirmSubscription();
+  const isProcessing = initiate.isPending || confirm.isPending;
+
   const [method, setMethod] = useState<Method>("upi");
   const [upiApp, setUpiApp] = useState(upiApps[0]);
-  const [upiId, setUpiId] = useState("anjali.menon@okhdfcbank");
-  const [couponApplied, setCouponApplied] = useState(true);
+  const [upiId, setUpiId] = useState("");
 
-  const planAmount = 5900;
-  const discount = couponApplied ? 1180 : 0;
-  const gst = Math.round((planAmount - discount) * 0.18);
-  const total = planAmount - discount + gst;
+  const originalPrice = plan ? Number(plan.plan_amount) : 0;
+  const offerPrice = plan?.offer ? plan.offer.offer_price : null;
+  const discount = offerPrice != null ? Math.round((originalPrice - offerPrice) * 100) / 100 : 0;
+  const total = offerPrice ?? originalPrice;
+
+  async function handlePay() {
+    if (!plan) return;
+    try {
+      // The backend recomputes the real price itself from the plan + any
+      // active offer — nothing priced here is trusted, this call just
+      // starts the attempt.
+      const { subscription_id } = await initiate.mutateAsync(plan.plan_id);
+      // No real payment gateway is wired up yet — the backend's gateway is
+      // a deliberate stub that always succeeds (see payment-gateway.stub.ts),
+      // so a real one can plug in here later without this flow changing.
+      await confirm.mutateAsync({ subscriptionId: subscription_id, gatewayPaymentId: `stub_${Date.now()}` });
+      router.push(`/checkout/success?subscription=${subscription_id}`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Payment could not be completed. Please try again.");
+    }
+  }
+
+  if (plansLoading) {
+    return <div className="py-24 text-center text-sm text-faint">Loading…</div>;
+  }
+
+  if (plansError || !plan) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-24 text-center">
+        <p className="text-sm font-semibold text-destructive">This plan isn&apos;t available.</p>
+        <p className="text-sm text-faint">Please choose a plan again.</p>
+        <Button size="sm" onClick={() => router.push("/plans")}>
+          Back to plans
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto grid max-w-290 grid-cols-1 gap-6 px-5 pt-6 pb-8 lg:grid-cols-[1fr_420px] lg:items-start lg:gap-8 lg:px-6 lg:pt-10 lg:pb-16">
@@ -42,12 +88,7 @@ export default function CheckoutPage() {
         </p>
 
         {/* UPI */}
-        <MethodCard
-          selected={method === "upi"}
-          onSelect={() => setMethod("upi")}
-          title="UPI"
-          badge="Recommended · Instant"
-        >
+        <MethodCard selected={method === "upi"} onSelect={() => setMethod("upi")} title="UPI" badge="Recommended · Instant">
           {method === "upi" && (
             <>
               <div className="mb-4.5 grid grid-cols-2 gap-2.5 lg:flex lg:gap-3">
@@ -58,25 +99,24 @@ export default function CheckoutPage() {
                     onClick={() => setUpiApp(app)}
                     className={cn(
                       "flex-1 rounded-[13px] border p-3.5 text-center text-[13.5px] font-bold",
-                      upiApp === app
-                        ? "border-primary bg-[#FBFCFE] text-primary"
-                        : "border-input text-muted-foreground"
+                      upiApp === app ? "border-primary bg-[#FBFCFE] text-primary" : "border-input text-muted-foreground"
                     )}
                   >
                     {app}
                   </button>
                 ))}
               </div>
-              <label className="mb-2 block text-[12.5px] font-bold text-primary-deep">
-                UPI ID
-              </label>
+              <label className="mb-2 block text-[12.5px] font-bold text-primary-deep">UPI ID</label>
               <div className="flex gap-3">
                 <Input
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
+                  placeholder="yourname@bank"
                   className="h-auto flex-1 rounded-xl px-4 py-3.5 text-sm"
                 />
-                <Button>Verify</Button>
+                <Button variant="outline" type="button">
+                  Verify
+                </Button>
               </div>
             </>
           )}
@@ -91,10 +131,7 @@ export default function CheckoutPage() {
           trailing={
             <span className="flex gap-1.5">
               {["VISA", "MC", "RuPay"].map((c) => (
-                <span
-                  key={c}
-                  className="rounded-md border border-input px-2.5 py-1 text-[10.5px] font-extrabold text-muted-foreground"
-                >
+                <span key={c} className="rounded-md border border-input px-2.5 py-1 text-[10.5px] font-extrabold text-muted-foreground">
                   {c}
                 </span>
               ))}
@@ -108,11 +145,7 @@ export default function CheckoutPage() {
           onSelect={() => setMethod("netbanking")}
           title="Net banking"
           icon={Landmark}
-          trailing={
-            <span className="text-xs font-semibold text-faint">
-              SBI, Federal, HDFC, ICICI +38
-            </span>
-          }
+          trailing={<span className="text-xs font-semibold text-faint">SBI, Federal, HDFC, ICICI +38</span>}
         />
 
         {/* WALLET */}
@@ -129,104 +162,69 @@ export default function CheckoutPage() {
       {/* ORDER SUMMARY */}
       <aside className="flex flex-col gap-4.5 lg:sticky lg:top-6">
         <div className="rounded-[20px] border border-card-border bg-card p-6 lg:p-7">
-          <div className="mb-4.5 text-base font-extrabold text-primary-deep lg:text-[17px]">
-            Order summary
-          </div>
+          <div className="mb-4.5 text-base font-extrabold text-primary-deep lg:text-[17px]">Order summary</div>
           <div className="mb-5 flex items-center gap-3.5 rounded-2xl bg-primary-deep p-4 text-white">
             <span className="bg-gold-gradient flex size-11 shrink-0 items-center justify-center rounded-xl">
               <Star className="size-[19px] fill-current" />
             </span>
             <div className="flex-1">
-              <div className="text-[15px] font-extrabold">Premium — 6 months</div>
+              <div className="text-[15px] font-extrabold">{plan.plan_name}</div>
               <div className="mt-0.5 text-xs text-white/70">
-                Renews 6 Jan 2027 · cancel anytime
+                {plan.plan_duration ? `${plan.plan_duration}-day plan` : "Lifetime plan"} · cancel anytime
               </div>
             </div>
           </div>
 
-          {couponApplied ? (
-            <div className="mb-5 flex items-center justify-between rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
-              <div className="flex items-center gap-2.5">
-                <Tag className="size-4 text-success" />
-                <div>
-                  <div className="text-[13.5px] font-extrabold text-success">
-                    FIRSTMATCH applied
-                  </div>
-                  <div className="text-[11.5px] text-muted-foreground">
-                    20% off on first membership
-                  </div>
-                </div>
+          {plan.offer && (
+            <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
+              <Tag className="size-4 text-success" />
+              <div>
+                <div className="text-[13.5px] font-extrabold text-success">{plan.offer.title}</div>
+                <div className="text-[11.5px] text-muted-foreground">Applied automatically</div>
               </div>
-              <button
-                type="button"
-                onClick={() => setCouponApplied(false)}
-                className="text-[12.5px] font-bold text-danger"
-              >
-                Remove
-              </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setCouponApplied(true)}
-              className="mb-5 w-full rounded-xl border border-dashed border-input py-3 text-[13px] font-bold text-primary"
-            >
-              Apply FIRSTMATCH coupon
-            </button>
           )}
 
           <div className="flex flex-col gap-2.5 text-sm">
-            <Row label="Premium 6-month plan" value={`₹${planAmount.toLocaleString("en-IN")}`} />
-            {couponApplied && (
-              <Row label="Coupon discount" value={`− ₹${discount.toLocaleString("en-IN")}`} tone="success" />
-            )}
-            <Row label="GST (18%)" value={`₹${gst.toLocaleString("en-IN")}`} />
+            <Row label={`${plan.plan_name} plan`} value={`₹${originalPrice.toLocaleString("en-IN")}`} />
+            {discount > 0 && <Row label="Offer discount" value={`− ₹${discount.toLocaleString("en-IN")}`} tone="success" />}
             <div className="flex items-baseline justify-between border-t border-card-border pt-3.5">
               <span className="text-[15px] font-extrabold text-primary-deep">Total payable</span>
-              <span className="text-2xl font-extrabold text-primary-deep">
-                ₹{total.toLocaleString("en-IN")}
-              </span>
+              <span className="text-2xl font-extrabold text-primary-deep">₹{total.toLocaleString("en-IN")}</span>
             </div>
           </div>
 
-          <Button
-            variant="gold"
-            size="cta"
-            className="mt-5.5 w-full"
-            onClick={() => router.push("/checkout/success")}
-          >
-            Pay ₹{total.toLocaleString("en-IN")} securely
+          <Button variant="gold" size="cta" className="mt-5.5 w-full" disabled={isProcessing} onClick={handlePay}>
+            {isProcessing ? "Processing…" : `Pay ₹${total.toLocaleString("en-IN")} securely`}
           </Button>
           <div className="mt-3 text-center text-xs text-faint">
-            By paying you agree to the Terms &amp; Refund Policy. Invoice emailed instantly.
+            By paying you agree to the Terms &amp; Refund Policy.
           </div>
         </div>
 
         <div className="hidden justify-center gap-5 text-[12.5px] font-semibold text-faint lg:flex">
           <span>🔒 PCI-DSS</span>
           <span>↩ 7-day refund</span>
-          <span>🧾 GST invoice</span>
+          <span>🧾 Invoice on request</span>
         </div>
       </aside>
     </div>
   );
 }
 
-function Row({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "success";
-}) {
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="py-24 text-center text-sm text-faint">Loading…</div>}>
+      <CheckoutPageInner />
+    </Suspense>
+  );
+}
+
+function Row({ label, value, tone }: { label: string; value: string; tone?: "success" }) {
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn("font-bold", tone === "success" ? "text-success" : "text-primary-deep")}>
-        {value}
-      </span>
+      <span className={cn("font-bold", tone === "success" ? "text-success" : "text-primary-deep")}>{value}</span>
     </div>
   );
 }
@@ -254,9 +252,7 @@ function MethodCard({
     <div
       className={cn(
         "rounded-[18px] border bg-card p-5 lg:p-6",
-        selected
-          ? "border-2 border-primary shadow-[0_8px_26px_rgba(185,28,28,0.08)]"
-          : "border-card-border",
+        selected ? "border-2 border-primary shadow-[0_8px_26px_rgba(185,28,28,0.08)]" : "border-card-border",
         !last && "mb-3.5"
       )}
     >
@@ -268,9 +264,7 @@ function MethodCard({
           )}
         />
         {Icon && <Icon className="size-[18px] text-primary-deep" />}
-        <span className="flex-1 text-left text-[15.5px] font-bold text-primary-deep">
-          {title}
-        </span>
+        <span className="flex-1 text-left text-[15.5px] font-bold text-primary-deep">{title}</span>
         {badge && (
           <span className="rounded-full bg-success-bg px-2.75 py-1 text-[11px] font-extrabold text-success">
             {badge.toUpperCase()}

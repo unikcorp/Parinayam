@@ -10,6 +10,7 @@ import {
   Pencil,
   Camera,
   Settings,
+  Rocket,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
@@ -17,6 +18,7 @@ import { useSearchResults } from "@/hooks/use-search-results";
 import { useReceivedInterests, useSentInterests } from "@/features/interests/use-interests";
 import { useRecentlyViewed, useProfileVisitorCount } from "@/features/profile-views/use-profile-views";
 import { useShortlistedYouCount } from "@/features/shortlist/use-shortlist";
+import { useMembership } from "@/features/membership/use-membership";
 import { AppMobileHeader } from "@/components/layout/app-mobile-header";
 import { StatTile } from "@/components/shared/stat-tile";
 import { ProfileCard } from "@/components/profile/profile-card";
@@ -31,6 +33,7 @@ const quickActions = [
   { icon: Camera, label: "Add photos", tint: "bg-peach-bg text-peach-text", href: "/profile/edit?step=photos" },
   { icon: Star, label: "Horoscope", tint: "bg-surface-cream-2 text-gold-text", href: "/profile/edit?step=horoscope" },
   { icon: Settings, label: "Preferences", tint: "bg-success-bg text-success", href: "/profile/edit?step=preferences" },
+  { icon: Rocket, label: "Profile Boost", tint: "bg-surface-cream-2 text-gold-text", href: "/boost" },
 ];
 
 export default function DashboardPage() {
@@ -56,11 +59,12 @@ export default function DashboardPage() {
   const { data: recentlyViewed = [], isLoading: recentlyViewedLoading } = useRecentlyViewed();
   const { data: visitorCount } = useProfileVisitorCount();
   const { data: shortlistedYouCount } = useShortlistedYouCount();
+  const { planName, isPremium, expiresAt, limits, usage } = useMembership();
 
   const tiles = [
     { icon: Heart, tint: "peach" as const, value: receivedInterests?.length ?? 0, label: "Interests received", href: "/interests" },
     { icon: ArrowUpRight, tint: "blue" as const, value: sentInterests?.length ?? 0, label: "Interests sent", href: "/interests" },
-    { icon: Eye, tint: "gold" as const, value: visitorCount ?? 0, label: "Profile visitors" },
+    { icon: Eye, tint: "gold" as const, value: visitorCount ?? 0, label: "Profile visitors", href: "/who-viewed-me" },
     { icon: Star, tint: "success" as const, value: shortlistedYouCount ?? 0, label: "Shortlisted you" },
   ];
 
@@ -166,6 +170,7 @@ export default function DashboardPage() {
                     gender={m.gender}
                     matchPercent={m.match ?? undefined}
                     verified={m.verified}
+                    premium={m.isPremium}
                     className="w-50 shrink-0 lg:w-auto"
                     photoClassName="h-45 lg:h-52.5"
                   />
@@ -271,20 +276,39 @@ export default function DashboardPage() {
           <div className="bg-dark-panel-gradient rounded-[20px] p-5.5 text-white">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-xs font-extrabold tracking-[0.1em] text-gold-light">
-                ★ PREMIUM
+                {isPremium ? `★ ${planName?.toUpperCase()}` : "FREE PLAN"}
               </span>
-              <span className="text-xs text-white/70">till Mar 2027</span>
+              {isPremium && expiresAt && (
+                <span className="text-xs text-white/70">
+                  till {new Date(expiresAt.replace(" ", "T") + "Z").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                </span>
+              )}
             </div>
-            <ProgressBar percent={68} variant="gold" trackClassName="bg-white/15" />
-            <div className="mt-2 mb-3.5 text-xs text-white/70">
-              68 of 100 contact views used
-            </div>
+            {limits && usage ? (
+              limits.contactViews === null ? (
+                <div className="text-xs text-white/70">Unlimited contact views</div>
+              ) : (
+                <>
+                  <ProgressBar
+                    percent={Math.min(100, Math.round((usage.contactViews / Math.max(limits.contactViews, 1)) * 100))}
+                    variant="gold"
+                    trackClassName="bg-white/15"
+                  />
+                  <div className="mt-2 mb-3.5 text-xs text-white/70">
+                    {usage.contactViews} of {limits.contactViews} contact views used
+                  </div>
+                </>
+              )
+            ) : (
+              <div className="text-xs text-white/70">Loading…</div>
+            )}
             <Button
+              render={<Link href="/plans" />}
               variant="outline"
               size="sm"
               className="w-full border-white/25 bg-white/10 text-white hover:bg-white/18"
             >
-              Upgrade to Elite ♛
+              {isPremium ? "View plans" : "Upgrade now"} ♛
             </Button>
           </div>
 

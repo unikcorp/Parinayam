@@ -38,6 +38,11 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
+  const [pendingDeletion, setPendingDeletion] = useState<{ phone: string; deletionDate: string } | null>(null);
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -48,6 +53,29 @@ export default function LoginPage() {
     defaultValues: loginDefaultValues,
   });
   const mode = watch("mode");
+
+  async function handleRecoverAccount() {
+    if (!pendingDeletion) return;
+    setRecoveryError(null);
+    if (!recoveryPassword) {
+      setRecoveryError("Enter your password to recover your account.");
+      return;
+    }
+    setRecoveryLoading(true);
+    try {
+      await api.post("/api/members/account/cancel-deletion", {
+        mobileNumber: pendingDeletion.phone,
+        password: recoveryPassword,
+      });
+      setPendingDeletion(null);
+      setRecoveryPassword("");
+      setRecoveryMessage("Your account has been recovered. Please log in.");
+    } catch (error) {
+      setRecoveryError(error instanceof ApiError ? error.message : "Could not recover your account.");
+    } finally {
+      setRecoveryLoading(false);
+    }
+  }
 
   async function completeLogin({ user, accessToken }: MemberLoginResponse) {
     // Set before the profile fetch below so it goes out with the right
@@ -85,6 +113,8 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginFormValues) {
     setFormError(null);
+    setPendingDeletion(null);
+    setRecoveryMessage(null);
 
     try {
       if (values.mode === "otp") {
@@ -107,6 +137,13 @@ export default function LoginPage() {
       });
       await completeLogin(data);
     } catch (error) {
+      if (error instanceof ApiError && error.details?.code === "ACCOUNT_PENDING_DELETION") {
+        setPendingDeletion({
+          phone: values.phone,
+          deletionDate: String(error.details.deletionDate),
+        });
+        return;
+      }
       setFormError(
         error instanceof ApiError
           ? error.message
@@ -175,6 +212,69 @@ export default function LoginPage() {
         <p className="mt-1.5 mb-6 text-[14.5px] text-muted-foreground lg:mb-8 lg:text-[15.5px]">
           Sign in with your mobile number or email.
         </p>
+
+        {recoveryMessage && (
+          <div className="mb-5.5 rounded-xl border border-success/30 bg-success-bg px-4 py-3 text-[13.5px] font-semibold text-success">
+            {recoveryMessage}
+          </div>
+        )}
+
+        {pendingDeletion ? (
+          <div className="mb-5.5 flex flex-col gap-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4.5">
+            <p className="text-[14px] font-semibold text-ink">
+              This account is scheduled for deletion on{" "}
+              <b className="font-extrabold text-primary-deep">
+                {new Date(pendingDeletion.deletionDate).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </b>
+              . Would you like to cancel the deletion and recover your account?
+            </p>
+
+            <div>
+              <label className="mb-1.5 block text-[13px] font-bold text-primary-deep">Password</label>
+              <Input
+                type="password"
+                value={recoveryPassword}
+                onChange={(e) => setRecoveryPassword(e.target.value)}
+                placeholder="Enter your password to confirm"
+                className="h-auto rounded-xl px-4 py-3.5 text-[15px]"
+              />
+            </div>
+            {recoveryError && <p className="text-xs font-semibold text-destructive">{recoveryError}</p>}
+
+            <div className="flex flex-col gap-2.5 sm:flex-row">
+              <Button
+                type="button"
+                className="flex-1"
+                disabled={recoveryLoading}
+                onClick={handleRecoverAccount}
+              >
+                Cancel Deletion &amp; Recover Account
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setPendingDeletion(null);
+                  setRecoveryPassword("");
+                  setRecoveryError(null);
+                }}
+              >
+                Continue with Deletion
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+        {formError && (
+          <div className="mb-5.5 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-[13.5px] font-semibold text-destructive">
+            {formError}
+          </div>
+        )}
 
         <Controller
           name="mode"
@@ -305,6 +405,8 @@ export default function LoginPage() {
           <Lock className="size-3.5" /> Privacy protected
           <Check className="size-3.5" /> 100% verified profiles
         </div>
+          </>
+        )}
       </form>
     </div>
   );

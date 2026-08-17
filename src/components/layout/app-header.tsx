@@ -10,6 +10,7 @@ import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { NotificationBell } from "@/features/notifications/components/NotificationBell";
+import { useMembership } from "@/features/membership/use-membership";
 
 const navLinks = [
   { label: "Home", href: "/dashboard" },
@@ -23,6 +24,7 @@ export function AppHeader() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { data: profile } = useMyProfile();
+  const { isPremium } = useMembership();
   const profilePhoto = profile?.photos.find((p) => p.is_profile_photo);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -71,9 +73,11 @@ export function AppHeader() {
         </nav>
       </div>
       <div className="flex items-center gap-3.5">
-        <span className="bg-gold-gradient inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-white">
-          <Star className="size-3 fill-current" /> Premium
-        </span>
+        {isPremium && (
+          <span className="bg-gold-gradient inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-white">
+            <Star className="size-3 fill-current" /> Premium
+          </span>
+        )}
         <NotificationBell />
         <div className="relative" ref={menuRef}>
           <button

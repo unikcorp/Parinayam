@@ -8,6 +8,9 @@ import { ChatBubble } from "@/components/shared/chat-bubble";
 import { ContactButton } from "@/components/profile/contact-button";
 import { useAuth } from "@/context/auth-context";
 import { useConversations, useMessages, useSendMessage } from "@/features/messaging/use-messaging";
+import { useMembership } from "@/features/membership/use-membership";
+import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
+import { UsageIndicator } from "@/features/membership/components/UsageIndicator";
 import { cn } from "@/lib/utils";
 
 // Same UTC-reattachment as lib/format-time.ts, but a clock time reads better
@@ -30,6 +33,7 @@ export function ChatWindow({
   const { data: conversations = [] } = useConversations();
   const { data: messages = [], isLoading } = useMessages(conversationId);
   const sendMessage = useSendMessage(conversationId);
+  const { isLoading: membershipLoading, canSendMessage } = useMembership();
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -122,25 +126,31 @@ export function ChatWindow({
       </div>
 
       {/* composer */}
-      <form
-        onSubmit={handleSend}
-        className="flex shrink-0 items-center gap-2.5 border-t border-card-border bg-card px-4 py-3.5 lg:px-7 lg:py-4"
-      >
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="Type a message…"
-          className="flex-1 rounded-[13px] border border-input bg-surface px-4.5 py-3.5 text-sm outline-none placeholder:text-faint focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-        />
-        <button
-          type="submit"
-          disabled={!draft.trim() || sendMessage.isPending}
-          className="flex size-11.5 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-cta disabled:opacity-50"
-          aria-label="Send"
-        >
-          <Send className="size-4.5" />
-        </button>
-      </form>
+      {!membershipLoading && !canSendMessage ? (
+        <div className="shrink-0 border-t border-card-border bg-card px-4 py-3.5 lg:px-7 lg:py-4">
+          <UpgradePrompt feature="Messages" message="You've used all your messages for this plan." />
+        </div>
+      ) : (
+        <div className="shrink-0 border-t border-card-border bg-card px-4 pt-2.5 pb-3.5 lg:px-7 lg:pt-3 lg:pb-4">
+          <UsageIndicator type="messages" className="mb-2" />
+          <form onSubmit={handleSend} className="flex items-center gap-2.5">
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Type a message…"
+              className="flex-1 rounded-[13px] border border-input bg-surface px-4.5 py-3.5 text-sm outline-none placeholder:text-faint focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+            <button
+              type="submit"
+              disabled={!draft.trim() || sendMessage.isPending}
+              className="flex size-11.5 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-cta disabled:opacity-50"
+              aria-label="Send"
+            >
+              <Send className="size-4.5" />
+            </button>
+          </form>
+        </div>
+      )}
     </main>
   );
 }

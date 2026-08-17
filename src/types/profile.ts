@@ -11,6 +11,7 @@ export interface SearchResult {
   caste: string | null;
   photoUrl: string | null;
   photoIsBlurred: boolean;
+  isPremium: boolean;
   verified: boolean;
   /** null when the viewer hasn't set partner preferences — nothing to score against. */
   match: number | null;

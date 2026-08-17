@@ -11,6 +11,7 @@ import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { MessageButton } from "@/features/messaging/components/MessageButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
+import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
 import { useProfile } from "@/hooks/use-profile";
 import { buildProfileSections } from "@/lib/profile-sections";
 import { ApiError } from "@/lib/api";
@@ -24,6 +25,13 @@ export default function MemberProfilePage() {
   }
 
   if (error instanceof ApiError && error.status === 403) {
+    if (error.details?.code === "ENTITLEMENT_LIMIT_REACHED") {
+      return (
+        <div className="mx-auto max-w-md px-5 py-16">
+          <UpgradePrompt feature="Profile Views" message={error.message} />
+        </div>
+      );
+    }
     return <BlockedProfileState memberId={Number(id)} />;
   }
 

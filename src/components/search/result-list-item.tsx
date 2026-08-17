@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
+import { PremiumBadge } from "@/features/membership/components/PremiumBadge";
 import type { SearchResult } from "@/types/profile";
 
 export function SearchResultListItem({ result }: { result: SearchResult }) {
@@ -16,6 +17,7 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
           isBlurred={result.photoIsBlurred}
           className="h-39 w-full"
         />
+        <PremiumBadge isPremium={result.isPremium} className="absolute top-2 left-2" />
       </Link>
       <div className="flex flex-1 flex-col p-3.5">
         <Link href={`/profile/${result.id}`} className="flex items-center gap-1.5">

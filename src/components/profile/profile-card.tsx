@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { InterestButton } from "@/features/interests/components/InterestButton";
 import { ShortlistButton } from "@/features/shortlist/components/ShortlistButton";
+import { PremiumBadge } from "@/features/membership/components/PremiumBadge";
 
 export interface ProfileCardProps {
   name: string;
@@ -48,11 +49,7 @@ export function ProfileCard({
         className
       )}
     >
-      {premium && (
-        <span className="bg-gold-gradient animate-pop absolute top-3 left-3 z-10 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide text-white uppercase">
-          <Star className="size-3 fill-current" /> Premium
-        </span>
-      )}
+      <PremiumBadge isPremium={!!premium} className="animate-pop absolute top-3 left-3 z-10" />
 
       <CardLink memberId={memberId}>
         <div

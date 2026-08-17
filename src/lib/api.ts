@@ -20,9 +20,14 @@ export function clearAccessToken() {
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  // Structured payload alongside the message, e.g. entitlement 403s carry
+  // { code: "ENTITLEMENT_LIMIT_REACHED", usageType, limit, usage, planName }
+  // — lets the UI react specifically instead of parsing message text.
+  details?: Record<string, unknown>;
+  constructor(status: number, message: string, details?: Record<string, unknown>) {
     super(message);
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -78,6 +83,12 @@ function errorMessage(error: unknown): string {
   return "Something went wrong. Please try again.";
 }
 
+function toApiError(error: unknown): ApiError {
+  const status = axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500;
+  const details = axios.isAxiosError(error) ? error.response?.data?.details : undefined;
+  return new ApiError(status, errorMessage(error), details);
+}
+
 type RequestOptions = {
   /** Kept for call-site compatibility — axios detects FormData automatically, no special handling needed. */
   isFormData?: boolean;
@@ -89,7 +100,7 @@ export const api = {
       const { data } = await client.get(path);
       return data.data as T;
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
   async post<T>(path: string, body?: unknown, _opts?: RequestOptions): Promise<T> {
@@ -97,7 +108,7 @@ export const api = {
       const { data } = await client.post(path, body);
       return data.data as T;
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
   async put<T>(path: string, body?: unknown): Promise<T> {
@@ -105,7 +116,7 @@ export const api = {
       const { data } = await client.put(path, body);
       return data.data as T;
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
   async delete<T>(path: string): Promise<T> {
@@ -113,7 +124,7 @@ export const api = {
       const { data } = await client.delete(path);
       return data.data as T;
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
   async patch<T>(path: string, body?: unknown): Promise<T> {
@@ -121,7 +132,7 @@ export const api = {
       const { data } = await client.patch(path, body);
       return data.data as T;
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
   // Same as get, but keeps the `pagination` envelope instead of unwrapping
@@ -133,7 +144,7 @@ export const api = {
       const { data } = await client.get(path);
       return { data: data.data as T, pagination: data.pagination };
     } catch (error) {
-      throw new ApiError(axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500, errorMessage(error));
+      throw toApiError(error);
     }
   },
 };

@@ -13,3 +13,18 @@ export interface RecentlyViewedRecord {
   photo_url: string | null;
   photo_is_blurred: boolean;
 }
+
+// One row from GET /members/me/profile-views/visitors — "Who Viewed Me,"
+// gated behind canSeeWhoViewedMe. Grouped by visitor, so no row id.
+export interface ProfileVisitorRecord {
+  viewed_at: string;
+  member_id: number;
+  member_code: string;
+  first_name: string;
+  last_name: string;
+  gender: "Male" | "Female" | string;
+  district_name: string | null;
+  state_name: string | null;
+  photo_url: string | null;
+  photo_is_blurred: boolean;
+}

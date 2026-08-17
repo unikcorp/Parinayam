@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Loader2, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Copy, Loader2, Lock, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { VariantProps } from "class-variance-authority";
 import type { buttonVariants } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
+import { useMembership } from "@/features/membership/use-membership";
 
 interface ContactResponse {
   mobileCountryCode: string;
@@ -25,10 +27,21 @@ interface ContactButtonProps {
 }
 
 export function ContactButton({ memberId, size = "cta", variant = "gold", iconOnly, className }: ContactButtonProps) {
+  const router = useRouter();
+  const { isLoading: membershipLoading, canViewContact } = useMembership();
   const [contact, setContact] = useState<ContactResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Free (contactViews limit 0) — never even attempt the call, send them
+  // straight to upgrade instead of a doomed request the backend would 403.
+  const locked = !membershipLoading && !canViewContact;
+
   async function reveal() {
+    if (locked) {
+      router.push("/plans");
+      return;
+    }
+
     if (contact) {
       if (iconOnly) {
         window.location.href = `tel:${contact.mobileCountryCode}${contact.mobile}`;
@@ -67,12 +80,14 @@ export function ContactButton({ memberId, size = "cta", variant = "gold", iconOn
     >
       {loading ? (
         <Loader2 className="size-4 animate-spin" />
+      ) : locked ? (
+        <Lock className={iconOnly ? "size-4.5" : "size-4"} />
       ) : contact && !iconOnly ? (
         <Copy className="size-4" />
       ) : (
         <Phone className={iconOnly ? "size-4.5" : "size-4"} />
       )}
-      {!iconOnly && (contact ? `${contact.mobileCountryCode} ${contact.mobile}` : "View Contact")}
+      {!iconOnly && (locked ? "Upgrade to View" : contact ? `${contact.mobileCountryCode} ${contact.mobile}` : "View Contact")}
     </Button>
   );
 
@@ -81,7 +96,7 @@ export function ContactButton({ memberId, size = "cta", variant = "gold", iconOn
   return (
     <Tooltip>
       <TooltipTrigger render={button} />
-      <TooltipContent>View Contact</TooltipContent>
+      <TooltipContent>{locked ? "Upgrade to view contact" : "View Contact"}</TooltipContent>
     </Tooltip>
   );
 }

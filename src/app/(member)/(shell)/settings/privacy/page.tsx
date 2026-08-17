@@ -11,6 +11,13 @@ const VISIBILITY_OPTIONS: { value: ContentVisibility; label: string }[] = [
   { value: "INTEREST_ACCEPTED", label: "Only Interest Accepted Members" },
 ];
 
+// base-ui's <Select.Value> shows the raw value string unless told how to
+// map it to a label — every other Select in this app just happens to have
+// value === label (e.g. "Hindu"), so this was never needed until now.
+function visibilityLabel(value: ContentVisibility): string {
+  return VISIBILITY_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}
+
 export default function PrivacySettingsPage() {
   const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdatePrivacyPreferences();
@@ -110,7 +117,7 @@ export default function PrivacySettingsPage() {
             }}
           >
             <SelectTrigger className="w-56">
-              <SelectValue />
+              <SelectValue>{(v: ContentVisibility) => visibilityLabel(v)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {VISIBILITY_OPTIONS.map((o) => (
@@ -136,7 +143,7 @@ export default function PrivacySettingsPage() {
             }}
           >
             <SelectTrigger className="w-56">
-              <SelectValue />
+              <SelectValue>{(v: ContentVisibility) => visibilityLabel(v)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {VISIBILITY_OPTIONS.map((o) => (
