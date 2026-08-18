@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { SimpleHeader } from "@/components/layout/simple-header";
-import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -12,15 +11,9 @@ export const metadata = buildMetadata({
 export default function PlansLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface">
-      <SimpleHeader
-        mobileTitle="Membership"
-        right={
-          <Button variant="outline" size="sm" className="hidden lg:inline-flex" render={<Link href="/dashboard" />}>
-            Back to dashboard
-          </Button>
-        }
-      />
+      <SiteHeader />
       <main className="flex-1">{children}</main>
+      <SiteFooter />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Heart, Lock, Check, ChevronDown, Apple } from "lucide-react";
+import { Heart, Lock, Check, ChevronDown, Apple, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -159,12 +159,22 @@ export default function LoginPage() {
         <div className="absolute -top-30 -right-30 size-95 rounded-full bg-white/5" />
         <div className="absolute -bottom-40 -left-25 size-105 rounded-full bg-gold-light/8" />
 
-        <Link href="/" className="relative flex items-center gap-2.5 lg:mb-0">
-          <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10">
-            {brand.logoLetter}
-          </span>
-          <span className="text-lg font-extrabold">{brand.name}</span>
-        </Link>
+        <div className="relative flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10">
+              {brand.logoLetter}
+            </span>
+            <span className="text-lg font-extrabold">{brand.name}</span>
+          </Link>
+
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-2 text-[13px] font-semibold text-white/85 backdrop-blur-sm transition-colors hover:bg-white/18 hover:text-white"
+          >
+            <ArrowLeft className="size-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+            <span className="hidden sm:inline">Back to home</span>
+          </Link>
+        </div>
 
         <div className="relative mt-8 lg:mt-0 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
           <div className="relative mx-auto mb-8 w-full max-w-[400px]">

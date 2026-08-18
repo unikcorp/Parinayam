@@ -1,5 +1,7 @@
 import { buildMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/shared/json-ld";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { faqs } from "@/data/faqs.data";
 
 export const metadata = buildMetadata({
@@ -20,9 +22,11 @@ const faqJsonLd = {
 
 export default function HelpLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-full flex-1 flex-col">
       <JsonLd data={faqJsonLd} />
-      {children}
-    </>
+      <SiteHeader />
+      <main className="flex-1">{children}</main>
+      <SiteFooter />
+    </div>
   );
 }

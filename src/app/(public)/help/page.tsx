@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { MessageCircle, Phone, Mail, Search } from "lucide-react";
-import { SimpleHeader } from "@/components/layout/simple-header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -34,15 +32,6 @@ export default function HelpCenterPage() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface">
-      <SimpleHeader
-        mobileTitle="Help Center"
-        right={
-          <Button variant="outline" size="sm" className="hidden lg:inline-flex" render={<Link href="/dashboard" />}>
-            Back to dashboard
-          </Button>
-        }
-      />
-
       <section className="bg-dark-panel-gradient px-5 py-10 text-center text-white lg:px-12 lg:py-14">
         <h1 className="mb-2.5 text-2xl font-extrabold tracking-[-0.01em] lg:text-4xl">
           How can we help?

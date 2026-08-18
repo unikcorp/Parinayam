@@ -17,16 +17,20 @@ export interface SearchResult {
   match: number | null;
 }
 
-// Still used by the homepage's separate "Featured profiles" carousel
-// (unrelated to /search) — kept here since that section is still mock data.
+// Homepage "Featured profiles" section — admin-picked real members, served
+// by GET /api/site-settings/featured-members (see FeaturedProfiles admin
+// page). Shape mirrors SearchResult so the same ProfileCard mapping works.
 export interface FeaturedProfile {
+  id: number;
+  memberCode: string;
   name: string;
   age: number;
-  job: string;
+  gender: "Male" | "Female" | string;
+  occupation: string | null;
   place: string;
-  match: number;
-  premium?: boolean;
-  online?: boolean;
+  photoUrl: string | null;
+  isPremium: boolean;
+  verified: boolean;
 }
 
 export interface SearchFilters {

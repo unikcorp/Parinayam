@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Search } from "lucide-react";
-import { SimpleHeader } from "@/components/layout/simple-header";
 import { Button } from "@/components/ui/button";
 import { ImageSlot } from "@/components/shared/image-slot";
 import {
@@ -33,15 +31,6 @@ export default function SuccessStoriesPage() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface-cream">
-      <SimpleHeader
-        mobileTitle="Stories"
-        right={
-          <Button size="sm" render={<Link href="/register" />}>
-            Share your story
-          </Button>
-        }
-      />
-
       <section className="px-5 pt-9 pb-6 text-center lg:px-12 lg:pt-13 lg:pb-9">
         <div className="mb-2.5 text-xs font-bold tracking-[0.12em] text-gold uppercase lg:mb-3 lg:text-[13px]">
           Success stories

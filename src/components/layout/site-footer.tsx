@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { brand } from "@/data/brand";
 
+// Mirrors the header nav (site-header.tsx) so the same destinations are
+// reachable from the top and bottom of every page.
 const columns = [
   {
     title: "Discover",
     links: [
-      { label: "Search Profiles", href: "/search" },
+      { label: "Home", href: "/" },
       { label: "Success Stories", href: "/stories" },
-      { label: "Membership Plans", href: "/plans" },
+      { label: "Plans", href: "/plans" },
       { label: "Blog", href: "/blog" },
+      { label: "Help", href: "/help" },
     ],
   },
   {
@@ -74,7 +77,10 @@ export function SiteFooter() {
       </div>
       <div className="flex flex-col gap-2 pt-6 text-xs text-white/50 lg:flex-row lg:items-center lg:justify-between">
         <span>© 2026 {brand.name} Matrimony. All rights reserved.</span>
-        <span>Made with care in Kerala 🌴</span>
+        <span>
+          Made with care in Kerala 🌴 · Developed by{" "}
+          <span className="font-semibold text-white/70">Unik Corp</span>
+        </span>
       </div>
     </footer>
   );

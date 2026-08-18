@@ -38,10 +38,15 @@ export function MemberProfilePhoto({
   }
 
   if (approvalStatus === "APPROVED" && isBlurred) {
+    // Restricted — photoUrl here is a presigned URL to a blurred copy of
+    // the member's real photo (blur baked into the pixels server-side, see
+    // getRestrictedPhotoUrl on the backend), never a live CSS filter over a
+    // sharp source. Opening this URL directly — inspect, network tab,
+    // copy-paste — still only ever shows a blurred image.
     return (
       <div className={cn("relative overflow-hidden", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoUrl} alt={alt} className="size-full object-cover blur-md scale-110" />
+        <img src={photoUrl} alt={alt} className="size-full object-cover" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/35 p-1 text-center">
           <Lock className="size-4 text-white" />
           {showMessage && <span className="text-[10px] leading-tight font-extrabold text-white">Restricted</span>}

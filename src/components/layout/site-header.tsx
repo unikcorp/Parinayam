@@ -1,13 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { brand } from "@/data/brand";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { label: "Search", href: "/search" },
+  { label: "Home", href: "/" },
   { label: "Success Stories", href: "/stories" },
   { label: "Plans", href: "/plans" },
   { label: "Blog", href: "/blog" },
@@ -15,8 +17,22 @@ const navLinks = [
 ];
 
 export function SiteHeader() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-card-border bg-card px-5 py-4 lg:px-18 lg:py-5">
+    <header
+      className={cn(
+        "supports-backdrop-filter:bg-card/80 sticky top-0 z-30 flex items-center justify-between border-b bg-card px-5 py-4 backdrop-blur-md transition-shadow duration-300 lg:px-18 lg:py-5",
+        scrolled ? "border-card-border shadow-[0_8px_24px_rgba(127,29,29,0.06)]" : "border-transparent"
+      )}
+    >
       <Link href="/" className="flex items-center gap-2.5 lg:gap-3">
         <span className="bg-dark-panel-gradient flex size-8.5 items-center justify-center rounded-[10px] text-base font-extrabold text-gold-light lg:size-10 lg:rounded-xl lg:text-xl">
           {brand.logoLetter}
