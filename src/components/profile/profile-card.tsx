@@ -22,6 +22,8 @@ export interface ProfileCardProps {
   matchPercent?: number;
   /** Real member id — when present the Interest/Shortlist buttons actually work. Omit for demo/marketing cards. */
   memberId?: number;
+  /** Marketing/logged-out context (e.g. landing page) — the photo, Interest and Shortlist all send the visitor to /login instead of acting for real. Takes priority over memberId. */
+  teaser?: boolean;
   className?: string;
   photoClassName?: string;
 }
@@ -39,6 +41,7 @@ export function ProfileCard({
   online,
   matchPercent,
   memberId,
+  teaser,
   className,
   photoClassName,
 }: ProfileCardProps) {
@@ -51,7 +54,7 @@ export function ProfileCard({
     >
       <PremiumBadge isPremium={!!premium} className="animate-pop absolute top-3 left-3 z-10" />
 
-      <CardLink memberId={memberId}>
+      <CardLink memberId={memberId} teaser={teaser}>
         <div
           className={cn(
             "relative h-[210px] w-full shrink-0 overflow-hidden",
@@ -99,14 +102,27 @@ export function ProfileCard({
 
       <div className="flex flex-col gap-3.5 px-4.5 pt-3.5 pb-4.5">
         <div className="flex gap-2">
-          {memberId != null ? (
+          {teaser ? (
+            <Button className="flex-1" size="sm" render={<Link href="/login" />}>
+              <Heart className="size-3.5" /> Interest
+            </Button>
+          ) : memberId != null ? (
             <InterestButton memberId={memberId} className="flex-1" />
           ) : (
             <Button className="flex-1" size="sm" disabled>
               <Heart className="size-3.5" /> Interest
             </Button>
           )}
-          {memberId != null ? (
+          {teaser ? (
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="Log in to shortlist"
+              render={<Link href="/login" />}
+            >
+              <Star className="size-4" />
+            </Button>
+          ) : memberId != null ? (
             <ShortlistButton memberId={memberId} />
           ) : (
             <Button variant="outline" size="icon-sm" aria-label="Shortlist" disabled>
@@ -121,11 +137,20 @@ export function ProfileCard({
 
 function CardLink({
   memberId,
+  teaser,
   children,
 }: {
   memberId?: number;
+  teaser?: boolean;
   children: ReactNode;
 }) {
+  if (teaser) {
+    return (
+      <Link href="/login" className="contents">
+        {children}
+      </Link>
+    );
+  }
   if (memberId == null) return <>{children}</>;
   return (
     <Link href={`/profile/${memberId}`} className="contents">

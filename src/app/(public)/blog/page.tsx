@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
-import { SimpleHeader } from "@/components/layout/simple-header";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { FilterChip } from "@/components/shared/filter-chip";
 import { blogCategories, blogPosts, sideBlogPosts } from "@/data/blog-posts.data";
@@ -14,15 +12,6 @@ export default function BlogPage() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-card">
-      <SimpleHeader
-        mobileTitle="Blog"
-        right={
-          <div className="hidden w-75 items-center gap-2.5 rounded-xl border border-input bg-surface px-4 py-2.75 text-[13.5px] text-faint lg:flex">
-            <Search className="size-4" /> Search articles…
-          </div>
-        }
-      />
-
       <div className="mx-auto w-full max-w-290 px-5 pt-8 pb-12 lg:px-6 lg:pt-11">
         <div className="mb-2 text-xs font-bold tracking-[0.12em] text-gold uppercase lg:mb-3 lg:text-[13px]">
           The {`Parinayam`} Blog
