@@ -131,7 +131,16 @@ function MobileField() {
   );
 }
 
-export function AccountInfoStep({ lookups }: { lookups: RegistrationLookups }) {
+export function AccountInfoStep({
+  lookups,
+  hideContactAndLogin,
+}: {
+  lookups: RegistrationLookups;
+  // /profile/edit reuses this step for name/DOB/gender/religion, but mobile
+  // number, email, and password change through OTP re-verification and
+  // Settings → Security instead — not through this wizard.
+  hideContactAndLogin?: boolean;
+}) {
   return (
     <div className="flex flex-col gap-7">
       <FieldGroup title="">
@@ -150,25 +159,27 @@ export function AccountInfoStep({ lookups }: { lookups: RegistrationLookups }) {
         </div>
       </FieldGroup>
 
-      <FieldGroup title="Contact & login">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <MobileField />
-          <TextField<RegistrationFormValues>
-            name="email"
-            label="Email"
-            required
-            type="email"
-            placeholder="you@example.com"
-          />
-          <PasswordField<RegistrationFormValues>
-            name="password"
-            label="Password"
-            required
-            placeholder="At least 8 characters"
-          />
-          <PasswordField<RegistrationFormValues> name="confirmPassword" label="Confirm password" required />
-        </div>
-      </FieldGroup>
+      {!hideContactAndLogin && (
+        <FieldGroup title="Contact & login">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <MobileField />
+            <TextField<RegistrationFormValues>
+              name="email"
+              label="Email"
+              required
+              type="email"
+              placeholder="you@example.com"
+            />
+            <PasswordField<RegistrationFormValues>
+              name="password"
+              label="Password"
+              required
+              placeholder="At least 8 characters"
+            />
+            <PasswordField<RegistrationFormValues> name="confirmPassword" label="Confirm password" required />
+          </div>
+        </FieldGroup>
+      )}
 
       <FieldGroup title="Religion & marital status">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

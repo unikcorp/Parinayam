@@ -8,6 +8,7 @@ import { registrationSteps } from "@/data/registration/types";
 import { useRegistrationForm } from "@/features/registration-wizard/hooks/use-registration-form";
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import {
+  updateAccountInfoRequest,
   updatePersonalDetailsRequest,
   updateLocationRequest,
   updateEducationRequest,
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import type { MemberProfileResponse } from "@/types/member-profile";
 import type { RegistrationFormValues } from "@/features/registration-wizard/schema";
 
+import { AccountInfoStep } from "@/features/registration-wizard/components/account-info";
 import { PersonalStep } from "@/features/registration-wizard/components/personal";
 import { EducationStep } from "@/features/registration-wizard/components/education";
 import { FamilyStep } from "@/features/registration-wizard/components/family";
@@ -33,9 +35,12 @@ import { PhotosStep } from "@/features/registration-wizard/components/photos";
 import { VerificationStep } from "@/features/registration-wizard/components/verification";
 import { ReviewStep } from "@/features/registration-wizard/components/review";
 
-// The 9 sections this wizard variant covers — Account Info and the OTP gate
-// are registration-only, so editing starts straight at Personal Details.
+// The OTP gate is registration-only, but Account Info itself (name, DOB,
+// gender, religion, marital status) is editable here too — mobile/email/
+// password are left out of this step (see AccountInfoStep's
+// hideContactAndLogin), those go through Settings → Security instead.
 const stepHeadings = [
+  "Account info",
   "Tell us about yourself",
   "Your education & career",
   "Tell us about your family",
@@ -47,6 +52,7 @@ const stepHeadings = [
   "Review your profile",
 ];
 const stepSubheadings = [
+  "Update your name, date of birth, gender, religion, and marital status.",
   "Update the basics of your profile. Fields marked * are required.",
   "Helps us find matches with compatible career goals.",
   "Family plays a big role in Kerala matchmaking traditions.",
@@ -58,12 +64,33 @@ const stepSubheadings = [
   "One final look before saving your changes.",
 ];
 
+const DOB_MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function parseDob(dob: string): { dobDay: string; dobMonth: string; dobYear: string } {
+  const date = new Date(dob.includes("T") ? dob : `${dob}T00:00:00`);
+  return {
+    dobDay: String(date.getDate()),
+    dobMonth: DOB_MONTH_NAMES[date.getMonth()],
+    dobYear: String(date.getFullYear()),
+  };
+}
+
 function mapProfileToFormValues(data: MemberProfileResponse): Partial<RegistrationFormValues> {
   const { member, horoscope, partnerPreference } = data;
+  const { dobDay, dobMonth, dobYear } = parseDob(member.dob);
   return {
+    profileCreatedBy: member.profile_created_by,
     firstName: member.first_name,
     lastName: member.last_name,
     gender: member.gender === "Female" ? "female" : "male",
+    dobDay,
+    dobMonth,
+    dobYear,
+    mobileCountryCode: member.mobile_country_code,
+    mobileNumber: member.mobile,
     religion: member.religion_name ?? "",
     maritalStatus: member.marital_status ?? "",
 
@@ -125,6 +152,7 @@ function errorMessage(error: unknown, fallback: string): string {
 // Mirrors stepHeadings above — lets links like /profile/edit?step=photos
 // jump straight to a section instead of always starting at step 0.
 const editStepKeys = [
+  "account",
   "personal",
   "education",
   "family",
@@ -138,16 +166,17 @@ const editStepKeys = [
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  // Not lastStep/goNext from the hook — those are indexed against the
-  // 10-step register wizard (which includes Account Info); this edit-only
-  // wizard has its own 9-step array (stepHeadings/editStepKeys) shifted
-  // down by one, so reusing them pointed goNext's internal re-validation at
-  // the wrong fields and made "Save & Continue" silently do nothing once a
-  // member actually walked through more than one step.
+  // Not lastStep/goNext from the hook — those were indexed against the
+  // 10-step register wizard's own field arrays, and calling goNext() here
+  // re-triggered its (differently-scoped) validation, silently doing
+  // nothing on "Save & Continue" once a member walked past step 1.
   const { form, step, setStep, goBack } = useRegistrationForm();
   const isLastStep = step === stepHeadings.length - 1;
   const lookups = useRegistrationLookups();
   const [memberId, setMemberId] = useState<number | null>(null);
+  const [accountStatus, setAccountStatus] = useState<
+    "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL"
+  >("ACTIVE");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -191,6 +220,7 @@ export default function ProfileEditPage() {
         const data = await api.get<MemberProfileResponse>("/api/members/me");
         if (cancelled) return;
         setMemberId(data.member.id);
+        setAccountStatus(data.member.account_status);
         form.reset(mapProfileToFormValues(data), { keepDefaultValues: true });
         void refreshCompletion(data.member.id);
       } catch (error) {
@@ -208,30 +238,33 @@ export default function ProfileEditPage() {
   const stepEstimate = Math.round(((step + 1) / stepHeadings.length) * 100);
   const percent = realCompletion ?? stepEstimate;
 
-  // Photos (5) & Verification (6) upload as the member picks files — nothing
-  // left to save on Continue for those. Review (7) has no fields of its own.
+  // Photos (6) & Verification (7) upload as the member picks files — nothing
+  // left to save on Continue for those. Review (8) has no fields of its own.
   async function saveCurrentStep() {
     if (memberId == null) return;
     const values = form.getValues();
 
     switch (step) {
       case 0:
+        await updateAccountInfoRequest(memberId, values, lookups, accountStatus);
+        break;
+      case 1:
         await updatePersonalDetailsRequest(memberId, values, lookups);
         await updateLocationRequest(memberId, values, lookups);
         break;
-      case 1:
+      case 2:
         await updateEducationRequest(memberId, values, lookups);
         break;
-      case 2:
+      case 3:
         await updateFamilyRequest(memberId, values);
         break;
-      case 3:
+      case 4:
         await updatePersonalDetailsRequest(memberId, values, lookups);
         break;
-      case 4:
+      case 5:
         await updateAboutRequest(memberId, values);
         break;
-      case 5:
+      case 6:
         await updatePartnerPreferenceRequest(memberId, values, lookups);
         break;
       default:
@@ -280,8 +313,21 @@ export default function ProfileEditPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function saveAndExit() {
-    router.push("/profile/me");
+  async function saveAndExit() {
+    if (memberId == null) {
+      router.push("/");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await saveCurrentStep();
+    } catch {
+      // Best-effort — still let them exit even if this save failed; their
+      // progress up to the previous step is already persisted regardless.
+    } finally {
+      setIsSaving(false);
+    }
+    router.push("/");
   }
 
   if (isLoadingProfile || lookups.isLoading) {
@@ -306,23 +352,15 @@ export default function ProfileEditPage() {
   return (
     <FormProvider {...form}>
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
-        {/* Both sidebars render the full 10-step registration list (incl.
-            Account Info, not part of this edit-only wizard), so indices are
-            shifted by 1 to line up — see registrationFieldsForStep's comment. */}
-        <StepperSidebar activeIndex={step + 1} onStepClick={(i) => i > 0 && setStep(i - 1)} onExit={saveAndExit} />
+        <StepperSidebar activeIndex={step} onStepClick={setStep} onExit={saveAndExit} />
 
         <div className="flex flex-1 flex-col">
-          <MobileStepHeader
-            activeIndex={step + 1}
-            onStepClick={(i) => i > 0 && setStep(i - 1)}
-            onExit={saveAndExit}
-            percent={percent}
-          />
+          <MobileStepHeader activeIndex={step} onStepClick={setStep} onExit={saveAndExit} percent={percent} />
 
           <main className="flex-1 px-5 py-6 pb-28 lg:max-w-215 lg:px-18 lg:py-11 lg:pb-14">
             <div className="mb-2.5 hidden items-center justify-between lg:flex">
               <span className="text-[13px] font-bold tracking-wide text-faint uppercase">
-                Step {step + 1} of {stepHeadings.length} · {registrationSteps[step + 1]?.title}
+                Step {step + 1} of {stepHeadings.length} · {registrationSteps[step]?.title}
               </span>
               <span className={cn("text-[13px] font-bold", percent >= 60 ? "text-success" : "text-gold-text")}>
                 {percent}% complete
@@ -357,15 +395,16 @@ export default function ProfileEditPage() {
             )}
 
             <div className="rounded-2xl border border-card-border bg-card p-5 shadow-[0_8px_30px_rgba(127,29,29,0.05)] lg:rounded-[20px] lg:p-10">
-              {step === 0 && <PersonalStep lookups={lookups} />}
-              {step === 1 && <EducationStep lookups={lookups} />}
-              {step === 2 && <FamilyStep />}
-              {step === 3 && <HoroscopeStep lookups={lookups} />}
-              {step === 4 && <AboutStep />}
-              {step === 5 && <PreferencesStep lookups={lookups} />}
-              {step === 6 && <PhotosStep memberId={memberId} />}
-              {step === 7 && <VerificationStep memberId={memberId} />}
-              {step === 8 && <ReviewStep onEditStep={setStep} memberId={memberId} />}
+              {step === 0 && <AccountInfoStep lookups={lookups} hideContactAndLogin />}
+              {step === 1 && <PersonalStep lookups={lookups} />}
+              {step === 2 && <EducationStep lookups={lookups} />}
+              {step === 3 && <FamilyStep />}
+              {step === 4 && <HoroscopeStep lookups={lookups} />}
+              {step === 5 && <AboutStep />}
+              {step === 6 && <PreferencesStep lookups={lookups} />}
+              {step === 7 && <PhotosStep memberId={memberId} />}
+              {step === 8 && <VerificationStep memberId={memberId} />}
+              {step === 9 && <ReviewStep onEditStep={setStep} memberId={memberId} />}
             </div>
 
             {isLastStep && percent < 60 && (
@@ -375,10 +414,7 @@ export default function ProfileEditPage() {
             )}
 
             {/* desktop nav */}
-            <div className="mt-7 hidden items-center justify-between lg:flex">
-              <button type="button" onClick={saveAndExit} className="text-[15px] font-bold text-faint">
-                Save &amp; exit
-              </button>
+            <div className="mt-7 hidden items-center justify-end lg:flex">
               <div className="flex gap-3">
                 {step > 0 && (
                   <Button variant="outline" size="cta" onClick={handleBack} disabled={isSaving}>
@@ -409,10 +445,12 @@ export default function ProfileEditPage() {
   );
 }
 
-// Subset of registrationFieldsByStep that applies here — Account Info (step
-// 0 there) doesn't exist in this wizard, so everything shifts down by one.
+// Subset of registrationFieldsByStep that applies here — mobileNumber/email/
+// password/confirmPassword are left out of step 0 since AccountInfoStep
+// hides that group in edit mode (see hideContactAndLogin).
 function registrationFieldsForStep(step: number): (keyof RegistrationFormValues)[] {
   const map: (keyof RegistrationFormValues)[][] = [
+    ["profileCreatedBy", "firstName", "lastName", "gender", "dobDay", "dobMonth", "dobYear", "religion", "maritalStatus"],
     [
       "height", "weight", "bodyType", "complexion", "physicalStatus", "bloodGroup",
       "motherTongue", "caste", "diet", "smokingHabits", "drinkingHabits",

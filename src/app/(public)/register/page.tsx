@@ -20,6 +20,7 @@ import {
   submitMemberRequest,
 } from "@/features/registration-wizard/api";
 import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
@@ -49,6 +50,7 @@ function errorMessage(error: unknown, fallback: string): string {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
   const lookups = useRegistrationLookups();
   const [showOtp, setShowOtp] = useState(false);
@@ -82,8 +84,25 @@ export default function RegisterPage() {
     setApiError(null);
     setIsSaving(true);
     try {
-      const result = await registerSelfRequest(form.getValues(), lookups);
+      const values = form.getValues();
+      const result = await registerSelfRequest(values, lookups);
       setMemberId(result.memberId);
+      // registerSelfRequest already swaps the access token in, but the
+      // session's user object (name shown in the header, etc.) only lives in
+      // AuthContext — without this, it keeps showing whoever was logged in
+      // here before (or "Guest"), correcting itself only on a full reload
+      // that re-fetches /api/members/me from scratch.
+      login(
+        {
+          id: String(result.memberId),
+          name: `${values.firstName} ${values.lastName}`.trim(),
+          email: values.email,
+          avatarInitials: `${values.firstName[0] ?? ""}${values.lastName[0] ?? ""}`.toUpperCase(),
+          premium: false,
+          memberCode: null,
+        },
+        result.accessToken,
+      );
       setShowOtp(true);
       await refreshCompletion(result.memberId);
     } catch (error) {
@@ -327,10 +346,7 @@ export default function RegisterPage() {
                   </div>
                 )}
                 {/* desktop nav */}
-                <div className="mt-7 hidden items-center justify-between lg:flex">
-                  <button type="button" onClick={saveAndExit} className="text-[15px] font-bold text-faint">
-                    Save &amp; exit
-                  </button>
+                <div className="mt-7 hidden items-center justify-end lg:flex">
                   <div className="flex gap-3">
                     {step > 0 && (
                       <Button variant="outline" size="cta" onClick={handleBack} disabled={isSaving}>

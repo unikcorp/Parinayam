@@ -54,6 +54,33 @@ export async function registerSelfRequest(
   return result;
 }
 
+// ---------- Editing Account Info after the account already exists (from
+// /profile/edit, not registration) — same PUT /:id/basic the admin panel's
+// Edit Member form uses. No password/email here (those live in Settings →
+// Security), so mobileCountryCode/mobileNumber/accountStatus are resent
+// unchanged rather than left for the caller to omit and risk clearing. ----------
+export async function updateAccountInfoRequest(
+  memberId: number,
+  values: RegistrationFormValues,
+  lookups: RegistrationLookups,
+  currentAccountStatus: "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL",
+) {
+  await api.put(`/api/members/${memberId}/basic`, {
+    profileCreatedBy: values.profileCreatedBy,
+    accountStatus: currentAccountStatus,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    gender: toServerGender(values.gender),
+    dobDay: Number(values.dobDay),
+    dobMonth: toMonthNumber(values.dobMonth),
+    dobYear: Number(values.dobYear),
+    mobileCountryCode: values.mobileCountryCode,
+    mobileNumber: values.mobileNumber,
+    religion: values.religion ? lookups.resolveReligionId(values.religion) : null,
+    maritalStatus: values.maritalStatus || null,
+  });
+}
+
 // ---------- Step 2 — Personal details (+ embedded horoscope) ----------
 export function buildPersonalDetailsPayload(values: RegistrationFormValues, lookups: RegistrationLookups) {
   return {

@@ -43,6 +43,37 @@ export function useUpdateAccountStatus() {
   });
 }
 
+export interface UpdateBasicDetailsPayload {
+  firstName: string;
+  lastName: string;
+  gender: "Male" | "Female";
+  dobDay: number;
+  dobMonth: number;
+  dobYear: number;
+  religion: number | null;
+}
+
+// Name/DOB/gender/religion live on the same "Basic Information" record the
+// registration wizard's Account Info step writes to — that step is
+// registration-only (no equivalent in /profile/edit), so this is the one
+// place a member can change them afterward. The backend's PUT /:id/basic
+// replaces the whole record, so profileCreatedBy/accountStatus/mobile are
+// resent unchanged from the current profile rather than left for the
+// caller to guess at.
+export function useUpdateBasicDetails(memberId: number | null) {
+  const invalidate = useInvalidateProfile();
+  return useMutation({
+    mutationFn: (dto: UpdateBasicDetailsPayload & {
+      profileCreatedBy: string;
+      accountStatus: "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL";
+      mobileCountryCode: string;
+      mobileNumber: string;
+      maritalStatus: string | null;
+    }) => api.put(`/api/members/${memberId}/basic`, dto),
+    onSuccess: invalidate,
+  });
+}
+
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: (password: string) => api.post("/api/members/me/delete", { password }),
