@@ -164,6 +164,8 @@ const editStepKeys = [
   "review",
 ] as const;
 
+const REVIEW_STEP_INDEX = stepHeadings.length - 1;
+
 export default function ProfileEditPage() {
   const router = useRouter();
   // Not lastStep/goNext from the hook — those were indexed against the
@@ -171,7 +173,7 @@ export default function ProfileEditPage() {
   // re-triggered its (differently-scoped) validation, silently doing
   // nothing on "Save & Continue" once a member walked past step 1.
   const { form, step, setStep, goBack } = useRegistrationForm();
-  const isLastStep = step === stepHeadings.length - 1;
+  const isLastStep = step === REVIEW_STEP_INDEX;
   const lookups = useRegistrationLookups();
   const [memberId, setMemberId] = useState<number | null>(null);
   const [accountStatus, setAccountStatus] = useState<
@@ -181,14 +183,14 @@ export default function ProfileEditPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  // True when we arrived via a single-section "Edit" link from My Profile or
-  // the dashboard's quick actions (e.g. /profile/edit?step=education) rather
-  // than the full wizard — in that case Save should return to My Profile
-  // instead of advancing steps. Explicitly false for the "resume" case
-  // (redirected here for having an incomplete required profile) — that
-  // needs the normal Save & Continue flow through every remaining step, not
-  // a save-and-exit after just one.
-  const [isSingleSectionEdit, setIsSingleSectionEdit] = useState(false);
+  // Editing an already-complete profile uses the Review "hub" — pick a
+  // section, save, land back on Review to pick another, mirroring admin's
+  // Edit Member flow. The "resume" case (redirected here for having an
+  // incomplete required profile) is the one exception — that needs the
+  // normal linear Save & Continue through every remaining step instead,
+  // since there's no finished profile yet to revisit section by section.
+  const [isResume, setIsResume] = useState(false);
+  const hubMode = !isResume;
   const [realCompletion, setRealCompletion] = useState<number | null>(null);
 
   async function refreshCompletion(id: number) {
@@ -203,11 +205,16 @@ export default function ProfileEditPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedStep = params.get("step");
-    const isResume = params.get("resume") === "1";
+    const resume = params.get("resume") === "1";
+    setIsResume(resume);
+
     const index = editStepKeys.indexOf(requestedStep as (typeof editStepKeys)[number]);
     if (index !== -1) {
       setStep(index);
-      setIsSingleSectionEdit(!isResume);
+    } else if (!resume) {
+      // Plain "Edit Profile" click, no section requested — land on the
+      // Review hub so the member picks which section to revisit.
+      setStep(REVIEW_STEP_INDEX);
     }
     // Only read the deep link once, on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,9 +286,16 @@ export default function ProfileEditPage() {
     }
 
     if (isLastStep) {
-      // /dashboard, not /profile/me — RequireCompleteProfile (the (shell)
-      // gate) re-checks fresh and routes on to /plans if a plan still
-      // hasn't been chosen, same as straight after registration.
+      if (hubMode) {
+        // Editing an already-complete profile — every section already saved
+        // itself as it was visited, Review is just the hub, not a submit.
+        router.push("/profile/me");
+        return;
+      }
+      // Resume flow reaching Review — /dashboard, not /profile/me, so
+      // RequireCompleteProfile (the (shell) gate) re-checks fresh and routes
+      // on to /plans if a plan still hasn't been chosen, same as straight
+      // after registration.
       router.push("/dashboard");
       return;
     }
@@ -295,11 +309,9 @@ export default function ProfileEditPage() {
     try {
       await saveCurrentStep();
       await refreshCompletion(memberId);
-      if (isSingleSectionEdit) {
-        router.push("/profile/me");
-        return;
-      }
-      setStep((s) => Math.min(s + 1, stepHeadings.length - 1));
+      // In hub mode, every section is reached from — and saves back to —
+      // the Review hub, rather than advancing linearly through the wizard.
+      setStep(hubMode ? REVIEW_STEP_INDEX : (s) => Math.min(s + 1, stepHeadings.length - 1));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setApiError(errorMessage(error, "Something went wrong while saving. Please try again."));
@@ -309,13 +321,20 @@ export default function ProfileEditPage() {
   }
 
   function handleBack() {
-    goBack();
+    // In hub mode, "Back" from any individual section returns to the
+    // Review hub it was opened from, rather than the previous step in
+    // sequence.
+    if (hubMode) {
+      setStep(REVIEW_STEP_INDEX);
+    } else {
+      goBack();
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function saveAndExit() {
     if (memberId == null) {
-      router.push("/");
+      router.push(hubMode ? "/profile/me" : "/");
       return;
     }
     setIsSaving(true);
@@ -327,8 +346,19 @@ export default function ProfileEditPage() {
     } finally {
       setIsSaving(false);
     }
-    router.push("/");
+    router.push(hubMode ? "/profile/me" : "/");
   }
+
+  // In hub mode, Back only makes sense from within a section (it returns to
+  // Review); the Review step itself has nothing to go "back" to.
+  const showBackButton = hubMode ? !isLastStep : step > 0;
+  const nextButtonLabel = isLastStep
+    ? hubMode
+      ? "Done"
+      : "Continue"
+    : hubMode
+      ? "Save & Back to Review"
+      : "Save & Continue";
 
   if (isLoadingProfile || lookups.isLoading) {
     return (
@@ -407,7 +437,7 @@ export default function ProfileEditPage() {
               {step === 9 && <ReviewStep onEditStep={setStep} memberId={memberId} />}
             </div>
 
-            {isLastStep && percent < 60 && (
+            {isLastStep && !hubMode && percent < 60 && (
               <div className="mt-7 rounded-xl border border-gold/30 bg-peach-bg px-4 py-3 text-[13px] font-semibold text-primary-deep">
                 To enter the dashboard, your profile progress needs to be 60% or above.
               </div>
@@ -416,13 +446,13 @@ export default function ProfileEditPage() {
             {/* desktop nav */}
             <div className="mt-7 hidden items-center justify-end lg:flex">
               <div className="flex gap-3">
-                {step > 0 && (
+                {showBackButton && (
                   <Button variant="outline" size="cta" onClick={handleBack} disabled={isSaving}>
-                    ← Back
+                    ← {hubMode ? "Back to Review" : "Back"}
                   </Button>
                 )}
                 <Button size="cta" onClick={handleNext} disabled={isSaving}>
-                  {isLastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
+                  {nextButtonLabel}
                 </Button>
               </div>
             </div>
@@ -430,13 +460,13 @@ export default function ProfileEditPage() {
 
           {/* mobile sticky nav */}
           <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-card-border bg-card/95 px-5 py-3.5 pb-5 backdrop-blur-md lg:hidden">
-            {step > 0 && (
+            {showBackButton && (
               <Button variant="outline" size="cta" onClick={handleBack} disabled={isSaving}>
-                Back
+                {hubMode ? "Back to Review" : "Back"}
               </Button>
             )}
             <Button size="cta" className="flex-1" onClick={handleNext} disabled={isSaving}>
-              {isLastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
+              {nextButtonLabel}
             </Button>
           </div>
         </div>

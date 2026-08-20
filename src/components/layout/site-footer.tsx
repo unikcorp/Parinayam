@@ -8,6 +8,7 @@ const columns = [
     title: "Discover",
     links: [
       { label: "Home", href: "/" },
+      { label: "About Us", href: "/legal/about-us" },
       { label: "Success Stories", href: "/stories" },
       { label: "Plans", href: "/plans" },
       { label: "Blog", href: "/blog" },
@@ -26,10 +27,10 @@ const columns = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Refund Policy", href: "#" },
-      { label: "Grievances", href: "#" },
+      { label: "Privacy Policy", href: "/legal/privacy-policy" },
+      { label: "Terms of Service", href: "/legal/terms-conditions" },
+      { label: "Refund Policy", href: "/legal/refund-policy" },
+      { label: "Grievances", href: "/legal/report-misuse" },
     ],
   },
 ];
