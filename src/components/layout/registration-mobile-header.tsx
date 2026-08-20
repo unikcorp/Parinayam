@@ -8,12 +8,16 @@ export function MobileStepHeader({
   activeIndex,
   onStepClick,
   onExit,
+  percent: percentOverride,
 }: {
   activeIndex: number;
   onStepClick: (i: number) => void;
   onExit: () => void;
+  /** Real, field-based completion from the backend — falls back to the step-index estimate when not given (e.g. before an account exists yet). */
+  percent?: number;
 }) {
-  const percent = Math.round(((activeIndex + 1) / registrationSteps.length) * 100);
+  const stepEstimate = Math.round(((activeIndex + 1) / registrationSteps.length) * 100);
+  const percent = percentOverride ?? stepEstimate;
   return (
     <header className="sticky top-0 z-10 border-b border-card-border bg-card pt-4 lg:hidden">
       <div className="mb-3.5 flex items-center justify-between px-5">
@@ -34,11 +38,15 @@ export function MobileStepHeader({
           Step {activeIndex + 1} of {registrationSteps.length} ·{" "}
           {registrationSteps[activeIndex].title}
         </span>
-        <span className="text-success">{percent}%</span>
+        <span className={percent >= 60 ? "text-success" : "text-gold-text"}>{percent}%</span>
       </div>
-      <div className="h-1.5 bg-[#EDEFF3]">
+      <div className="relative h-1.5 bg-[#EDEFF3]">
+        <div className="absolute top-0 bottom-0 w-px bg-primary-deep/25" style={{ left: "60%" }} />
         <div
-          className="bg-progress-success-gradient h-full transition-[width] duration-500"
+          className={cn(
+            "h-full transition-[width] duration-500",
+            percent >= 60 ? "bg-progress-success-gradient" : "bg-gold-gradient",
+          )}
           style={{ width: `${percent}%` }}
         />
       </div>

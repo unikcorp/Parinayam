@@ -31,7 +31,7 @@ export function StepperSidebar({
             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12.5px] font-bold text-white/70 hover:bg-white/10 hover:text-white"
           >
             <ChevronLeft className="size-3.5" /> Exit
-          </button>
+          </button>    
         )}
       </div>
 

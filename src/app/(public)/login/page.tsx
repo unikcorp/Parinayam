@@ -23,7 +23,7 @@ import {
 import { OTP_LENGTH } from "@/constants/auth";
 import { api, ApiError, setAccessToken } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MemberLoginResponse {
   user: { id: number; email: string; roleId: number; memberId: number };
@@ -34,6 +34,46 @@ interface MemberProfileResponse {
   member: { first_name: string; last_name: string; member_code: string };
 }
 
+type SectionKey =
+  | "personal_location"
+  | "education"
+  | "family"
+  | "horoscope"
+  | "about"
+  | "partner_preference"
+  | "photos"
+  | "identity";
+
+interface CompletionSummary {
+  profile_completion: number;
+  sections: Record<SectionKey, boolean>;
+  mandatory_done: boolean;
+  has_selected_plan: boolean;
+  can_enter_dashboard: boolean;
+}
+
+const MANDATORY_SECTIONS: SectionKey[] = ["personal_location", "education", "about"];
+const ALL_SECTIONS: SectionKey[] = [
+  "personal_location",
+  "education",
+  "family",
+  "horoscope",
+  "about",
+  "partner_preference",
+  "photos",
+  "identity",
+];
+const SECTION_TO_EDIT_STEP: Record<SectionKey, string> = {
+  personal_location: "personal",
+  education: "education",
+  family: "family",
+  horoscope: "horoscope",
+  about: "about",
+  partner_preference: "preferences",
+  photos: "photos",
+  identity: "verification",
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -43,16 +83,33 @@ export default function LoginPage() {
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
   const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [otpRequested, setOtpRequested] = useState(false);
   const {
     control,
     handleSubmit,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: loginDefaultValues,
   });
   const mode = watch("mode");
+
+  // Switching modes (or picking OTP fresh) always starts at "enter phone,
+  // generate OTP" again rather than carrying over a stale revealed OTP step.
+  useEffect(() => {
+    setOtpRequested(false);
+  }, [mode]);
+
+  async function handleGenerateOtp() {
+    const phoneValid = await trigger("phone");
+    if (!phoneValid) return;
+    // No SMS provider wired up yet (see onSubmit's login/otp call) — this
+    // just reveals the OTP step. The actual mobile number is still
+    // validated server-side against real members on submit.
+    setOtpRequested(true);
+  }
 
   async function handleRecoverAccount() {
     if (!pendingDeletion) return;
@@ -97,18 +154,33 @@ export default function LoginPage() {
       // Profile fetch is a display-name nicety — login already succeeded, don't block on it.
     }
 
-    login(
-      {
-        id: String(user.memberId),
-        name,
-        email: user.email,
-        avatarInitials,
-        premium: false,
-        memberCode,
-      },
-      accessToken,
-    );
-    router.push("/dashboard");
+    login({ id: String(user.memberId), name, email: user.email, avatarInitials, premium: false, memberCode }, accessToken);
+
+    // Route straight to wherever this member actually belongs instead of
+    // always landing on /dashboard first and letting RequireCompleteProfile
+    // bounce them off it a beat later — same rule the (shell) gate applies,
+    // checked here too so the very first screen after login is the right one.
+    try {
+      const summary = await api.get<CompletionSummary>("/api/members/me/completion");
+      if (summary.can_enter_dashboard) {
+        router.push("/dashboard");
+        return;
+      }
+      const profileReady = summary.profile_completion >= 60;
+      if (!profileReady) {
+        const firstIncomplete =
+          MANDATORY_SECTIONS.find((key) => !summary.sections[key]) ??
+          ALL_SECTIONS.find((key) => !summary.sections[key]) ??
+          "personal_location";
+        router.push(`/profile/edit?step=${SECTION_TO_EDIT_STEP[firstIncomplete]}&resume=1`);
+        return;
+      }
+      router.push("/plans");
+    } catch {
+      // Completion check failed — fall back to /dashboard, which still
+      // gates via RequireCompleteProfile on its own.
+      router.push("/dashboard");
+    }
   }
 
   async function onSubmit(values: LoginFormValues) {
@@ -327,51 +399,57 @@ export default function LoginPage() {
         )}
 
         {mode === "otp" ? (
-          <>
-            <label className="mt-4 mb-2 block text-[13px] font-bold text-primary-deep">
-              Enter OTP{" "}
-              <span className="font-semibold text-faint">
-                — sent to your number
-              </span>
-            </label>
-            <Controller
-              name="otp"
-              control={control}
-              render={({ field }) => (
-                <InputOTP
-                  maxLength={OTP_LENGTH}
-                  value={field.value}
-                  onChange={field.onChange}
-                  containerClassName="mb-3"
-                >
-                  <InputOTPGroup className="w-full justify-between gap-2 lg:gap-3">
-                    {Array.from({ length: OTP_LENGTH }, (_, i) => i).map(
-                      (i) => (
-                        <InputOTPSlot
-                          key={i}
-                          index={i}
-                          className="h-13.5 flex-1 rounded-[13px]! border-input text-xl font-extrabold text-primary-deep data-[active=true]:border-primary data-[active=true]:ring-4 data-[active=true]:ring-surface-blue lg:h-15"
-                        />
-                      ),
-                    )}
-                  </InputOTPGroup>
-                </InputOTP>
+          otpRequested && (
+            <>
+              <label className="mt-4 mb-2 block text-[13px] font-bold text-primary-deep">
+                Enter OTP{" "}
+                <span className="font-semibold text-faint">
+                  — sent to your number
+                </span>
+              </label>
+              <Controller
+                name="otp"
+                control={control}
+                render={({ field }) => (
+                  <InputOTP
+                    maxLength={OTP_LENGTH}
+                    value={field.value}
+                    onChange={field.onChange}
+                    containerClassName="mb-3"
+                  >
+                    <InputOTPGroup className="w-full justify-between gap-2 lg:gap-3">
+                      {Array.from({ length: OTP_LENGTH }, (_, i) => i).map(
+                        (i) => (
+                          <InputOTPSlot
+                            key={i}
+                            index={i}
+                            className="h-13.5 flex-1 rounded-[13px]! border-input text-xl font-extrabold text-primary-deep data-[active=true]:border-primary data-[active=true]:ring-4 data-[active=true]:ring-surface-blue lg:h-15"
+                          />
+                        ),
+                      )}
+                    </InputOTPGroup>
+                  </InputOTP>
+                )}
+              />
+              {errors.otp && (
+                <p className="mb-2 text-xs font-semibold text-destructive">
+                  {errors.otp.message}
+                </p>
               )}
-            />
-            {errors.otp && (
-              <p className="mb-2 text-xs font-semibold text-destructive">
-                {errors.otp.message}
-              </p>
-            )}
-            <div className="mb-7 flex justify-between text-[13px]">
-              <span className="text-faint">
-                Resend in <b className="font-bold text-primary-deep">00:24</b>
-              </span>
-              <Link href="#" className="font-bold text-primary">
-                Forgot password?
-              </Link>
-            </div>
-          </>
+              <div className="mb-7 flex justify-between text-[13px]">
+                <button
+                  type="button"
+                  onClick={() => setOtpRequested(false)}
+                  className="font-bold text-faint hover:text-primary-deep"
+                >
+                  Change number
+                </button>
+                <span className="text-faint">
+                  Resend in <b className="font-bold text-primary-deep">00:24</b>
+                </span>
+              </div>
+            </>
+          )
         ) : (
           <>
             <label className="mt-4 mb-2 block text-[13px] font-bold text-primary-deep">
@@ -395,21 +473,32 @@ export default function LoginPage() {
               </p>
             )}
             <div className="mt-2 mb-7 flex justify-end text-[13px]">
-              <Link href="#" className="font-bold text-primary">
+              <Link href="/forgot-password" className="font-bold text-primary">
                 Forgot password?
               </Link>
             </div>
           </>
         )}
 
-        <Button
-          size="cta"
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full text-base"
-        >
-          Sign in
-        </Button>
+        {mode === "otp" && !otpRequested ? (
+          <Button
+            size="cta"
+            type="button"
+            onClick={handleGenerateOtp}
+            className="w-full text-base"
+          >
+            Generate OTP
+          </Button>
+        ) : (
+          <Button
+            size="cta"
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full text-base"
+          >
+            Sign in
+          </Button>
+        )}
 
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-faint lg:hidden">
           <Lock className="size-3.5" /> Privacy protected

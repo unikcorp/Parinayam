@@ -16,6 +16,7 @@ import {
   updatePartnerPreferenceRequest,
 } from "@/features/registration-wizard/api";
 import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { Button } from "@/components/ui/button";
@@ -137,24 +138,47 @@ const editStepKeys = [
 
 export default function ProfileEditPage() {
   const router = useRouter();
-  const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
+  // Not lastStep/goNext from the hook — those are indexed against the
+  // 10-step register wizard (which includes Account Info); this edit-only
+  // wizard has its own 9-step array (stepHeadings/editStepKeys) shifted
+  // down by one, so reusing them pointed goNext's internal re-validation at
+  // the wrong fields and made "Save & Continue" silently do nothing once a
+  // member actually walked through more than one step.
+  const { form, step, setStep, goBack } = useRegistrationForm();
+  const isLastStep = step === stepHeadings.length - 1;
   const lookups = useRegistrationLookups();
   const [memberId, setMemberId] = useState<number | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  // True when we arrived via a single-section "Edit" link from My Profile
-  // (e.g. /profile/edit?step=education) rather than the full wizard — in
-  // that case Save should return to My Profile instead of advancing steps.
+  // True when we arrived via a single-section "Edit" link from My Profile or
+  // the dashboard's quick actions (e.g. /profile/edit?step=education) rather
+  // than the full wizard — in that case Save should return to My Profile
+  // instead of advancing steps. Explicitly false for the "resume" case
+  // (redirected here for having an incomplete required profile) — that
+  // needs the normal Save & Continue flow through every remaining step, not
+  // a save-and-exit after just one.
   const [isSingleSectionEdit, setIsSingleSectionEdit] = useState(false);
+  const [realCompletion, setRealCompletion] = useState<number | null>(null);
+
+  async function refreshCompletion(id: number) {
+    try {
+      const data = await api.get<{ profile_completion: number }>(`/api/members/${id}/completion`);
+      setRealCompletion(data.profile_completion);
+    } catch {
+      // Non-fatal — the step-index estimate stays as a fallback.
+    }
+  }
 
   useEffect(() => {
-    const requestedStep = new URLSearchParams(window.location.search).get("step");
+    const params = new URLSearchParams(window.location.search);
+    const requestedStep = params.get("step");
+    const isResume = params.get("resume") === "1";
     const index = editStepKeys.indexOf(requestedStep as (typeof editStepKeys)[number]);
     if (index !== -1) {
       setStep(index);
-      setIsSingleSectionEdit(true);
+      setIsSingleSectionEdit(!isResume);
     }
     // Only read the deep link once, on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -168,6 +192,7 @@ export default function ProfileEditPage() {
         if (cancelled) return;
         setMemberId(data.member.id);
         form.reset(mapProfileToFormValues(data), { keepDefaultValues: true });
+        void refreshCompletion(data.member.id);
       } catch (error) {
         if (!cancelled) setLoadError(errorMessage(error, "Could not load your profile."));
       } finally {
@@ -180,7 +205,8 @@ export default function ProfileEditPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const percent = Math.round(((step + 1) / stepHeadings.length) * 100);
+  const stepEstimate = Math.round(((step + 1) / stepHeadings.length) * 100);
+  const percent = realCompletion ?? stepEstimate;
 
   // Photos (5) & Verification (6) upload as the member picks files — nothing
   // left to save on Continue for those. Review (7) has no fields of its own.
@@ -219,8 +245,11 @@ export default function ProfileEditPage() {
       return;
     }
 
-    if (lastStep) {
-      router.push("/profile/me");
+    if (isLastStep) {
+      // /dashboard, not /profile/me — RequireCompleteProfile (the (shell)
+      // gate) re-checks fresh and routes on to /plans if a plan still
+      // hasn't been chosen, same as straight after registration.
+      router.push("/dashboard");
       return;
     }
 
@@ -232,12 +261,13 @@ export default function ProfileEditPage() {
     setIsSaving(true);
     try {
       await saveCurrentStep();
+      await refreshCompletion(memberId);
       if (isSingleSectionEdit) {
         router.push("/profile/me");
         return;
       }
-      const advanced = await goNext();
-      if (advanced) window.scrollTo({ top: 0, behavior: "smooth" });
+      setStep((s) => Math.min(s + 1, stepHeadings.length - 1));
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setApiError(errorMessage(error, "Something went wrong while saving. Please try again."));
     } finally {
@@ -286,6 +316,7 @@ export default function ProfileEditPage() {
             activeIndex={step + 1}
             onStepClick={(i) => i > 0 && setStep(i - 1)}
             onExit={saveAndExit}
+            percent={percent}
           />
 
           <main className="flex-1 px-5 py-6 pb-28 lg:max-w-215 lg:px-18 lg:py-11 lg:pb-14">
@@ -293,13 +324,25 @@ export default function ProfileEditPage() {
               <span className="text-[13px] font-bold tracking-wide text-faint uppercase">
                 Step {step + 1} of {stepHeadings.length} · {registrationSteps[step + 1]?.title}
               </span>
-              <span className="text-[13px] font-bold text-success">{percent}% complete</span>
+              <span className={cn("text-[13px] font-bold", percent >= 60 ? "text-success" : "text-gold-text")}>
+                {percent}% complete
+              </span>
             </div>
-            <div className="mb-9 hidden h-2 overflow-hidden rounded-full bg-[#EDEFF3] lg:block">
+            <div className="relative mt-2 mb-11 hidden h-2.5 overflow-visible rounded-full bg-[#EDEFF3] lg:block">
               <div
-                className="bg-progress-success-gradient h-full transition-[width] duration-500"
+                className={cn(
+                  "h-full rounded-full transition-[width] duration-500",
+                  percent >= 60 ? "bg-progress-success-gradient" : "bg-gold-gradient",
+                )}
                 style={{ width: `${percent}%` }}
               />
+              <div className="absolute top-0 bottom-0 w-px bg-primary-deep/25" style={{ left: "60%" }} />
+              <span
+                className="absolute top-1/2 -translate-y-1/2 rounded-full bg-primary-deep px-2 py-0.5 text-[11px] font-extrabold text-white shadow-[0_4px_10px_rgba(127,29,29,0.25)] transition-[left] duration-500"
+                style={{ left: `${percent}%`, transform: `translate(${percent > 92 ? "-100%" : "-50%"}, calc(-50% + 18px))` }}
+              >
+                {percent}%
+              </span>
             </div>
 
             <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[32px]">
@@ -322,8 +365,14 @@ export default function ProfileEditPage() {
               {step === 5 && <PreferencesStep lookups={lookups} />}
               {step === 6 && <PhotosStep memberId={memberId} />}
               {step === 7 && <VerificationStep memberId={memberId} />}
-              {step === 8 && <ReviewStep onEditStep={setStep} />}
+              {step === 8 && <ReviewStep onEditStep={setStep} memberId={memberId} />}
             </div>
+
+            {isLastStep && percent < 60 && (
+              <div className="mt-7 rounded-xl border border-gold/30 bg-peach-bg px-4 py-3 text-[13px] font-semibold text-primary-deep">
+                To enter the dashboard, your profile progress needs to be 60% or above.
+              </div>
+            )}
 
             {/* desktop nav */}
             <div className="mt-7 hidden items-center justify-between lg:flex">
@@ -337,7 +386,7 @@ export default function ProfileEditPage() {
                   </Button>
                 )}
                 <Button size="cta" onClick={handleNext} disabled={isSaving}>
-                  {lastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
+                  {isLastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
                 </Button>
               </div>
             </div>
@@ -351,7 +400,7 @@ export default function ProfileEditPage() {
               </Button>
             )}
             <Button size="cta" className="flex-1" onClick={handleNext} disabled={isSaving}>
-              {lastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
+              {isLastStep || isSingleSectionEdit ? "Save" : "Save & Continue"}
             </Button>
           </div>
         </div>
@@ -373,7 +422,7 @@ function registrationFieldsForStep(step: number): (keyof RegistrationFormValues)
     ["familyType", "familyValues", "fatherOccupation", "motherOccupation", "siblings"],
     ["birthTime", "birthPlace", "star", "dosham"],
     [],
-    ["partnerHeightMin", "partnerReligion", "partnerCaste", "partnerEducation", "partnerLocation"],
+    ["partnerHeightMin", "partnerReligion", "partnerCaste", "partnerEducation"],
     [],
     [],
     [],

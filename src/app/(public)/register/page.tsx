@@ -19,7 +19,8 @@ import {
   skipStepRequest,
   submitMemberRequest,
 } from "@/features/registration-wizard/api";
-import { ApiError } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { Button } from "@/components/ui/button";
@@ -55,8 +56,22 @@ export default function RegisterPage() {
   const [memberId, setMemberId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [realCompletion, setRealCompletion] = useState<number | null>(null);
 
-  const percent = Math.round(((step + 1) / registrationSteps.length) * 100);
+  // Real, field-based percentage from the backend (same calculation the
+  // dashboard-entry gate uses) once the account exists — the step-index
+  // estimate below only covers the brief window before Step 1 is saved.
+  async function refreshCompletion(id: number) {
+    try {
+      const data = await api.get<{ profile_completion: number }>(`/api/members/${id}/completion`);
+      setRealCompletion(data.profile_completion);
+    } catch {
+      // Non-fatal — the step-index estimate stays as a fallback.
+    }
+  }
+
+  const stepEstimate = Math.round(((step + 1) / registrationSteps.length) * 100);
+  const percent = realCompletion ?? stepEstimate;
 
   // Step 1 doesn't just save — it's the moment the account itself gets
   // created, so it calls the real signup endpoint instead of a plain PUT.
@@ -70,6 +85,7 @@ export default function RegisterPage() {
       const result = await registerSelfRequest(form.getValues(), lookups);
       setMemberId(result.memberId);
       setShowOtp(true);
+      await refreshCompletion(result.memberId);
     } catch (error) {
       setApiError(errorMessage(error, "Could not create your account. Please try again."));
     } finally {
@@ -152,6 +168,7 @@ export default function RegisterPage() {
     setIsSaving(true);
     try {
       await saveCurrentStep();
+      await refreshCompletion(memberId);
       const advanced = await goNext();
       if (advanced) window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -186,7 +203,23 @@ export default function RegisterPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function saveAndExit() {
+  async function saveAndExit() {
+    // Nothing to save before an account even exists (Account Info hasn't
+    // been submitted/OTP-verified yet) — just leave.
+    if (memberId == null || step <= ACCOUNT_INFO_STEP) {
+      router.push("/");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await saveCurrentStep();
+    } catch {
+      // Best-effort — still let them exit even if this save failed; nothing
+      // here is destructive, and their progress up to the previous step is
+      // already persisted regardless.
+    } finally {
+      setIsSaving(false);
+    }
     router.push("/");
   }
 
@@ -209,6 +242,7 @@ export default function RegisterPage() {
             activeIndex={step}
             onStepClick={otpVerified ? handleStepClick : () => {}}
             onExit={saveAndExit}
+            percent={percent}
           />
 
           <main className="flex-1 px-5 py-6 pb-28 lg:max-w-215 lg:px-18 lg:py-11 lg:pb-14">
@@ -218,13 +252,26 @@ export default function RegisterPage() {
                 Step {step + 1} of {registrationSteps.length} ·{" "}
                 {showOtp ? "Verify mobile" : registrationSteps[step].title}
               </span>
-              <span className="text-[13px] font-bold text-success">{percent}% complete</span>
+              <span className={cn("text-[13px] font-bold", percent >= 60 ? "text-success" : "text-gold-text")}>
+                {percent}% complete
+              </span>
             </div>
-            <div className="mb-9 hidden h-2 overflow-hidden rounded-full bg-[#EDEFF3] lg:block">
+            <div className="relative mt-2 mb-11 hidden h-2.5 overflow-visible rounded-full bg-[#EDEFF3] lg:block">
               <div
-                className="bg-progress-success-gradient h-full transition-[width] duration-500"
+                className={cn(
+                  "h-full rounded-full transition-[width] duration-500",
+                  percent >= 60 ? "bg-progress-success-gradient" : "bg-gold-gradient",
+                )}
                 style={{ width: `${percent}%` }}
               />
+              {/* 60% dashboard-entry threshold marker */}
+              <div className="absolute top-0 bottom-0 w-px bg-primary-deep/25" style={{ left: "60%" }} />
+              <span
+                className="absolute top-1/2 -translate-y-1/2 rounded-full bg-primary-deep px-2 py-0.5 text-[11px] font-extrabold text-white shadow-[0_4px_10px_rgba(127,29,29,0.25)] transition-[left] duration-500"
+                style={{ left: `${percent}%`, transform: `translate(${percent > 92 ? "-100%" : "-50%"}, calc(-50% + 18px))` }}
+              >
+                {percent}%
+              </span>
             </div>
 
             <h1 className="mb-2 text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[32px]">
@@ -267,13 +314,18 @@ export default function RegisterPage() {
                   {step === 6 && <PreferencesStep lookups={lookups} />}
                   {step === 7 && <PhotosStep memberId={memberId} />}
                   {step === 8 && <VerificationStep memberId={memberId} />}
-                  {step === 9 && <ReviewStep onEditStep={handleStepClick} />}
+                  {step === 9 && <ReviewStep onEditStep={handleStepClick} memberId={memberId} />}
                 </>
               )}
             </div>
 
             {!showOtp && (
               <>
+                {lastStep && percent < 60 && (
+                  <div className="mt-7 rounded-xl border border-gold/30 bg-peach-bg px-4 py-3 text-[13px] font-semibold text-primary-deep">
+                    To enter the dashboard, your profile progress needs to be 60% or above.
+                  </div>
+                )}
                 {/* desktop nav */}
                 <div className="mt-7 hidden items-center justify-between lg:flex">
                   <button type="button" onClick={saveAndExit} className="text-[15px] font-bold text-faint">

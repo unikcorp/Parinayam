@@ -14,7 +14,10 @@ export const registrationSchema = z
     // Step 1 — Account info
     profileCreatedBy: requiredString("Profile created by"),
     firstName: nameField("First name"),
-    lastName: nameField("Last name"),
+    // Not nameField — real last names are often just a single initial or
+    // family name with a period (e.g. "L", "J.N"), which the letters-only
+    // format rejects. Last name just needs to be present.
+    lastName: requiredString("Last name"),
     gender: z.enum(["female", "male"]),
     dobDay: requiredString("Day"),
     dobMonth: requiredString("Month"),

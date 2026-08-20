@@ -1,8 +1,69 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, Pencil } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { RegistrationFormValues } from "../schema";
+
+interface CompletionSummary {
+  profile_completion: number;
+  mandatory_done: boolean;
+  can_enter_dashboard: boolean;
+}
+
+function CompletionBanner({ memberId }: { memberId: number | null }) {
+  const [summary, setSummary] = useState<CompletionSummary | null>(null);
+
+  useEffect(() => {
+    if (memberId == null) return;
+    let cancelled = false;
+    api
+      .get<CompletionSummary>(`/api/members/${memberId}/completion`)
+      .then((data) => {
+        if (!cancelled) setSummary(data);
+      })
+      .catch(() => {
+        // Informational banner only — the real gate lives on the dashboard route.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [memberId]);
+
+  if (!summary) return null;
+
+  const ready = summary.can_enter_dashboard;
+
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3 rounded-2xl border p-4.5",
+        ready ? "border-success/30 bg-success-bg" : "border-gold/30 bg-peach-bg",
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-extrabold",
+          ready ? "bg-success/15 text-success" : "bg-gold/15 text-gold-text",
+        )}
+      >
+        {ready ? <CheckCircle2 className="size-4.5" /> : `${summary.profile_completion}%`}
+      </span>
+      <div>
+        <div className={cn("text-[14.5px] font-bold", ready ? "text-success" : "text-primary-deep")}>
+          {ready ? "Your profile is ready" : `${summary.profile_completion}% complete`}
+        </div>
+        <p className="mt-0.5 text-[13px] leading-[1.5] text-muted-foreground">
+          {ready
+            ? "You've hit the dashboard requirements — full access is unlocked."
+            : "Complete at least 60% of your profile to unlock the dashboard."}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function ReviewSection({
   title,
@@ -39,12 +100,19 @@ function ReviewSection({
   );
 }
 
-export function ReviewStep({ onEditStep }: { onEditStep: (index: number) => void }) {
+export function ReviewStep({
+  onEditStep,
+  memberId,
+}: {
+  onEditStep: (index: number) => void;
+  memberId?: number | null;
+}) {
   const { watch } = useFormContext<RegistrationFormValues>();
   const data = watch();
 
   return (
     <div className="flex flex-col gap-6">
+      <CompletionBanner memberId={memberId ?? null} />
       <ReviewSection
         title="Account info"
         onEdit={() => onEditStep(0)}

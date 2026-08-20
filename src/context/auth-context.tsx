@@ -18,7 +18,8 @@ interface MemberMeResponse {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function toSessionUser(member: MemberMeResponse["member"]): SessionUser {
+function toSessionUser(data: MemberMeResponse): SessionUser {
+  const { member } = data;
   const name = `${member.first_name} ${member.last_name}`.trim();
   return {
     id: String(member.id),
@@ -44,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { accessToken } = await api.post<{ accessToken: string }>("/api/auth/refresh");
         setAccessToken(accessToken);
-        const { member } = await api.get<MemberMeResponse>("/api/members/me");
-        if (!cancelled) setUser(toSessionUser(member));
+        const data = await api.get<MemberMeResponse>("/api/members/me");
+        if (!cancelled) setUser(toSessionUser(data));
       } catch {
         // No valid session to restore — stay logged out.
       } finally {

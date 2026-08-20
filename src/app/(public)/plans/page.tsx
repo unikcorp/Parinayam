@@ -1,17 +1,46 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { PlanCard } from "@/components/shared/plan-card";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useMembership } from "@/features/membership/use-membership";
 import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
+import { ApiError } from "@/lib/api";
+import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
 
 export default function PlansPage() {
   const router = useRouter();
   const { data: plans, isLoading, isError } = useMembershipPlans();
-  const { planName: currentPlanName, isLoading: membershipLoading } = useMembership();
+  // isActive means a real member_subscriptions row exists — planName alone
+  // isn't enough to mean "already selected", since the backend returns
+  // planName: "Free" as an implicit fallback for anyone with no active
+  // subscription at all (never actually chosen). Without the isActive
+  // check, Free always looked pre-selected and its button was permanently
+  // disabled, even for a member who'd never picked anything.
+  const { planName: currentPlanName, isActive, isLoading: membershipLoading } = useMembership();
+
+  const initiate = useInitiateSubscription();
+  const confirm = useConfirmSubscription();
+  const [activatingPlanId, setActivatingPlanId] = useState<number | null>(null);
 
   const badges = getPlanBadges(plans ?? []);
+
+  // Free costs nothing, so it skips the payment-method screen entirely —
+  // it's activated the moment the member picks it. Paid plans still go
+  // through /checkout since there's actually money to collect there.
+  async function activateFree(planId: number) {
+    setActivatingPlanId(planId);
+    try {
+      const { subscription_id } = await initiate.mutateAsync(planId);
+      await confirm.mutateAsync({ subscriptionId: subscription_id, gatewayPaymentId: `stub_${Date.now()}` });
+      router.push(`/checkout/success?subscription=${subscription_id}`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Could not activate the Free plan. Please try again.");
+      setActivatingPlanId(null);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-290 px-5 pt-8 pb-10 lg:px-6 lg:pt-12">
@@ -45,7 +74,8 @@ export default function PlansPage() {
           {plans.map((plan) => {
             const isFree = Number(plan.plan_amount) === 0;
             const badge = badges.get(plan.plan_id);
-            const isCurrentPlan = !membershipLoading && currentPlanName === plan.plan_name;
+            const isCurrentPlan = !membershipLoading && isActive && currentPlanName === plan.plan_name;
+            const isActivating = activatingPlanId === plan.plan_id;
             return (
               <PlanCard
                 key={plan.plan_id}
@@ -55,8 +85,14 @@ export default function PlansPage() {
                 tagline={plan.plan_offers || undefined}
                 badge={badge}
                 dark={badge === "Best Value"}
-                ctaLabel={isCurrentPlan ? "Current Plan" : `Go ${plan.plan_name}`}
-                onSelect={isCurrentPlan ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
+                ctaLabel={isCurrentPlan ? "Current Plan" : isActivating ? "Activating…" : `Go ${plan.plan_name}`}
+                onSelect={
+                  isCurrentPlan || isActivating
+                    ? undefined
+                    : isFree
+                      ? () => activateFree(plan.plan_id)
+                      : () => router.push(`/checkout?plan=${plan.plan_id}`)
+                }
                 className={isCurrentPlan ? "border-success ring-2 ring-success/20" : undefined}
                 features={getPlanFeatures(plan)}
               />
