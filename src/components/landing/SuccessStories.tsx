@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { Reveal } from "@/components/shared/reveal";
@@ -8,18 +9,33 @@ function StoryCard({
   story,
   imgClassName,
   compact,
+  imgPosition = "object-center",
 }: {
   story: (typeof homeStories)[number];
   imgClassName: string;
   compact?: boolean;
+  /** Tailwind object-position class — keeps faces in frame on tall photos cropped into a shorter box. */
+  imgPosition?: string;
 }) {
   return (
     <div className="group h-full overflow-hidden rounded-2xl border border-[#F0E9DD] bg-card transition-all duration-200 hover:-translate-y-1.5 hover:shadow-card-hover">
       <div className="overflow-hidden">
-        <ImageSlot
-          label="Couple photo — wedding"
-          className={`w-full transition-transform duration-500 ease-out group-hover:scale-105 ${imgClassName}`}
-        />
+        {story.image ? (
+          <div className={`relative w-full overflow-hidden transition-transform duration-500 ease-out group-hover:scale-105 ${imgClassName}`}>
+            <Image
+              src={story.image}
+              alt={`${story.couple} — wedding photo`}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className={`object-cover ${imgPosition}`}
+            />
+          </div>
+        ) : (
+          <ImageSlot
+            label="Couple photo — wedding"
+            className={`w-full transition-transform duration-500 ease-out group-hover:scale-105 ${imgClassName}`}
+          />
+        )}
       </div>
       <div className={compact ? "p-4" : "p-4.5 lg:p-6"}>
         <div className={compact ? "text-sm font-extrabold text-primary-deep" : "text-base font-extrabold text-primary-deep lg:text-[19px]"}>
@@ -60,7 +76,7 @@ export function SuccessStories() {
       <div className="pn-scroll-x flex gap-3.5 overflow-x-auto pr-5 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
         {homeStories.map((story, i) => (
           <Reveal key={story.couple} delay={i * 120} className="w-65 shrink-0">
-            <StoryCard story={story} imgClassName="h-42.5" />
+            <StoryCard story={story} imgClassName="h-42.5" imgPosition="object-top" />
           </Reveal>
         ))}
       </div>
@@ -68,7 +84,7 @@ export function SuccessStories() {
       {/* desktop: featured story + two stacked */}
       <div className="hidden lg:grid lg:grid-cols-3 lg:gap-7">
         <Reveal className="lg:col-span-2">
-          <StoryCard story={homeStories[0]} imgClassName="h-72" />
+          <StoryCard story={homeStories[0]} imgClassName="h-105" imgPosition="object-top" />
         </Reveal>
         <div className="flex flex-col gap-7">
           {homeStories.slice(1).map((story, i) => (

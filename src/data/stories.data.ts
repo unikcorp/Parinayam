@@ -2,8 +2,8 @@ import type { SuccessStory } from "@/types/content";
 
 // Featured teaser shown on the marketing homepage.
 export const homeStories: SuccessStory[] = [
-  { couple: "Meera & Kiran", when: "Jan 2026", place: "Guruvayur", quote: "Our parents connected first on Parinayam. Three months later, we were engaged at the temple." },
-  { couple: "Lakshmi & Hari", when: "Nov 2025", place: "Kochi", quote: "The horoscope match said 9/10 poruthams. Turns out the algorithm knew before we did." },
+  { couple: "Meera & Kiran", when: "Jan 2026", place: "Guruvayur", quote: "Our parents connected first on Parinayam. Three months later, we were engaged at the temple.", image: "/images/success2_2_23.jpg" },
+  { couple: "Lakshmi & Hari", when: "Nov 2025", place: "Kochi", quote: "The horoscope match said 9/10 poruthams. Turns out the algorithm knew before we did.", image: "/images/success1.jpg" },
   { couple: "Gauri & Ananthu", when: "Aug 2025", place: "Palakkad", quote: "I loved that photos stayed private until we were ready. It felt safe from day one." },
 ];
 

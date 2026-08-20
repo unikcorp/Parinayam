@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Apple, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageSlot } from "@/components/shared/image-slot";
@@ -8,7 +9,6 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FeaturedProfiles } from "@/components/landing/FeaturedProfiles";
 import { WhyParinayam } from "@/components/landing/WhyParinayam";
 import { SuccessStories } from "@/components/landing/SuccessStories";
-import { PricingSection } from "@/components/landing/PricingSection";
 import { PrivacySection } from "@/components/landing/PrivacySection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { StickyActionBar } from "@/components/shared/sticky-action-bar";
@@ -47,33 +47,8 @@ const websiteJsonLd = {
   },
 };
 
-interface MarketingPlan {
-  plan_id: number;
-  plan_name: string;
-  plan_amount: string;
-  plan_duration: number;
-  plan_contacts: number;
-  profile: number;
-  plan_msg: number;
-  chat: boolean;
-  video: boolean;
-  plan_offers: string;
-}
-
-async function fetchActivePlans(): Promise<MarketingPlan[]> {
-  try {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-    const res = await fetch(`${base}/api/membership-plans/public`, { next: { revalidate: 60 } });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return body.data ?? [];
-  } catch {
-    return [];
-  }
-}
-
 export default async function LandingPage() {
-  const [plans, featuredProfiles] = await Promise.all([fetchActivePlans(), fetchFeaturedProfiles()]);
+  const featuredProfiles = await fetchFeaturedProfiles();
 
   return (
     <>
@@ -87,7 +62,6 @@ export default async function LandingPage() {
       <FeaturedProfiles profiles={featuredProfiles} />
       <WhyParinayam />
       <SuccessStories />
-      <PricingSection plans={plans} />
 
       {/* TESTIMONIALS */}
       <section className="bg-surface px-5 py-9 lg:px-18 lg:py-24">
@@ -165,10 +139,22 @@ export default async function LandingPage() {
             <Reveal key={post.title} delay={i * 100}>
               <div className="group overflow-hidden rounded-2xl border border-card-border transition-all duration-200 lg:hover:-translate-y-1.5 lg:hover:shadow-card-hover">
                 <div className="overflow-hidden">
-                  <ImageSlot
-                    label="Article image"
-                    className="h-40 w-full transition-transform duration-500 ease-out group-hover:scale-105 lg:h-47.5"
-                  />
+                  {post.image ? (
+                    <div className="relative h-40 w-full overflow-hidden transition-transform duration-500 ease-out group-hover:scale-105 lg:h-47.5">
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover object-top"
+                      />
+                    </div>
+                  ) : (
+                    <ImageSlot
+                      label="Article image"
+                      className="h-40 w-full transition-transform duration-500 ease-out group-hover:scale-105 lg:h-47.5"
+                    />
+                  )}
                 </div>
                 <div className="p-5">
                   <div className="text-xs font-bold tracking-wide text-primary uppercase">

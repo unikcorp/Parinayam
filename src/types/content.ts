@@ -3,6 +3,8 @@ export interface SuccessStory {
   when: string;
   place: string;
   quote: string;
+  /** Real photo path (e.g. "/images/success1.jpg") — falls back to a placeholder when omitted. */
+  image?: string;
 }
 
 export interface Testimonial {
@@ -23,6 +25,8 @@ export interface BlogTeaserPost {
   tag: string;
   title: string;
   meta: string;
+  /** Real photo path (e.g. "/images/success1.jpg") — falls back to a placeholder when omitted. */
+  image?: string;
 }
 
 export interface Faq {

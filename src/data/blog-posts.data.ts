@@ -21,7 +21,7 @@ export const sideBlogPosts: BlogTeaserPost[] = [
 
 // Homepage "From the blog" teaser.
 export const homeBlogPosts: BlogTeaserPost[] = [
-  { tag: "Tradition", title: "Understanding porutham: a modern guide to horoscope matching", meta: "6 min read · Jan 2026" },
-  { tag: "Advice", title: "The first family meeting: questions worth asking", meta: "4 min read · Dec 2025" },
+  { tag: "Tradition", title: "Understanding porutham: a modern guide to horoscope matching", meta: "6 min read · Jan 2026", image: "/images/success1.jpg" },
+  { tag: "Advice", title: "The first family meeting: questions worth asking", meta: "4 min read · Dec 2025", image: "/images/success2_2_23.jpg" },
   { tag: "Safety", title: "How we verify every profile on Parinayam", meta: "3 min read · Dec 2025" },
 ];
