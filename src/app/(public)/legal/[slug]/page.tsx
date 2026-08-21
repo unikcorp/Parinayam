@@ -6,6 +6,7 @@ import { SimpleHeader } from "@/components/layout/simple-header";
 import { Button } from "@/components/ui/button";
 import { useCmsPage } from "@/hooks/use-cms-page";
 import { ApiError } from "@/lib/api";
+import { TextBlockSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function LegalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -24,7 +25,7 @@ export default function LegalPage() {
 
       <div className="mx-auto w-full max-w-190 px-5 py-10 lg:px-6 lg:py-14">
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading…</p>
+          <TextBlockSkeleton lines={8} />
         ) : error instanceof ApiError && error.status === 404 ? (
           <div className="py-16 text-center">
             <p className="text-sm font-semibold text-destructive">This page isn&apos;t available.</p>

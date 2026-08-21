@@ -20,6 +20,7 @@ import { ApiError } from "@/lib/api";
 import { MAX_REGISTRATION_PHOTOS } from "@/constants/registration";
 import { cn } from "@/lib/utils";
 import { buildProfileSections } from "@/lib/profile-sections";
+import { ProfileDetailSkeleton } from "@/components/shared/loading-skeletons";
 
 const MAX_GALLERY_PHOTOS = MAX_REGISTRATION_PHOTOS - 1;
 
@@ -41,7 +42,11 @@ export default function MyProfilePage() {
   const [galleryError, setGalleryError] = useState<string | null>(null);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-24 text-sm text-faint">Loading your profile…</div>;
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <ProfileDetailSkeleton />
+      </div>
+    );
   }
 
   if (isError || !data) {

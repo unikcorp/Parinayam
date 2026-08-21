@@ -7,6 +7,7 @@ import { MobileBackHeader } from "@/components/layout/mobile-back-header";
 import { formatRelativeTime } from "@/lib/format-time";
 import { useRecentlyViewed } from "@/features/profile-views/use-profile-views";
 import type { RecentlyViewedRecord } from "@/features/profile-views/types";
+import { ListRowsSkeleton } from "@/components/shared/loading-skeletons";
 
 function RecentlyViewedRow({ entry }: { entry: RecentlyViewedRecord }) {
   return (
@@ -52,7 +53,7 @@ export default function RecentlyViewedPage() {
         </div>
 
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading…</p>
+          <ListRowsSkeleton />
         ) : recentlyViewed.length === 0 ? (
           <p className="py-16 text-center text-sm text-faint">
             You haven&apos;t viewed any profiles yet. Profiles you open will show up here.

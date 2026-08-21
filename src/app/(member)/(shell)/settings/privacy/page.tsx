@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMyProfile, useUpdatePrivacyPreferences, type ContentVisibility } from "@/hooks/use-my-profile";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 const VISIBILITY_OPTIONS: { value: ContentVisibility; label: string }[] = [
   { value: "ALL_MEMBERS", label: "All Members" },
@@ -51,7 +52,7 @@ export default function PrivacySettingsPage() {
   }
 
   if (isLoading) {
-    return <div className="py-16 text-center text-sm text-faint">Loading…</div>;
+    return <SectionSkeleton />;
   }
 
   if (isError || !data) {

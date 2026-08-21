@@ -7,6 +7,7 @@ import {
   NOTIFICATION_CATEGORY_LABELS,
   type NotificationPreference,
 } from "@/hooks/use-notification-preferences";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 const channels = [
   { key: "push" as const, label: "Push" },
@@ -26,7 +27,7 @@ export default function NotificationsSettingsPage() {
     <div className="flex flex-col gap-5.5">
       <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-primary-deep">Notifications</h1>
 
-      {isLoading && <div className="py-16 text-center text-sm text-faint">Loading…</div>}
+      {isLoading && <SectionSkeleton />}
 
       {isError && (
         <div className="flex flex-col items-center gap-2 py-16 text-center">

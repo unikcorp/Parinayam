@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ImageSlot } from "@/components/shared/image-slot";
 import { Reveal } from "@/components/shared/reveal";
-import { homeStories } from "@/data/stories.data";
+import { useSuccessStories } from "@/hooks/use-success-stories";
+import type { SuccessStory } from "@/types/content";
 
 function StoryCard({
   story,
@@ -11,7 +14,7 @@ function StoryCard({
   compact,
   imgPosition = "object-center",
 }: {
-  story: (typeof homeStories)[number];
+  story: SuccessStory;
   imgClassName: string;
   compact?: boolean;
   /** Tailwind object-position class — keeps faces in frame on tall photos cropped into a shorter box. */
@@ -26,6 +29,7 @@ function StoryCard({
               src={story.image}
               alt={`${story.couple} — wedding photo`}
               fill
+              unoptimized
               sizes="(max-width: 768px) 100vw, 50vw"
               className={`object-cover ${imgPosition}`}
             />
@@ -53,6 +57,11 @@ function StoryCard({
 }
 
 export function SuccessStories() {
+  const { data: stories } = useSuccessStories();
+  const homeStories = (stories ?? []).slice(0, 3);
+
+  if (homeStories.length === 0) return null;
+
   return (
     <section id="stories" className="bg-surface-cream py-9 pl-5 lg:px-18 lg:py-20">
       <div className="mb-5 flex items-end justify-between pr-5 lg:mb-10 lg:pr-0">
@@ -61,7 +70,7 @@ export function SuccessStories() {
             Success stories
           </div>
           <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-4xl">
-            3,200+ marriages and counting
+            Real couples, real weddings
           </h2>
         </div>
         <Button variant="outline" className="hidden lg:inline-flex" render={<Link href="/stories" />}>
@@ -75,7 +84,7 @@ export function SuccessStories() {
       {/* mobile: uniform horizontal scroll */}
       <div className="pn-scroll-x flex gap-3.5 overflow-x-auto pr-5 [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
         {homeStories.map((story, i) => (
-          <Reveal key={story.couple} delay={i * 120} className="w-65 shrink-0">
+          <Reveal key={story.id ?? story.couple} delay={i * 120} className="w-65 shrink-0">
             <StoryCard story={story} imgClassName="h-42.5" imgPosition="object-top" />
           </Reveal>
         ))}
@@ -88,8 +97,8 @@ export function SuccessStories() {
         </Reveal>
         <div className="flex flex-col gap-7">
           {homeStories.slice(1).map((story, i) => (
-            <Reveal key={story.couple} delay={(i + 1) * 120} className="flex-1">
-              <StoryCard story={story} imgClassName="h-32" compact />
+            <Reveal key={story.id ?? story.couple} delay={(i + 1) * 120} className="flex-1">
+              <StoryCard story={story} imgClassName="h-32" imgPosition="object-top" compact />
             </Reveal>
           ))}
         </div>

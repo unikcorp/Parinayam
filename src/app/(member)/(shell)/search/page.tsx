@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useInfiniteSearchResults } from "@/hooks/use-search-results";
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import type { SearchFilters } from "@/types/profile";
+import { ProfileCardGridSkeleton } from "@/components/shared/loading-skeletons";
 
 const sortOptions: { label: string; value: SearchFilters["sort"] }[] = [
   { label: "Best match", value: "match" },
@@ -136,7 +137,7 @@ export default function SearchPage() {
         </div>
 
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading matches…</p>
+          <ProfileCardGridSkeleton count={8} />
         ) : isError ? (
           <div className="flex flex-col items-center gap-2 py-16 text-center">
             <p className="text-sm font-semibold text-destructive">Unable to load search results.</p>

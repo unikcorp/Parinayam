@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useNotificationSocket } from "@/features/notifications/use-notification-socket";
 import { useMessageSocket } from "@/features/messaging/use-message-socket";
+import { AppShellSkeleton } from "@/components/shared/loading-skeletons";
 
 // Every route under (member) — dashboard, search, messages, settings,
 // checkout, profile — requires a logged-in member. Without this, visiting
@@ -30,11 +30,7 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
   }, [isRestoring, isAuthenticated, router]);
 
   if (isRestoring || !isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center gap-2 text-sm text-faint">
-        <Loader2 className="size-4 animate-spin" /> Loading…
-      </div>
-    );
+    return <AppShellSkeleton />;
   }
 
   return <>{children}</>;

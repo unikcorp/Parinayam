@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 type Method = "upi" | "card" | "netbanking" | "wallet";
 const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
@@ -53,7 +54,11 @@ function CheckoutPageInner() {
   }
 
   if (plansLoading) {
-    return <div className="py-24 text-center text-sm text-faint">Loading…</div>;
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <SectionSkeleton />
+      </div>
+    );
   }
 
   if (plansError || !plan) {
@@ -214,7 +219,13 @@ function CheckoutPageInner() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="py-24 text-center text-sm text-faint">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+          <SectionSkeleton />
+        </div>
+      }
+    >
       <CheckoutPageInner />
     </Suspense>
   );

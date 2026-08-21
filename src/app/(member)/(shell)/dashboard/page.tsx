@@ -27,6 +27,8 @@ import { ProgressRing } from "@/components/shared/progress-ring";
 import { ProgressBar } from "@/components/shared/progress-bar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ProfileCardSkeleton } from "@/components/shared/loading-skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const quickActions = [
   { icon: Pencil, label: "Edit profile", tint: "bg-surface-blue text-primary", href: "/profile/edit" },
@@ -150,7 +152,13 @@ export default function DashboardPage() {
               </Link>
             </div>
             {suggestedLoading ? (
-              <p className="py-6 text-center text-sm text-faint">Finding matches…</p>
+              <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4.5 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="w-50 shrink-0 lg:w-auto">
+                    <ProfileCardSkeleton />
+                  </div>
+                ))}
+              </div>
             ) : suggestedMatches.length === 0 ? (
               <p className="py-6 text-center text-sm text-faint">
                 No suggestions yet — widen your profile details to find more matches.
@@ -191,7 +199,13 @@ export default function DashboardPage() {
                 </Link>
               </div>
               {recentlyViewedLoading ? (
-                <p className="py-6 text-center text-sm text-faint">Loading…</p>
+                <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div key={i} className="w-28 shrink-0 lg:w-auto">
+                      <ProfileCardSkeleton />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="pn-scroll-x -mx-5 flex gap-3 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
                   {recentlyViewed.slice(0, 5).map((r) => (
@@ -300,7 +314,7 @@ export default function DashboardPage() {
                 </>
               )
             ) : (
-              <div className="text-xs text-white/70">Loading…</div>
+              <Skeleton className="h-3 w-32 bg-white/15" />
             )}
             <Button
               render={<Link href="/plans" />}

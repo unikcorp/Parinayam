@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/input-otp";
 import { SegmentedControl } from "@/components/shared/segmented-control";
 import { ImageSlot } from "@/components/shared/image-slot";
+import { BrandMark } from "@/components/shared/brand-mark";
+import { PasswordInput } from "@/components/shared/password-input";
+import { useHasCustomLogo } from "@/hooks/use-branding";
 import { brand } from "@/data/brand";
 import {
   loginSchema,
@@ -77,8 +80,12 @@ const SECTION_TO_EDIT_STEP: Record<SectionKey, string> = {
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const hasCustomLogo = useHasCustomLogo();
   const [formError, setFormError] = useState<string | null>(null);
-  const [pendingDeletion, setPendingDeletion] = useState<{ phone: string; deletionDate: string } | null>(null);
+  const [pendingDeletion, setPendingDeletion] = useState<{
+    identifier: { mobileNumber?: string; email?: string };
+    deletionDate: string;
+  } | null>(null);
   const [recoveryPassword, setRecoveryPassword] = useState("");
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
@@ -121,7 +128,7 @@ export default function LoginPage() {
     setRecoveryLoading(true);
     try {
       await api.post("/api/members/account/cancel-deletion", {
-        mobileNumber: pendingDeletion.phone,
+        ...pendingDeletion.identifier,
         password: recoveryPassword,
       });
       setPendingDeletion(null);
@@ -204,14 +211,14 @@ export default function LoginPage() {
       }
 
       const data = await api.post<MemberLoginResponse>("/api/members/login", {
-        mobileNumber: values.phone,
+        email: values.email,
         password: values.password,
       });
       await completeLogin(data);
     } catch (error) {
       if (error instanceof ApiError && error.details?.code === "ACCOUNT_PENDING_DELETION") {
         setPendingDeletion({
-          phone: values.phone,
+          identifier: values.mode === "otp" ? { mobileNumber: values.phone } : { email: values.email },
           deletionDate: String(error.details.deletionDate),
         });
         return;
@@ -233,10 +240,8 @@ export default function LoginPage() {
 
         <div className="relative flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10">
-              {brand.logoLetter}
-            </span>
-            <span className="text-lg font-extrabold">{brand.name}</span>
+            <BrandMark className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10" />
+            {!hasCustomLogo && <span className="text-lg font-extrabold">{brand.name}</span>}
           </Link>
 
           <Link
@@ -317,8 +322,7 @@ export default function LoginPage() {
 
             <div>
               <label className="mb-1.5 block text-[13px] font-bold text-primary-deep">Password</label>
-              <Input
-                type="password"
+              <PasswordInput
                 value={recoveryPassword}
                 onChange={(e) => setRecoveryPassword(e.target.value)}
                 placeholder="Enter your password to confirm"
@@ -374,28 +378,55 @@ export default function LoginPage() {
           )}
         />
 
-        <label className="mb-2 block text-[13px] font-bold text-primary-deep">
-          Mobile number
-        </label>
-        <div className="mb-1 flex gap-2.5">
-          <div className="flex items-center gap-1.5 rounded-xl border border-input px-4 py-3.5 text-[15px] font-semibold whitespace-nowrap">
-            🇮🇳 +91 <ChevronDown className="size-3 text-faint" />
-          </div>
-          <Controller
-            name="phone"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                className="h-auto flex-1 rounded-xl border-primary px-4 py-3.5 text-[15px] font-semibold ring-4 ring-surface-blue"
+        {mode === "otp" ? (
+          <>
+            <label className="mb-2 block text-[13px] font-bold text-primary-deep">
+              Mobile number
+            </label>
+            <div className="mb-1 flex gap-2.5">
+              <div className="flex items-center gap-1.5 rounded-xl border border-input px-4 py-3.5 text-[15px] font-semibold whitespace-nowrap">
+                🇮🇳 +91 <ChevronDown className="size-3 text-faint" />
+              </div>
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    className="h-auto flex-1 rounded-xl border-primary px-4 py-3.5 text-[15px] font-semibold ring-4 ring-surface-blue"
+                  />
+                )}
               />
+            </div>
+            {errors.phone && (
+              <p className="mb-4 text-xs font-semibold text-destructive">
+                {errors.phone.message}
+              </p>
             )}
-          />
-        </div>
-        {errors.phone && (
-          <p className="mb-4 text-xs font-semibold text-destructive">
-            {errors.phone.message}
-          </p>
+          </>
+        ) : (
+          <>
+            <label className="mb-2 block text-[13px] font-bold text-primary-deep">
+              Email
+            </label>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="email"
+                  placeholder="you@example.com"
+                  className="h-auto rounded-xl border-primary px-4 py-3.5 text-[15px] font-semibold ring-4 ring-surface-blue"
+                />
+              )}
+            />
+            {errors.email && (
+              <p className="mt-1.5 mb-1 text-xs font-semibold text-destructive">
+                {errors.email.message}
+              </p>
+            )}
+          </>
         )}
 
         {mode === "otp" ? (
@@ -459,9 +490,8 @@ export default function LoginPage() {
               name="password"
               control={control}
               render={({ field }) => (
-                <Input
+                <PasswordInput
                   {...field}
-                  type="password"
                   placeholder="Enter your password"
                   className="h-auto rounded-xl px-4 py-3.5 text-[15px]"
                 />

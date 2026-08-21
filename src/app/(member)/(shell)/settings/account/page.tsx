@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Pause, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/shared/password-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { useMyProfile, useUpdateAccountStatus, useDeleteAccount, useUpdateBasicD
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import { useAuth } from "@/context/auth-context";
 import { ApiError } from "@/lib/api";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 function toDateInputValue(dob: string): string {
   return dob.includes("T") ? dob.slice(0, 10) : dob;
@@ -58,7 +60,7 @@ export default function AccountSettingsPage() {
   }, [data]);
 
   if (isLoading || !data) {
-    return <div className="py-16 text-center text-sm text-faint">Loading…</div>;
+    return <SectionSkeleton />;
   }
 
   const isPaused = data.member.account_status === "INACTIVE";
@@ -289,8 +291,7 @@ export default function AccountSettingsPage() {
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-bold text-primary-deep">Confirm your password</label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   className="h-auto rounded-xl px-3.5 py-2.5"

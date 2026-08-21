@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { FormProvider } from "react-hook-form";
 import { registrationSteps } from "@/data/registration/types";
 import { useRegistrationForm } from "@/features/registration-wizard/hooks/use-registration-form";
@@ -21,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { Button } from "@/components/ui/button";
+import { FormSkeleton } from "@/components/shared/loading-skeletons";
 import type { MemberProfileResponse } from "@/types/member-profile";
 import type { RegistrationFormValues } from "@/features/registration-wizard/schema";
 
@@ -362,8 +362,8 @@ export default function ProfileEditPage() {
 
   if (isLoadingProfile || lookups.isLoading) {
     return (
-      <div className="flex items-center justify-center gap-2 py-24 text-sm text-faint">
-        <Loader2 className="size-4 animate-spin" /> Loading your profile…
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <FormSkeleton fields={6} />
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { ImageSlot } from "@/components/shared/image-slot";
 import { Button } from "@/components/ui/button";
 import { useBlockedMembers, useUnblockMember } from "@/hooks/use-blocked-members";
 import { ApiError } from "@/lib/api";
+import { ListRowsSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function BlockedUsersPage() {
   const { data, isLoading, isError } = useBlockedMembers();
@@ -25,7 +26,7 @@ export default function BlockedUsersPage() {
     <div className="flex flex-col gap-5.5">
       <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-primary-deep">Blocked Users</h1>
 
-      {isLoading && <div className="py-16 text-center text-sm text-faint">Loading…</div>}
+      {isLoading && <ListRowsSkeleton />}
 
       {isError && (
         <div className="flex flex-col items-center gap-2 py-16 text-center">

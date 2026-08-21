@@ -9,6 +9,7 @@ import { useMembership } from "@/features/membership/use-membership";
 import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
 import { ApiError } from "@/lib/api";
 import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
+import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function PlansPage() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function PlansPage() {
         </p>
       </div>
 
-      {isLoading && <div className="py-16 text-center text-sm text-faint">Loading plans…</div>}
+      {isLoading && <PlanCardsSkeleton />}
 
       {isError && (
         <div className="py-16 text-center text-sm font-semibold text-destructive">

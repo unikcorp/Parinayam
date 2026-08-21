@@ -18,8 +18,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { brand } from "@/data/brand";
-import { faqs } from "@/data/faqs.data";
-import { useCmsPage } from "@/hooks/use-cms-page";
+import { useFaqs } from "@/hooks/use-faqs";
+import { AccordionSkeleton } from "@/components/shared/loading-skeletons";
 
 const channels = [
   { icon: MessageCircle, tint: "bg-surface-blue text-primary", title: "Live chat", desc: "Avg. wait under 2 minutes", cta: "Start chat" },
@@ -30,7 +30,8 @@ const channels = [
 
 export default function HelpCenterPage() {
   const [topic, setTopic] = useState("Billing & refunds");
-  const { data: faqPage } = useCmsPage("faq");
+  const { data: faqs, isLoading: isFaqsLoading } = useFaqs();
+  const displayedFaqs = faqs ?? [];
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface">
@@ -78,26 +79,25 @@ export default function HelpCenterPage() {
         <div className="grid grid-cols-1 gap-7 lg:grid-cols-[1fr_380px]">
           <div>
             <h2 className="mb-4 text-lg font-extrabold text-primary-deep lg:text-[22px]">
-              {faqPage?.cms_title ?? "Frequently asked questions"}
+              Frequently asked questions
             </h2>
-            {faqPage?.cms_content ? (
-              <div
-                className="rounded-2xl border border-card-border bg-card p-5 text-[14px] leading-[1.75] text-muted-foreground lg:p-6.5 [&_h1]:mb-2 [&_h1]:font-extrabold [&_h1]:text-primary-deep [&_h2]:mb-2 [&_h2]:font-extrabold [&_h2]:text-primary-deep [&_h3]:mb-1.5 [&_h3]:text-[15px] [&_h3]:font-bold [&_h3]:text-primary-deep [&_p]:mb-4 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:text-primary-deep [&_a]:text-primary [&_a]:underline"
-                dangerouslySetInnerHTML={{ __html: faqPage.cms_content }}
-              />
+            {isFaqsLoading ? (
+              <AccordionSkeleton />
+            ) : displayedFaqs.length === 0 ? (
+              <p className="py-10 text-center text-sm text-faint">No FAQs yet — check back soon.</p>
             ) : (
               <Accordion defaultValue={["faq-0"]} className="flex flex-col gap-2.5">
-                {faqs.map((f, i) => (
+                {displayedFaqs.map((f, i) => (
                   <AccordionItem
-                    key={f.q}
+                    key={f.faq_id}
                     value={`faq-${i}`}
                     className="overflow-hidden rounded-2xl border border-card-border bg-card"
                   >
                     <AccordionTrigger className="px-5 py-4 text-[15px] font-bold text-primary-deep hover:no-underline">
-                      {f.q}
+                      {f.question}
                     </AccordionTrigger>
                     <AccordionContent className="px-5 pb-4.5 text-sm leading-[1.65] text-muted-foreground">
-                      {f.a}
+                      {f.answer}
                     </AccordionContent>
                   </AccordionItem>
                 ))}

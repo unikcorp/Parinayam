@@ -6,6 +6,7 @@ import { useMyProfile } from "@/hooks/use-my-profile";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useMembership } from "@/features/membership/use-membership";
 import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
+import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function BillingSettingsPage() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function BillingSettingsPage() {
       <div>
         <div className="mb-4 text-lg font-extrabold text-primary-deep">Available plans</div>
 
-        {isLoading && <div className="py-10 text-center text-sm text-faint">Loading plans…</div>}
+        {isLoading && <PlanCardsSkeleton />}
 
         {isError && (
           <div className="py-10 text-center text-sm font-semibold text-destructive">

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { FormProvider } from "react-hook-form";
 import { registrationSteps } from "@/data/registration/types";
 import { registrationFieldsByStep } from "@/features/registration-wizard/schema";
@@ -25,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { Button } from "@/components/ui/button";
+import { FormSkeleton } from "@/components/shared/loading-skeletons";
 
 import { AccountInfoStep } from "@/features/registration-wizard/components/account-info";
 import { OtpGate } from "@/features/registration-wizard/components/otp-gate";
@@ -319,9 +319,7 @@ export default function RegisterPage() {
                 // option list has arrived can end up stuck, so nothing here
                 // renders until the real religion/caste/country/... lists
                 // are actually in.
-                <div className="flex items-center justify-center gap-2 py-16 text-sm text-faint">
-                  <Loader2 className="size-4 animate-spin" /> Loading form options…
-                </div>
+                <FormSkeleton fields={5} className="py-4" />
               ) : (
                 <>
                   {step === 0 && <AccountInfoStep lookups={lookups} />}

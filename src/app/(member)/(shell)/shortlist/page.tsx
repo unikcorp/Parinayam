@@ -8,6 +8,7 @@ import { MobileBackHeader } from "@/components/layout/mobile-back-header";
 import { formatRelativeTime } from "@/lib/format-time";
 import { useShortlist, useToggleShortlist } from "@/features/shortlist/use-shortlist";
 import type { ShortlistRecord } from "@/features/shortlist/types";
+import { ListRowsSkeleton } from "@/components/shared/loading-skeletons";
 
 function ShortlistRow({ entry }: { entry: ShortlistRecord }) {
   const toggle = useToggleShortlist();
@@ -65,7 +66,7 @@ export default function ShortlistPage() {
         </div>
 
         {isLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading…</p>
+          <ListRowsSkeleton />
         ) : shortlist.length === 0 ? (
           <p className="py-16 text-center text-sm text-faint">
             You haven&apos;t shortlisted anyone yet. Tap the star on a profile to save it here.

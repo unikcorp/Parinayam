@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { BrandMark } from "@/components/shared/brand-mark";
+import { useHasCustomLogo } from "@/hooks/use-branding";
 import { NotificationBell } from "@/features/notifications/components/NotificationBell";
 import { useMembership } from "@/features/membership/use-membership";
 
@@ -25,6 +27,7 @@ export function AppHeader() {
   const { user, logout } = useAuth();
   const { data: profile } = useMyProfile();
   const { isPremium } = useMembership();
+  const hasCustomLogo = useHasCustomLogo();
   const profilePhoto = profile?.photos.find((p) => p.is_profile_photo);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,10 +53,8 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-card-border bg-card px-12 py-3.5 lg:flex">
       <div className="flex items-center gap-10">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="bg-dark-panel-gradient flex size-9 items-center justify-center rounded-[11px] text-lg font-extrabold text-gold-light">
-            {brand.logoLetter}
-          </span>
-          <span className="text-lg font-extrabold text-primary">{brand.name}</span>
+          <BrandMark className="bg-dark-panel-gradient flex size-9 items-center justify-center rounded-[11px] text-lg font-extrabold text-gold-light" />
+          {!hasCustomLogo && <span className="text-lg font-extrabold text-primary">{brand.name}</span>}
         </Link>
         <nav className="flex gap-2 text-[14.5px] font-semibold">
           {navLinks.map((link) => (

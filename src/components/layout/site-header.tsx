@@ -6,6 +6,8 @@ import { Menu } from "lucide-react";
 import { brand } from "@/data/brand";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { BrandMark } from "@/components/shared/brand-mark";
+import { useHasCustomLogo } from "@/hooks/use-branding";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -18,6 +20,7 @@ const navLinks = [
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const hasCustomLogo = useHasCustomLogo();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -34,17 +37,20 @@ export function SiteHeader() {
       )}
     >
       <Link href="/" className="flex items-center gap-2.5 lg:gap-3">
-        <span className="bg-dark-panel-gradient flex size-8.5 items-center justify-center rounded-[10px] text-base font-extrabold text-gold-light lg:size-10 lg:rounded-xl lg:text-xl">
-          {brand.logoLetter}
-        </span>
-        <span className="flex flex-col lg:block">
-          <span className="text-lg font-extrabold tracking-tight text-primary lg:text-xl">
-            {brand.name}
+        <BrandMark
+          className="bg-dark-panel-gradient flex size-8.5 items-center justify-center rounded-[10px] text-base font-extrabold text-gold-light lg:size-10 lg:rounded-xl lg:text-xl"
+          imageClassName="h-12 w-auto max-w-44 lg:h-15"
+        />
+        {!hasCustomLogo && (
+          <span className="flex flex-col lg:block">
+            <span className="text-lg font-extrabold tracking-tight text-primary lg:text-xl">
+              {brand.name}
+            </span>
+            <span className="hidden text-[11px] font-semibold tracking-wide text-faint uppercase lg:block">
+              Matrimony
+            </span>
           </span>
-          <span className="hidden text-[11px] font-semibold tracking-wide text-faint uppercase lg:block">
-            Matrimony
-          </span>
-        </span>
+        )}
       </Link>
 
       <nav className="hidden items-center gap-8 text-[15px] font-semibold text-muted-foreground lg:flex">

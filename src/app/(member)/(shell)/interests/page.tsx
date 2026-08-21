@@ -9,6 +9,7 @@ import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
 import { formatRelativeTime } from "@/lib/format-time";
 import { useReceivedInterests, useRespondToInterest, useSentInterests } from "@/features/interests/use-interests";
 import type { InterestRecord, InterestStatus } from "@/features/interests/types";
+import { ListRowsSkeleton } from "@/components/shared/loading-skeletons";
 
 const STATUS_LABEL: Record<InterestStatus, { label: string; className: string }> = {
   PENDING: { label: "Pending", className: "bg-surface-cream-2 text-gold-text" },
@@ -108,7 +109,7 @@ export default function InterestsPage() {
 
         <TabsContent value="received" className="mt-4">
           {receivedLoading ? (
-            <p className="py-16 text-center text-sm text-faint">Loading…</p>
+            <ListRowsSkeleton />
           ) : received.length === 0 ? (
             <p className="py-16 text-center text-sm text-faint">No interests received yet.</p>
           ) : (
@@ -122,7 +123,7 @@ export default function InterestsPage() {
 
         <TabsContent value="sent" className="mt-4">
           {sentLoading ? (
-            <p className="py-16 text-center text-sm text-faint">Loading…</p>
+            <ListRowsSkeleton />
           ) : sent.length === 0 ? (
             <p className="py-16 text-center text-sm text-faint">You haven&apos;t sent any interests yet.</p>
           ) : (

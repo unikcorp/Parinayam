@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { calculateAge } from "@/types/member-profile";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 const editSections = [
   { label: "Personal details", desc: "Height, appearance, community, location" },
@@ -23,7 +24,7 @@ export default function ProfileSettingsPage() {
   const { data, isLoading, isError } = useMyProfile();
 
   if (isLoading) {
-    return <div className="py-16 text-center text-sm text-faint">Loading your profile…</div>;
+    return <SectionSkeleton />;
   }
 
   if (isError || !data) {

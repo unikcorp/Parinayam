@@ -4,6 +4,7 @@ import { Rocket } from "lucide-react";
 import { MobileBackHeader } from "@/components/layout/mobile-back-header";
 import { useMembership } from "@/features/membership/use-membership";
 import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 // No boost feature exists on the backend yet — this is intentionally just
 // a locked placeholder (per spec: "if the feature UI doesn't exist yet, add
@@ -24,7 +25,7 @@ export default function ProfileBoostPage() {
 
         <div className="mx-auto max-w-sm py-10">
           {isLoading ? (
-            <p className="text-center text-sm text-faint">Loading…</p>
+            <SectionSkeleton />
           ) : !canUseProfileBoost ? (
             <UpgradePrompt
               feature="Profile Boost"

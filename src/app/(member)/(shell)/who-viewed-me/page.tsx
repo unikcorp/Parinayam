@@ -9,6 +9,7 @@ import { useProfileVisitors } from "@/features/profile-views/use-profile-views";
 import { useMembership } from "@/features/membership/use-membership";
 import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
 import type { ProfileVisitorRecord } from "@/features/profile-views/types";
+import { ListRowsSkeleton } from "@/components/shared/loading-skeletons";
 
 function VisitorRow({ entry }: { entry: ProfileVisitorRecord }) {
   return (
@@ -55,7 +56,7 @@ export default function WhoViewedMePage() {
         </div>
 
         {membershipLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading…</p>
+          <ListRowsSkeleton />
         ) : !canSeeWhoViewedMe ? (
           <div className="mx-auto max-w-sm py-10">
             <UpgradePrompt
@@ -64,7 +65,7 @@ export default function WhoViewedMePage() {
             />
           </div>
         ) : isLoading ? (
-          <p className="py-16 text-center text-sm text-faint">Loading…</p>
+          <ListRowsSkeleton />
         ) : visitors.length === 0 ? (
           <p className="py-16 text-center text-sm text-faint">
             No one has viewed your profile yet.

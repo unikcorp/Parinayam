@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useMySubscriptions } from "@/features/subscription/use-subscription";
 import { useMembership } from "@/features/membership/use-membership";
 import { useMyProfile } from "@/hooks/use-my-profile";
+import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 
 function limitLabel(limit: number | null, noun: string) {
   return limit === null ? `Unlimited ${noun}` : `${limit} ${noun}`;
@@ -33,7 +34,11 @@ function OrderSuccessPageInner() {
   const subscription = subscriptions?.find((s) => s.id === subscriptionId);
 
   if (subsLoading || membershipLoading) {
-    return <div className="py-24 text-center text-sm text-faint">Loading…</div>;
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <SectionSkeleton />
+      </div>
+    );
   }
 
   if (!subscription) {
@@ -123,7 +128,13 @@ function OrderSuccessPageInner() {
 
 export default function OrderSuccessPage() {
   return (
-    <Suspense fallback={<div className="py-24 text-center text-sm text-faint">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+          <SectionSkeleton />
+        </div>
+      }
+    >
       <OrderSuccessPageInner />
     </Suspense>
   );

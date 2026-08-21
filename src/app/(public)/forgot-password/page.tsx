@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, ChevronDown, ArrowLeft, Check } from "lucide-react";
+import { Lock, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +14,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { ImageSlot } from "@/components/shared/image-slot";
+import { BrandMark } from "@/components/shared/brand-mark";
+import { PasswordInput } from "@/components/shared/password-input";
+import { useHasCustomLogo } from "@/hooks/use-branding";
 import { brand } from "@/data/brand";
 import {
   forgotPasswordSchema,
@@ -25,6 +28,7 @@ import { api, ApiError } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const hasCustomLogo = useHasCustomLogo();
   const [formError, setFormError] = useState<string | null>(null);
   const [otpRequested, setOtpRequested] = useState(false);
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
@@ -41,16 +45,16 @@ export default function ForgotPasswordPage() {
   });
 
   async function handleRequestOtp() {
-    const phoneValid = await trigger("phone");
-    if (!phoneValid) return;
+    const emailValid = await trigger("email");
+    if (!emailValid) return;
 
     setFormError(null);
     setIsRequestingOtp(true);
     try {
-      // No SMS provider wired up yet (same dummy-OTP convention as login) —
-      // this just confirms the mobile number belongs to a real member and
-      // reveals the OTP + new-password step.
-      await api.post("/api/members/password/forgot", { mobileNumber: getValues("phone") });
+      // No email provider wired up yet (same dummy-OTP convention as login) —
+      // this just confirms the email belongs to a real member and reveals
+      // the OTP + new-password step.
+      await api.post("/api/members/password/forgot", { email: getValues("email") });
       setOtpRequested(true);
     } catch (error) {
       setFormError(error instanceof ApiError ? error.message : "Something went wrong. Please try again.");
@@ -63,7 +67,7 @@ export default function ForgotPasswordPage() {
     setFormError(null);
     try {
       await api.post("/api/members/password/reset", {
-        mobileNumber: values.phone,
+        email: values.email,
         otp: values.otp,
         newPassword: values.newPassword,
       });
@@ -82,10 +86,8 @@ export default function ForgotPasswordPage() {
 
         <div className="relative flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10">
-              {brand.logoLetter}
-            </span>
-            <span className="text-lg font-extrabold">{brand.name}</span>
+            <BrandMark className="flex size-9 items-center justify-center rounded-[11px] bg-white/12 text-lg font-extrabold text-gold-light lg:size-10" />
+            {!hasCustomLogo && <span className="text-lg font-extrabold">{brand.name}</span>}
           </Link>
 
           <Link
@@ -108,7 +110,7 @@ export default function ForgotPasswordPage() {
             Let&apos;s get you back in.
           </h1>
           <p className="mx-auto mt-3 hidden max-w-md text-center text-base leading-[1.7] text-white/70 lg:block">
-            Verify your mobile number to set a new password.
+            Verify your email to set a new password.
           </p>
         </div>
       </aside>
@@ -134,7 +136,7 @@ export default function ForgotPasswordPage() {
               Forgot password
             </h2>
             <p className="mt-1.5 mb-6 text-[14.5px] text-muted-foreground lg:mb-8 lg:text-[15.5px]">
-              Enter your mobile number to receive an OTP and set a new password.
+              Enter your email to receive an OTP and set a new password.
             </p>
 
             {formError && (
@@ -143,24 +145,21 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <label className="mb-2 block text-[13px] font-bold text-primary-deep">Mobile number</label>
-            <div className="mb-1 flex gap-2.5">
-              <div className="flex items-center gap-1.5 rounded-xl border border-input px-4 py-3.5 text-[15px] font-semibold whitespace-nowrap">
-                🇮🇳 +91 <ChevronDown className="size-3 text-faint" />
-              </div>
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    disabled={otpRequested}
-                    className="h-auto flex-1 rounded-xl border-primary px-4 py-3.5 text-[15px] font-semibold ring-4 ring-surface-blue"
-                  />
-                )}
-              />
-            </div>
-            {errors.phone && <p className="mb-4 text-xs font-semibold text-destructive">{errors.phone.message}</p>}
+            <label className="mb-2 block text-[13px] font-bold text-primary-deep">Email</label>
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="email"
+                  disabled={otpRequested}
+                  placeholder="you@example.com"
+                  className="h-auto rounded-xl border-primary px-4 py-3.5 text-[15px] font-semibold ring-4 ring-surface-blue"
+                />
+              )}
+            />
+            {errors.email && <p className="mt-1.5 mb-4 text-xs font-semibold text-destructive">{errors.email.message}</p>}
 
             {otpRequested && (
               <>
@@ -191,9 +190,8 @@ export default function ForgotPasswordPage() {
                   name="newPassword"
                   control={control}
                   render={({ field }) => (
-                    <Input
+                    <PasswordInput
                       {...field}
-                      type="password"
                       placeholder="Enter a new password"
                       className="h-auto rounded-xl px-4 py-3.5 text-[15px]"
                     />
@@ -208,9 +206,8 @@ export default function ForgotPasswordPage() {
                   name="confirmPassword"
                   control={control}
                   render={({ field }) => (
-                    <Input
+                    <PasswordInput
                       {...field}
-                      type="password"
                       placeholder="Re-enter your new password"
                       className="h-auto rounded-xl px-4 py-3.5 text-[15px]"
                     />

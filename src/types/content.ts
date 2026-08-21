@@ -1,4 +1,6 @@
 export interface SuccessStory {
+  /** Present for stories loaded from the admin CMS — used as a stable list key. */
+  id?: number;
   couple: string;
   when: string;
   place: string;
@@ -27,9 +29,4 @@ export interface BlogTeaserPost {
   meta: string;
   /** Real photo path (e.g. "/images/success1.jpg") — falls back to a placeholder when omitted. */
   image?: string;
-}
-
-export interface Faq {
-  q: string;
-  a: string;
 }

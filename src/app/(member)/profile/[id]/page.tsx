@@ -15,13 +15,18 @@ import { UpgradePrompt } from "@/features/membership/components/UpgradePrompt";
 import { useProfile } from "@/hooks/use-profile";
 import { buildProfileSections } from "@/lib/profile-sections";
 import { ApiError } from "@/lib/api";
+import { ProfileDetailSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function MemberProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { data: profile, isLoading, isError, error } = useProfile(id);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center py-24 text-sm text-faint">Loading profile…</div>;
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <ProfileDetailSkeleton />
+      </div>
+    );
   }
 
   if (error instanceof ApiError && error.status === 403) {
