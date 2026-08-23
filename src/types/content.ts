@@ -10,10 +10,14 @@ export interface SuccessStory {
 }
 
 export interface Testimonial {
+  /** Present for testimonials loaded from the admin CMS — used as a stable list key. */
+  id?: number;
   initials: string;
   name: string;
   meta: string;
   quote: string;
+  /** 1-5 — defaults to 5 stars when omitted. */
+  rating?: number;
 }
 
 export interface BlogPost {

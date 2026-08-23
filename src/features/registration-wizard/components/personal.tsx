@@ -1,7 +1,8 @@
 "use client";
 
 import { Controller, useFormContext } from "react-hook-form";
-import { Field, FieldGroup, SelectField } from "@/components/forms/form-fields";
+import { Field, FieldGroup, SelectField, SearchableSelectField } from "@/components/forms/form-fields";
+import { useFieldVisibility } from "@/hooks/use-field-visibility";
 import type { RegistrationFormValues } from "../schema";
 import type { RegistrationLookups } from "../use-registration-lookups";
 
@@ -40,10 +41,13 @@ function WillingToMarryOtherCasteField() {
 
 export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
   const { watch } = useFormContext<RegistrationFormValues>();
+  const { isFieldEnabled } = useFieldVisibility();
   const religion = watch("religion");
   const caste = watch("caste");
   const country = watch("country");
   const state = watch("state");
+
+  const showLifestyle = isFieldEnabled("diet") || isFieldEnabled("smokingHabits") || isFieldEnabled("drinkingHabits");
 
   return (
     <div className="flex flex-col gap-7">
@@ -60,15 +64,25 @@ export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
 
       <FieldGroup title="Physical attributes">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <SelectField<RegistrationFormValues> name="weight" label="Weight" options={weights} />
-          <SelectField<RegistrationFormValues> name="bodyType" label="Body type" options={bodyTypes} />
-          <SelectField<RegistrationFormValues> name="complexion" label="Complexion" options={complexions} />
-          <SelectField<RegistrationFormValues>
-            name="physicalStatus"
-            label="Physical status"
-            options={physicalStatuses}
-          />
-          <SelectField<RegistrationFormValues> name="bloodGroup" label="Blood group" options={bloodGroups} />
+          {isFieldEnabled("weight") && (
+            <SelectField<RegistrationFormValues> name="weight" label="Weight" options={weights} />
+          )}
+          {isFieldEnabled("bodyType") && (
+            <SelectField<RegistrationFormValues> name="bodyType" label="Body type" options={bodyTypes} />
+          )}
+          {isFieldEnabled("complexion") && (
+            <SelectField<RegistrationFormValues> name="complexion" label="Complexion" options={complexions} />
+          )}
+          {isFieldEnabled("physicalStatus") && (
+            <SelectField<RegistrationFormValues>
+              name="physicalStatus"
+              label="Physical status"
+              options={physicalStatuses}
+            />
+          )}
+          {isFieldEnabled("bloodGroup") && (
+            <SelectField<RegistrationFormValues> name="bloodGroup" label="Blood group" options={bloodGroups} />
+          )}
         </div>
       </FieldGroup>
 
@@ -79,36 +93,50 @@ export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
             label="Caste"
             options={lookups.casteOptions(religion)}
           />
-          <SelectField<RegistrationFormValues>
-            name="subCaste"
-            label="Sub caste"
-            options={lookups.subCasteOptions(caste)}
-          />
-          <WillingToMarryOtherCasteField />
+          {isFieldEnabled("subCaste") && (
+            <SelectField<RegistrationFormValues>
+              name="subCaste"
+              label="Sub caste"
+              options={lookups.subCasteOptions(caste)}
+            />
+          )}
+          {isFieldEnabled("willingToMarryOtherCaste") && <WillingToMarryOtherCasteField />}
         </div>
       </FieldGroup>
 
-      <FieldGroup title="Lifestyle">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <SelectField<RegistrationFormValues> name="diet" label="Diet" options={diets} />
-          <SelectField<RegistrationFormValues> name="smokingHabits" label="Smoking" options={smokingOptions} />
-          <SelectField<RegistrationFormValues> name="drinkingHabits" label="Drinking" options={drinkingOptions} />
-        </div>
-      </FieldGroup>
+      {showLifestyle && (
+        <FieldGroup title="Lifestyle">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {isFieldEnabled("diet") && (
+              <SelectField<RegistrationFormValues> name="diet" label="Diet" options={diets} />
+            )}
+            {isFieldEnabled("smokingHabits") && (
+              <SelectField<RegistrationFormValues> name="smokingHabits" label="Smoking" options={smokingOptions} />
+            )}
+            {isFieldEnabled("drinkingHabits") && (
+              <SelectField<RegistrationFormValues>
+                name="drinkingHabits"
+                label="Drinking"
+                options={drinkingOptions}
+              />
+            )}
+          </div>
+        </FieldGroup>
+      )}
 
       <FieldGroup title="Location">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          <SelectField<RegistrationFormValues>
+          <SearchableSelectField<RegistrationFormValues>
             name="country"
             label="Country"
             options={lookups.countryOptions}
           />
-          <SelectField<RegistrationFormValues>
+          <SearchableSelectField<RegistrationFormValues>
             name="state"
             label="State"
             options={lookups.stateOptions(country)}
           />
-          <SelectField<RegistrationFormValues>
+          <SearchableSelectField<RegistrationFormValues>
             name="district"
             label="District"
             options={lookups.districtOptions(state)}

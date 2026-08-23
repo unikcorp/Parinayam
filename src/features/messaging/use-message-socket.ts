@@ -6,7 +6,7 @@ import { io, type Socket } from "socket.io-client";
 import { useAuth } from "@/context/auth-context";
 import type { MessageRecord } from "@/types/messaging";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
 
 // Same pattern as features/notifications/use-notification-socket.ts — live
 // delivery shortcut only. Appends the message straight into any already-open

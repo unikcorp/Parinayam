@@ -6,7 +6,7 @@ export interface BrandingData {
   favicon: string | null;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
 
 export function brandingImageUrl(image: string | null): string | null {
   if (!image) return null;

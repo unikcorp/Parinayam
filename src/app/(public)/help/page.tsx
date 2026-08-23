@@ -1,16 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { MessageCircle, Phone, Mail, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MessageCircle, Phone, Mail } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -29,7 +19,6 @@ const channels = [
 ];
 
 export default function HelpCenterPage() {
-  const [topic, setTopic] = useState("Billing & refunds");
   const { data: faqs, isLoading: isFaqsLoading } = useFaqs();
   const displayedFaqs = faqs ?? [];
 
@@ -39,18 +28,9 @@ export default function HelpCenterPage() {
         <h1 className="mb-2.5 text-2xl font-extrabold tracking-[-0.01em] lg:text-4xl">
           How can we help?
         </h1>
-        <p className="mb-5 text-sm text-white/70 lg:text-[15.5px]">
-          Search articles, or reach our Kerala-based support team directly.
+        <p className="text-sm text-white/70 lg:text-[15.5px]">
+          Reach our Kerala-based support team directly.
         </p>
-        <div className="mx-auto flex max-w-155 items-center gap-3 rounded-2xl bg-card p-2 pl-4.5 shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
-          <Search className="size-4.5 shrink-0 text-faint" />
-          <span className="flex-1 truncate text-left text-sm text-faint">
-            Try &quot;photo privacy&quot; or &quot;refund&quot;…
-          </span>
-          <Button size="sm" className="shrink-0">
-            Search
-          </Button>
-        </div>
       </section>
 
       <div className="mx-auto w-full max-w-275 px-5 pt-8 pb-12 lg:px-6 lg:pt-10">
@@ -76,11 +56,10 @@ export default function HelpCenterPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-7 lg:grid-cols-[1fr_380px]">
-          <div>
-            <h2 className="mb-4 text-lg font-extrabold text-primary-deep lg:text-[22px]">
-              Frequently asked questions
-            </h2>
+        <div>
+          <h2 className="mb-4 text-lg font-extrabold text-primary-deep lg:text-[22px]">
+            Frequently asked questions
+          </h2>
             {isFaqsLoading ? (
               <AccordionSkeleton />
             ) : displayedFaqs.length === 0 ? (
@@ -102,47 +81,7 @@ export default function HelpCenterPage() {
                   </AccordionItem>
                 ))}
               </Accordion>
-            )}
-          </div>
-
-          <aside className="rounded-[20px] border border-card-border bg-card p-6.5 lg:sticky lg:top-6">
-            <div className="mb-1.5 text-lg font-extrabold text-primary-deep">Raise a ticket</div>
-            <div className="mb-5 text-[13px] text-faint">We reply within 4 working hours.</div>
-            <label className="mb-1.75 block text-[12.5px] font-bold text-primary-deep">
-              Topic
-            </label>
-            <Select value={topic} onValueChange={(v) => v && setTopic(v)}>
-              <SelectTrigger className="mb-3.5 h-auto w-full rounded-xl px-3.5 py-3 text-sm font-semibold">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["Billing & refunds", "Account & profile", "Verification", "Safety & privacy", "Other"].map(
-                  (t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-            <label className="mb-1.75 block text-[12.5px] font-bold text-primary-deep">
-              Describe the issue
-            </label>
-            <Textarea
-              placeholder="Tell us what happened…"
-              rows={4}
-              className="mb-3.5 resize-none rounded-xl text-sm"
-            />
-            <div className="mb-4.5 flex items-center gap-2.5 rounded-xl border border-dashed border-input px-3.5 py-3 text-[13px] text-faint">
-              📎 Attach screenshot (optional)
-            </div>
-            <Button size="cta" className="w-full">
-              Submit ticket
-            </Button>
-            <div className="mt-3.5 text-center text-xs text-faint">
-              Or call <b className="text-primary-deep">1800-425-77-99</b> (9 AM – 9 PM IST)
-            </div>
-          </aside>
+          )}
         </div>
       </div>
     </div>

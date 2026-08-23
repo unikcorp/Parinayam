@@ -4,6 +4,23 @@ import type { MemberPartnerPreference, MemberProfileHoroscope, MemberProfileRow 
 const fallback = (v: string | number | null | undefined) =>
   v === null || v === undefined || v === "" ? "Not added yet" : String(v);
 
+// About Me / Partner Expectation free text goes through admin moderation —
+// a viewer who isn't the owner never sees unapproved text at all (the
+// server nulls it out before it reaches the client, same as an unapproved
+// photo), so this only ever has something to say on the owner's own page.
+function moderatedText(
+  text: string | null | undefined,
+  status: "PENDING" | "APPROVED" | "REJECTED" | undefined,
+  rejectionReason: string | null | undefined,
+): string {
+  if (!text) return "Not added yet";
+  if (status === "REJECTED") {
+    return rejectionReason ? `Rejected by admin: ${rejectionReason} — please edit and resubmit.` : "Rejected by admin — please edit and resubmit.";
+  }
+  if (status !== "APPROVED") return "Waiting for admin approval.";
+  return text;
+}
+
 // Only the columns actually rendered below — satisfied structurally by both
 // the full MemberProfileRow (/profile/me) and the trimmed, privacy-safe
 // PublicMemberProfileRow (/profile/[id]), so this one helper serves both
@@ -144,7 +161,14 @@ export function buildProfileSections({
           partnerPreference ? `${fallback(partnerPreference.age_from)} - ${fallback(partnerPreference.age_to)}` : "Not added yet",
         ],
         ["Min height", fallback(partnerPreference?.height_from)],
-        ["About partner", fallback(partnerPreference?.about_partner)],
+        [
+          "About partner",
+          moderatedText(
+            partnerPreference?.about_partner,
+            partnerPreference?.about_partner_status,
+            partnerPreference?.about_partner_rejection_reason,
+          ),
+        ],
       ],
     },
   ];

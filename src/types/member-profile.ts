@@ -42,6 +42,8 @@ export interface MemberProfileRow {
   smoking_habits: string | null;
   drinking_habits: string | null;
   about_me: string | null;
+  about_me_status: "PENDING" | "APPROVED" | "REJECTED";
+  about_me_rejection_reason: string | null;
   profile_completion: number;
   profile_status: "DRAFT" | "READY_FOR_VERIFICATION" | "COMPLETED";
   account_status: "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL";
@@ -77,6 +79,7 @@ export interface MemberProfileDocument {
   document_number: string | null;
   file_url: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  rejection_reason: string | null;
 }
 
 export interface MemberProfileHoroscope {
@@ -98,6 +101,8 @@ export interface MemberPartnerPreference {
   education_id: number | null;
   country_id: number | null;
   about_partner: string | null;
+  about_partner_status: "PENDING" | "APPROVED" | "REJECTED";
+  about_partner_rejection_reason: string | null;
   religion_name: string | null;
   caste_name: string | null;
   education_name: string | null;

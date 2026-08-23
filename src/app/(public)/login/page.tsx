@@ -291,7 +291,7 @@ export default function LoginPage() {
       {/* FORM */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="relative -mt-6 flex flex-col rounded-t-[24px] bg-card px-5 pt-6 pb-8 shadow-[0_-16px_44px_rgba(127,29,29,0.12)] lg:mt-0 lg:justify-center lg:rounded-none lg:px-22 lg:py-18 lg:shadow-none"
+        className="relative -mt-6 flex flex-col rounded-t-[24px] bg-card px-5 pt-6 pb-8 shadow-[0_-16px_44px_rgba(127,29,29,0.12)] lg:mt-0 lg:overflow-y-auto lg:rounded-none lg:px-22 lg:py-18 lg:shadow-none"
       >
         <h2 className="text-[26px] font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[34px]">
           Welcome back
@@ -533,6 +533,13 @@ export default function LoginPage() {
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-faint lg:hidden">
           <Lock className="size-3.5" /> Privacy protected
           <Check className="size-3.5" /> 100% verified profiles
+        </div>
+
+        <div className="mt-6 text-center text-[13.5px] text-faint">
+          Not registered yet?{" "}
+          <Link href="/register" className="font-bold text-primary hover:underline">
+            Register now
+          </Link>
         </div>
           </>
         )}

@@ -16,7 +16,7 @@ interface FaqRecord {
 
 async function getPublishedFaqs(): Promise<FaqRecord[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
     const res = await fetch(`${apiUrl}/api/faqs/published`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     const { data } = await res.json();

@@ -25,7 +25,7 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
             {result.name}, {result.age}
           </span>
           {result.verified && (
-            <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+            <span className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full bg-blue-500 text-white">
               <svg viewBox="0 0 24 24" className="size-2" fill="currentColor">
                 <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
               </svg>

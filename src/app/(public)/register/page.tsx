@@ -7,6 +7,7 @@ import { registrationSteps } from "@/data/registration/types";
 import { registrationFieldsByStep } from "@/features/registration-wizard/schema";
 import { useRegistrationForm } from "@/features/registration-wizard/hooks/use-registration-form";
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
+import { useFieldVisibility } from "@/hooks/use-field-visibility";
 import {
   registerSelfRequest,
   updatePersonalDetailsRequest,
@@ -53,8 +54,15 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
   const lookups = useRegistrationLookups();
+  const { isStepEnabled, disabledSteps } = useFieldVisibility();
+  const isStepEnabledAt = (index: number) => isStepEnabled(registrationSteps[index].key);
   const [showOtp, setShowOtp] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  // The furthest step the member has actually reached via Next/Skip/OTP —
+  // the stepper only lets them click back to an already-reached step, not
+  // jump ahead past ones they haven't gotten to (which would bypass the
+  // per-step validation/save that Next and Skip each do).
+  const [maxStepReached, setMaxStepReached] = useState(0);
   const [memberId, setMemberId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -72,7 +80,7 @@ export default function RegisterPage() {
     }
   }
 
-  const stepEstimate = Math.round(((step + 1) / registrationSteps.length) * 100);
+  const stepEstimate = Math.round((step / registrationSteps.length) * 100);
   const percent = realCompletion ?? stepEstimate;
 
   // Step 1 doesn't just save — it's the moment the account itself gets
@@ -115,7 +123,10 @@ export default function RegisterPage() {
   function handleOtpVerified() {
     setOtpVerified(true);
     setShowOtp(false);
-    setStep(ACCOUNT_INFO_STEP + 1);
+    let next = ACCOUNT_INFO_STEP + 1;
+    while (!isStepEnabledAt(next) && next < registrationSteps.length - 1) next++;
+    setStep(next);
+    setMaxStepReached((s) => Math.max(s, next));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -188,8 +199,13 @@ export default function RegisterPage() {
     try {
       await saveCurrentStep();
       await refreshCompletion(memberId);
-      const advanced = await goNext();
-      if (advanced) window.scrollTo({ top: 0, behavior: "smooth" });
+      const advanced = await goNext(isStepEnabledAt);
+      if (advanced) {
+        let next = Math.min(step + 1, registrationSteps.length - 1);
+        while (!isStepEnabledAt(next) && next < registrationSteps.length - 1) next++;
+        setMaxStepReached((s) => Math.max(s, next));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch (error) {
       setApiError(errorMessage(error, "Something went wrong while saving. Please try again."));
     } finally {
@@ -198,7 +214,7 @@ export default function RegisterPage() {
   }
 
   function handleBack() {
-    goBack();
+    goBack(isStepEnabledAt);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -208,15 +224,23 @@ export default function RegisterPage() {
     if (memberId != null) {
       skipStepRequest(memberId, Math.min(step + 1, 9)).catch(() => {});
     }
-    setStep((s) => Math.min(s + 1, registrationSteps.length - 1));
+    let next = Math.min(step + 1, registrationSteps.length - 1);
+    while (!isStepEnabledAt(next) && next < registrationSteps.length - 1) next++;
+    setStep(next);
+    setMaxStepReached((s) => Math.max(s, next));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // Steps past Account Info are only reachable once the phone is verified —
   // otherwise clicking ahead in the stepper would let someone skip the OTP
-  // gate entirely.
+  // gate entirely. Beyond that, clicking is only allowed to a step already
+  // reached via Next/Skip — clicking ahead would skip that step's own
+  // validation/save (or the OTP gate, for step 1) — and a step an admin has
+  // turned off entirely is never a valid destination.
   function handleStepClick(index: number) {
     if (index > ACCOUNT_INFO_STEP && !otpVerified) return;
+    if (index > maxStepReached) return;
+    if (!isStepEnabledAt(index)) return;
     setShowOtp(false);
     setStep(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -252,6 +276,8 @@ export default function RegisterPage() {
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
         <StepperSidebar
           activeIndex={step}
+          maxStepReached={maxStepReached}
+          disabledSteps={disabledSteps}
           onStepClick={otpVerified ? handleStepClick : undefined}
           onExit={saveAndExit}
         />
@@ -259,6 +285,8 @@ export default function RegisterPage() {
         <div className="flex flex-1 flex-col">
           <MobileStepHeader
             activeIndex={step}
+            maxStepReached={maxStepReached}
+            disabledSteps={disabledSteps}
             onStepClick={otpVerified ? handleStepClick : () => {}}
             onExit={saveAndExit}
             percent={percent}

@@ -32,13 +32,13 @@ export class ApiError extends Error {
 }
 
 const client = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001",
   withCredentials: true,
 });
 
 // Separate instance (no interceptors) so the refresh call itself can't trigger another refresh.
 const refreshClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001",
   withCredentials: true,
 });
 

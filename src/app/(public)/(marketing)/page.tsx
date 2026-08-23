@@ -9,12 +9,12 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FeaturedProfiles } from "@/components/landing/FeaturedProfiles";
 import { WhyParinayam } from "@/components/landing/WhyParinayam";
 import { SuccessStories } from "@/components/landing/SuccessStories";
+import { Testimonials } from "@/components/landing/Testimonials";
 import { PrivacySection } from "@/components/landing/PrivacySection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Reveal } from "@/components/shared/reveal";
 import { brand } from "@/data/brand";
-import { testimonials } from "@/data/testimonials.data";
 import { homeBlogPosts } from "@/data/blog-posts.data";
 import { buildMetadata, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -63,30 +63,7 @@ export default async function LandingPage() {
       <WhyParinayam />
       <SuccessStories />
 
-      {/* TESTIMONIALS */}
-      <section className="bg-surface px-5 py-9 lg:px-18 lg:py-24">
-        <div className="grid grid-cols-1 gap-4.5 lg:grid-cols-3 lg:gap-6">
-          {testimonials.map((t, i) => (
-            <Reveal key={t.name} delay={i * 100} className={i === 1 ? "lg:-translate-y-5" : ""}>
-              <div className="rounded-2xl border border-card-border bg-card p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover lg:p-7.5">
-                <div className="mb-3 text-gold">★★★★★</div>
-                <p className="mb-5 text-[15px] leading-[1.7] text-foreground/85">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10.5 items-center justify-center rounded-full bg-surface-blue text-[15px] font-extrabold text-primary">
-                    {t.initials}
-                  </span>
-                  <div>
-                    <div className="text-sm font-bold text-primary-deep">{t.name}</div>
-                    <div className="text-xs text-faint">{t.meta}</div>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <Testimonials />
 
       <PrivacySection />
 

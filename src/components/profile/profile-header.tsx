@@ -70,7 +70,7 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
               <span className="text-[28px] font-extrabold tracking-[-0.02em] whitespace-nowrap text-primary-deep">
                 {name}, {age}
               </span>
-              {verified && <Badge tone="primary">✓ Verified</Badge>}
+              {verified && <Badge tone="blue">✓ Verified</Badge>}
             </div>
             <div className="mt-2 text-[15px] text-muted-foreground">{details}</div>
             {(managedByLabel || lastActiveLabel) && (
@@ -208,7 +208,7 @@ function Badge({
   small,
   children,
 }: {
-  tone: "primary" | "gold" | "success";
+  tone: "primary" | "gold" | "success" | "blue";
   small?: boolean;
   children: React.ReactNode;
 }) {
@@ -216,6 +216,10 @@ function Badge({
     primary: "bg-primary text-white",
     gold: "bg-gold-gradient text-white",
     success: "bg-success-bg text-success",
+    // Verified checkmark blue — a distinct trust color, deliberately not
+    // the brand's burgundy/gold palette, matching the universal
+    // "verified" convention.
+    blue: "bg-blue-500 text-white",
   };
   return (
     <span

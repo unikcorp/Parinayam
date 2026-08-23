@@ -7,7 +7,7 @@ import { useAuth } from "@/context/auth-context";
 import { UNREAD_NOTIFICATIONS_KEY } from "./use-notifications";
 import type { NotificationRecord } from "./types";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
 
 // Socket.IO is a live-delivery shortcut only, never the source of truth —
 // the handshake authenticates itself via the same httpOnly member_refreshToken

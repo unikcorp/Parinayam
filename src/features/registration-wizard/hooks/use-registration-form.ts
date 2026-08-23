@@ -23,16 +23,28 @@ export function useRegistrationForm() {
 
   const lastStep = step === registrationSteps.length - 1;
 
-  async function goNext() {
+  // isStepEnabled lets a caller skip over admin-disabled steps (Site
+  // Settings > Enable/Disable Fields) instead of landing on one that's been
+  // turned off — optional so callers that don't care about that (e.g. a
+  // caller with no such config) just get the plain +1/-1 behavior.
+  async function goNext(isStepEnabled?: (index: number) => boolean) {
     const fields = registrationFieldsByStep[step];
     const valid = fields.length === 0 ? true : await trigger(fields);
     if (!valid) return false;
-    setStep((s) => Math.min(s + 1, registrationSteps.length - 1));
+    setStep((s) => {
+      let next = Math.min(s + 1, registrationSteps.length - 1);
+      while (isStepEnabled && !isStepEnabled(next) && next < registrationSteps.length - 1) next++;
+      return next;
+    });
     return true;
   }
 
-  function goBack() {
-    setStep((s) => Math.max(s - 1, 0));
+  function goBack(isStepEnabled?: (index: number) => boolean) {
+    setStep((s) => {
+      let prev = Math.max(s - 1, 0);
+      while (isStepEnabled && !isStepEnabled(prev) && prev > 0) prev--;
+      return prev;
+    });
   }
 
   return { form, step, setStep, lastStep, goNext, goBack };

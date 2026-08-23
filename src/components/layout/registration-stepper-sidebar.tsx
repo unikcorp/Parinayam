@@ -9,16 +9,26 @@ import { cn } from "@/lib/utils";
 
 export function StepperSidebar({
   activeIndex,
+  maxStepReached = Infinity,
+  disabledSteps,
   onStepClick,
   onExit,
 }: {
   activeIndex: number;
+  /** Furthest step reached via Next/Skip so far — steps beyond this render non-clickable. Omit to leave every step freely clickable (e.g. editing an already-complete profile). */
+  maxStepReached?: number;
+  /** Step keys an admin has turned off entirely (Site Settings > Enable/Disable Fields) — hidden from the list rather than just non-clickable. */
+  disabledSteps?: Set<string>;
   /** Omit to keep the sidebar a static display (e.g. before the account is verified). */
   onStepClick?: (index: number) => void;
   /** Omit to hide the exit control — e.g. mid-registration, before there's anywhere useful to exit to. */
   onExit?: () => void;
 }) {
   const hasCustomLogo = useHasCustomLogo();
+
+  const visibleSteps = registrationSteps
+    .map((step, i) => ({ step, i }))
+    .filter(({ step }) => !disabledSteps?.has(step.key));
 
   return (
     <aside className="bg-dark-panel-gradient hidden flex-col p-11 text-white lg:flex">
@@ -35,7 +45,7 @@ export function StepperSidebar({
             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12.5px] font-bold text-white/70 hover:bg-white/10 hover:text-white"
           >
             <ChevronLeft className="size-3.5" /> Exit
-          </button>    
+          </button>
         )}
       </div>
 
@@ -47,10 +57,10 @@ export function StepperSidebar({
       </div>
 
       <div className="flex flex-1 flex-col">
-        {registrationSteps.map((step, i) => {
+        {visibleSteps.map(({ step, i }, displayIndex) => {
           const done = i < activeIndex;
           const active = i === activeIndex;
-          const clickable = !!onStepClick;
+          const clickable = !!onStepClick && i <= maxStepReached;
           return (
             <button
               key={step.key}
@@ -68,9 +78,9 @@ export function StepperSidebar({
                     !done && !active && "border border-white/25 text-white/60"
                   )}
                 >
-                  {done ? <Check className="size-4" /> : i + 1}
+                  {done ? <Check className="size-4" /> : displayIndex + 1}
                 </div>
-                {i < registrationSteps.length - 1 && (
+                {displayIndex < visibleSteps.length - 1 && (
                   <div className="my-1 min-h-4.5 w-0.5 flex-1 bg-white/15" />
                 )}
               </div>

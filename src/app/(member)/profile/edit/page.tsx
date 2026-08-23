@@ -192,6 +192,11 @@ export default function ProfileEditPage() {
   const [isResume, setIsResume] = useState(false);
   const hubMode = !isResume;
   const [realCompletion, setRealCompletion] = useState<number | null>(null);
+  // Resume-only: the furthest step reached so far, so the sidebar/mobile
+  // stepper can't be clicked ahead of it — same "must Save & Continue, no
+  // jumping" rule as the initial registration wizard. Doesn't apply in hub
+  // mode, where every section is already filled in and free to revisit.
+  const [maxStepReached, setMaxStepReached] = useState(0);
 
   async function refreshCompletion(id: number) {
     try {
@@ -211,6 +216,9 @@ export default function ProfileEditPage() {
     const index = editStepKeys.indexOf(requestedStep as (typeof editStepKeys)[number]);
     if (index !== -1) {
       setStep(index);
+      // The backend sent us to whichever section is first-incomplete —
+      // that's already the legitimate frontier, so seed it here.
+      if (resume) setMaxStepReached(index);
     } else if (!resume) {
       // Plain "Edit Profile" click, no section requested — land on the
       // Review hub so the member picks which section to revisit.
@@ -242,7 +250,7 @@ export default function ProfileEditPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stepEstimate = Math.round(((step + 1) / stepHeadings.length) * 100);
+  const stepEstimate = Math.round((step / stepHeadings.length) * 100);
   const percent = realCompletion ?? stepEstimate;
 
   // Photos (6) & Verification (7) upload as the member picks files — nothing
@@ -311,13 +319,28 @@ export default function ProfileEditPage() {
       await refreshCompletion(memberId);
       // In hub mode, every section is reached from — and saves back to —
       // the Review hub, rather than advancing linearly through the wizard.
-      setStep(hubMode ? REVIEW_STEP_INDEX : (s) => Math.min(s + 1, stepHeadings.length - 1));
+      if (hubMode) {
+        setStep(REVIEW_STEP_INDEX);
+      } else {
+        const next = Math.min(step + 1, stepHeadings.length - 1);
+        setStep(next);
+        setMaxStepReached((s) => Math.max(s, next));
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setApiError(errorMessage(error, "Something went wrong while saving. Please try again."));
     } finally {
       setIsSaving(false);
     }
+  }
+
+  // In hub mode every section is already filled in, so clicking any step is
+  // fine. In the resume flow (profile still under 60%), the same "must Save
+  // & Continue, no jumping ahead" rule as initial registration applies.
+  function handleStepClick(index: number) {
+    if (!hubMode && index > maxStepReached) return;
+    setStep(index);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleBack() {
@@ -382,10 +405,21 @@ export default function ProfileEditPage() {
   return (
     <FormProvider {...form}>
       <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
-        <StepperSidebar activeIndex={step} onStepClick={setStep} onExit={saveAndExit} />
+        <StepperSidebar
+          activeIndex={step}
+          maxStepReached={hubMode ? undefined : maxStepReached}
+          onStepClick={handleStepClick}
+          onExit={saveAndExit}
+        />
 
         <div className="flex flex-1 flex-col">
-          <MobileStepHeader activeIndex={step} onStepClick={setStep} onExit={saveAndExit} percent={percent} />
+          <MobileStepHeader
+            activeIndex={step}
+            maxStepReached={hubMode ? undefined : maxStepReached}
+            onStepClick={handleStepClick}
+            onExit={saveAndExit}
+            percent={percent}
+          />
 
           <main className="flex-1 px-5 py-6 pb-28 lg:max-w-215 lg:px-18 lg:py-11 lg:pb-14">
             <div className="mb-2.5 hidden items-center justify-between lg:flex">
@@ -434,7 +468,7 @@ export default function ProfileEditPage() {
               {step === 6 && <PreferencesStep lookups={lookups} />}
               {step === 7 && <PhotosStep memberId={memberId} />}
               {step === 8 && <VerificationStep memberId={memberId} />}
-              {step === 9 && <ReviewStep onEditStep={setStep} memberId={memberId} />}
+              {step === 9 && <ReviewStep onEditStep={handleStepClick} memberId={memberId} />}
             </div>
 
             {isLastStep && !hubMode && percent < 60 && (

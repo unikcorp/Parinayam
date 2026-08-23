@@ -6,6 +6,7 @@ import { motion, useReducedMotion, useScroll, useTransform, type Variants } from
 import { Heart, Sparkles } from "lucide-react";
 import { heroCollageImages } from "@/config/landingImages";
 import { FloatingMatchCard } from "@/components/landing/FloatingMatchCard";
+import { useBanners, bannerImageUrl, type BannerSlot } from "@/hooks/use-banners";
 
 const container: Variants = {
   hidden: {},
@@ -39,6 +40,11 @@ export function HeroCollage() {
   const reduceMotion = useReducedMotion();
   const v = reduceMotion ? { hidden: {}, show: {} } : undefined;
 
+  // Admin-uploaded banners (Site Settings > Home Page Banner) override the
+  // curated stock photos slot-for-slot, falling back wherever unset.
+  const { data: banners } = useBanners();
+  const bannerSrc = (slot: BannerSlot, fallback: string) => bannerImageUrl(banners?.[slot] ?? null) ?? fallback;
+
   // Scroll-linked parallax for the heart badge: as the hero scrolls out of
   // view (from its top hitting the viewport top, to its bottom leaving it),
   // the badge drifts up, rotates and fades — tied to scroll position rather
@@ -70,7 +76,7 @@ export function HeroCollage() {
           className="relative aspect-[3/4] -rotate-2 overflow-hidden rounded-[18px] border-4 border-white shadow-[0_16px_34px_rgba(127,29,29,0.18)]"
         >
           <Image
-            src={heroCollageImages.main.small}
+            src={bannerSrc(1, heroCollageImages.main.small)}
             alt={heroCollageImages.main.alt}
             fill
             sizes="150px"
@@ -84,7 +90,7 @@ export function HeroCollage() {
           className="relative mt-6 aspect-[3/4] rotate-2 overflow-hidden rounded-[18px] border-4 border-white shadow-[0_16px_34px_rgba(127,29,29,0.18)]"
         >
           <Image
-            src={heroCollageImages.secondary.small}
+            src={bannerSrc(2, heroCollageImages.secondary.small)}
             alt={heroCollageImages.secondary.alt}
             fill
             sizes="150px"
@@ -97,7 +103,7 @@ export function HeroCollage() {
           className="relative aspect-square -rotate-3 overflow-hidden rounded-[18px] border-4 border-white shadow-[0_14px_28px_rgba(127,29,29,0.16)]"
         >
           <Image
-            src={heroCollageImages.gathering.small}
+            src={bannerSrc(3, heroCollageImages.gathering.small)}
             alt={heroCollageImages.gathering.alt}
             fill
             sizes="150px"
@@ -110,7 +116,7 @@ export function HeroCollage() {
           className="relative aspect-square rotate-3 overflow-hidden rounded-[18px] border-4 border-white shadow-[0_14px_28px_rgba(127,29,29,0.16)]"
         >
           <Image
-            src={heroCollageImages.celebration.small}
+            src={bannerSrc(4, heroCollageImages.celebration.small)}
             alt={heroCollageImages.celebration.alt}
             fill
             sizes="150px"
@@ -222,7 +228,7 @@ export function HeroCollage() {
           className="absolute top-0 left-0 z-20 h-[250px] w-[255px] overflow-hidden rounded-[24px] border-8 border-white shadow-[0_24px_50px_rgba(127,29,29,0.2)]"
         >
           <Image
-            src={heroCollageImages.main.regular}
+            src={bannerSrc(1, heroCollageImages.main.regular)}
             alt={heroCollageImages.main.alt}
             fill
             priority
@@ -239,7 +245,7 @@ export function HeroCollage() {
           className="absolute top-[26px] right-0 z-20 h-[290px] w-[255px] overflow-hidden rounded-[24px] border-8 border-white shadow-[0_28px_56px_rgba(127,29,29,0.22)]"
         >
           <Image
-            src={heroCollageImages.secondary.regular}
+            src={bannerSrc(2, heroCollageImages.secondary.regular)}
             alt={heroCollageImages.secondary.alt}
             fill
             sizes="255px"
@@ -255,7 +261,7 @@ export function HeroCollage() {
           className="absolute top-[280px] left-0 z-20 h-[250px] w-[275px] overflow-hidden rounded-[24px] border-8 border-white shadow-[0_28px_56px_rgba(127,29,29,0.22)]"
         >
           <Image
-            src={heroCollageImages.gathering.regular}
+            src={bannerSrc(3, heroCollageImages.gathering.regular)}
             alt={heroCollageImages.gathering.alt}
             fill
             sizes="275px"
@@ -271,7 +277,7 @@ export function HeroCollage() {
           className="absolute right-[22px] bottom-0 z-20 h-[215px] w-[225px] overflow-hidden rounded-[22px] border-8 border-white shadow-[0_22px_46px_rgba(127,29,29,0.22)]"
         >
           <Image
-            src={heroCollageImages.celebration.regular}
+            src={bannerSrc(4, heroCollageImages.celebration.regular)}
             alt={heroCollageImages.celebration.alt}
             fill
             sizes="225px"

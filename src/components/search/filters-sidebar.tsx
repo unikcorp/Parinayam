@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableCombobox } from "@/components/forms/form-fields";
 import { Button } from "@/components/ui/button";
 import { RangeFilter } from "@/components/shared/range-filter";
 import { useMembership } from "@/features/membership/use-membership";
@@ -111,6 +112,22 @@ export function FiltersSidebar({
     );
   }
 
+  // Country/state/district have far too many options to scroll through —
+  // lets the user type straight into the field to filter instead.
+  function searchableField(label: string, value: string, setValue: (v: string) => void, options: string[]) {
+    return (
+      <div>
+        <label className="mb-2 block text-[13px] font-bold text-primary-deep">{label}</label>
+        <SearchableCombobox
+          value={value}
+          onChange={setValue}
+          options={[ANY, ...options]}
+          placeholder="Any"
+        />
+      </div>
+    );
+  }
+
   return (
     <aside className={className}>
       <div className="mb-5 flex items-center justify-between">
@@ -146,16 +163,16 @@ export function FiltersSidebar({
           />
         )}
         {selectField("Marital status", maritalStatus, setMaritalStatus, maritalStatusOptions.filter((o) => o !== ANY))}
-        {selectField("Country", country, (v) => {
+        {searchableField("Country", country, (v) => {
           setCountry(v);
           setState(ANY);
           setDistrict(ANY);
         }, lookups.countryOptions)}
-        {selectField("State", state, (v) => {
+        {searchableField("State", state, (v) => {
           setState(v);
           setDistrict(ANY);
         }, country === ANY ? [] : lookups.stateOptions(country))}
-        {selectField("District", district, setDistrict, state === ANY ? [] : lookups.districtOptions(state))}
+        {searchableField("District", district, setDistrict, state === ANY ? [] : lookups.districtOptions(state))}
       </div>
 
       <Button size="cta" className="mt-6 w-full" onClick={apply}>

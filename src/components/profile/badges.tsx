@@ -23,7 +23,7 @@ function Pill({
 
 export function VerifiedBadge({ className }: { className?: string }) {
   return (
-    <Pill className={cn("bg-primary text-white", className)}>
+    <Pill className={cn("bg-blue-500 text-white", className)}>
       <BadgeCheck className="size-3.5" />
       Verified
     </Pill>

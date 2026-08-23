@@ -205,8 +205,18 @@ export default function MyProfilePage() {
               {member.first_name} {member.last_name}
             </span>
             {document?.status === "APPROVED" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-extrabold text-white">
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-3 py-1 text-xs font-extrabold text-white">
                 <ShieldCheck className="size-3.5" /> Verified
+              </span>
+            )}
+            {document?.status === "PENDING" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-extrabold text-amber-700">
+                Document pending admin approval
+              </span>
+            )}
+            {document?.status === "REJECTED" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-3 py-1 text-xs font-extrabold text-destructive">
+                Document rejected{document.rejection_reason ? `: ${document.rejection_reason}` : ""}
               </span>
             )}
           </div>
@@ -322,6 +332,31 @@ export default function MyProfilePage() {
             </label>
           )}
         </div>
+      </div>
+
+      {/* ABOUT ME — moderated free text; only the owner sees the
+          pending/rejected state, other members simply never receive
+          unapproved text from the server. */}
+      <div className="mb-7 rounded-2xl border border-card-border bg-card p-6">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-lg font-extrabold text-primary-deep">About {member.first_name}</div>
+          <Link href="/profile/edit?step=about" className="text-[13px] font-bold text-primary">
+            Edit
+          </Link>
+        </div>
+        {member.about_me ? (
+          member.about_me_status === "APPROVED" ? (
+            <p className="text-[15px] leading-[1.75] text-[#4A5568]">{member.about_me}</p>
+          ) : member.about_me_status === "REJECTED" ? (
+            <p className="text-sm font-semibold text-destructive">
+              Rejected by admin{member.about_me_rejection_reason ? `: ${member.about_me_rejection_reason}` : ""} — please edit and resubmit.
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-amber-700">Waiting for admin approval.</p>
+          )
+        ) : (
+          <p className="text-sm text-faint">Not added yet.</p>
+        )}
       </div>
 
       {/* desktop cards */}

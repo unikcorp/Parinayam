@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Controller, useFormContext, type FieldValues, type Path } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -178,6 +178,153 @@ export function SelectField<TFieldValues extends FieldValues = FieldValues>({
         )}
       />
     </Field>
+  );
+}
+
+// A plain <select>/base-ui Select forces scrolling through the whole list —
+// fine for a handful of options, but painful for country/state/district
+// (250+ countries, dozens of states). This lets the user type straight into
+// the field to filter it, instead of a separate search bar bolted on top.
+export function SearchableSelectField<TFieldValues extends FieldValues = FieldValues>({
+  name,
+  label,
+  required,
+  options,
+  className,
+}: {
+  name: Path<TFieldValues>;
+  label: string;
+  required?: boolean;
+  options: string[];
+  className?: string;
+}) {
+  const { control, formState: { errors } } = useFormContext<TFieldValues>();
+  const error = errors[name]?.message as string | undefined;
+
+  return (
+    <Field label={label} required={required} error={error} className={className}>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <SearchableCombobox
+            value={String(field.value ?? "")}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            options={options}
+            placeholder={`Select ${label.toLowerCase()}`}
+          />
+        )}
+      />
+    </Field>
+  );
+}
+
+export function SearchableCombobox({
+  value,
+  onChange,
+  onBlur,
+  options,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Keep the displayed text in sync when the field's real value changes from
+  // outside (e.g. resetting the form, or a dependent field getting cleared).
+  useEffect(() => {
+    if (!open) setQuery(value);
+  }, [value, open]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q === value.toLowerCase()) return options;
+    return options.filter((o) => o.toLowerCase().includes(q));
+  }, [options, query, value]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery(value);
+      }
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [open, value]);
+
+  function selectOption(option: string) {
+    onChange(option);
+    setQuery(option);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <input
+        type="text"
+        role="combobox"
+        aria-expanded={open}
+        value={query}
+        placeholder={placeholder}
+        onFocus={() => setOpen(true)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (filtered[0]) selectOption(filtered[0]);
+          } else if (e.key === "Escape") {
+            setOpen(false);
+            setQuery(value);
+          }
+        }}
+        onBlur={() => {
+          // Outside-click handles closing when an option is clicked; this
+          // covers tabbing away without picking anything.
+          window.setTimeout(() => {
+            if (!containerRef.current?.contains(document.activeElement)) {
+              setOpen(false);
+              setQuery(value);
+              onBlur?.();
+            }
+          }, 0);
+        }}
+        className="h-auto w-full rounded-xl border border-input bg-transparent px-4 py-3.5 text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+      {open && (
+        <div className="absolute z-50 mt-1.5 max-h-64 w-full overflow-y-auto rounded-lg border border-input bg-popover py-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+          {filtered.length === 0 ? (
+            <div className="px-3.5 py-2 text-sm text-muted-foreground">No matches</div>
+          ) : (
+            filtered.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => selectOption(option)}
+                className={cn(
+                  "flex w-full items-center px-3.5 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground",
+                  option === value && "bg-accent/60 font-semibold",
+                )}
+              >
+                {option}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

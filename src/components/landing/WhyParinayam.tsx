@@ -22,8 +22,8 @@ export function WhyParinayam() {
             Matchmaking built on trust, not just algorithms
           </h2>
           <p className="mb-6 text-[14.5px] leading-[1.65] text-white/70 lg:mb-9 lg:text-[17px] lg:leading-[1.7]">
-            Every profile is manually reviewed and identity-verified before
-            it appears in search. Your photos and contact details stay
+            Every ID and photo is reviewed by our team, and verified members
+            carry a badge you can trust. Your photos and contact details stay
             private until you choose to share them.
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-5">
