@@ -14,11 +14,14 @@ import {
   updateFamilyRequest,
   updateAboutRequest,
   updatePartnerPreferenceRequest,
+  idTypeFromDocumentType,
 } from "@/features/registration-wizard/api";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
+import { RegistrationAdPanel } from "@/components/layout/registration-ad-panel";
+import { useAdvertisements } from "@/hooks/use-advertisements";
 import { Button } from "@/components/ui/button";
 import { FormSkeleton } from "@/components/shared/loading-skeletons";
 import type { MemberProfileResponse } from "@/types/member-profile";
@@ -142,6 +145,7 @@ function mapProfileToFormValues(data: MemberProfileResponse): Partial<Registrati
 
     photoCount: data.photos.length,
     idDocumentUploaded: !!data.document,
+    idType: idTypeFromDocumentType(data.document?.document_type),
   };
 }
 
@@ -175,6 +179,8 @@ export default function ProfileEditPage() {
   const { form, step, setStep, goBack } = useRegistrationForm();
   const isLastStep = step === REVIEW_STEP_INDEX;
   const lookups = useRegistrationLookups();
+  const { data: ads } = useAdvertisements();
+  const ad = ads?.[0];
   const [memberId, setMemberId] = useState<number | null>(null);
   const [accountStatus, setAccountStatus] = useState<
     "ACTIVE" | "INACTIVE" | "BLOCKED" | "PENDING_APPROVAL"
@@ -404,7 +410,12 @@ export default function ProfileEditPage() {
 
   return (
     <FormProvider {...form}>
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
+      <div
+        className={cn(
+          "lg:grid lg:min-h-screen",
+          !hubMode && ad ? "lg:grid-cols-[380px_1fr_360px]" : "lg:grid-cols-[380px_1fr]",
+        )}
+      >
         <StepperSidebar
           activeIndex={step}
           maxStepReached={hubMode ? undefined : maxStepReached}
@@ -504,6 +515,8 @@ export default function ProfileEditPage() {
             </Button>
           </div>
         </div>
+
+        {!hubMode && <RegistrationAdPanel ad={ad} />}
       </div>
     </FormProvider>
   );

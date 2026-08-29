@@ -24,6 +24,8 @@ import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
+import { RegistrationAdPanel } from "@/components/layout/registration-ad-panel";
+import { useAdvertisements } from "@/hooks/use-advertisements";
 import { Button } from "@/components/ui/button";
 import { FormSkeleton } from "@/components/shared/loading-skeletons";
 
@@ -54,6 +56,8 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const { form, step, setStep, lastStep, goNext, goBack } = useRegistrationForm();
   const lookups = useRegistrationLookups();
+  const { data: ads } = useAdvertisements();
+  const ad = ads?.[0];
   const { isStepEnabled, disabledSteps } = useFieldVisibility();
   const isStepEnabledAt = (index: number) => isStepEnabled(registrationSteps[index].key);
   const [showOtp, setShowOtp] = useState(false);
@@ -273,7 +277,12 @@ export default function RegisterPage() {
 
   return (
     <FormProvider {...form}>
-      <div className="lg:grid lg:min-h-screen lg:grid-cols-[380px_1fr]">
+      <div
+        className={cn(
+          "lg:grid lg:min-h-screen",
+          ad ? "lg:grid-cols-[380px_1fr_360px]" : "lg:grid-cols-[380px_1fr]",
+        )}
+      >
         <StepperSidebar
           activeIndex={step}
           maxStepReached={maxStepReached}
@@ -412,6 +421,8 @@ export default function RegisterPage() {
             </div>
           )}
         </div>
+
+        <RegistrationAdPanel ad={ad} />
       </div>
     </FormProvider>
   );

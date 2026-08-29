@@ -190,10 +190,14 @@ export function ReviewStep({
         ]}
       />
       <ReviewSection
-        title="Photos & verification"
+        title="Photos"
         onEdit={() => onEditStep(7)}
+        rows={[["Photos added", `${data.photoCount} of 6`]]}
+      />
+      <ReviewSection
+        title="Identity verification"
+        onEdit={() => onEditStep(8)}
         rows={[
-          ["Photos added", `${data.photoCount} of 6`],
           ["ID type", data.idType],
           ["ID document", data.idDocumentUploaded ? "Uploaded" : "Not uploaded"],
         ]}

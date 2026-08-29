@@ -12,7 +12,6 @@ const guestDiscoverLinks = [
   { label: "About Us", href: "/legal/about-us" },
   { label: "Success Stories", href: "/stories" },
   { label: "Plans", href: "/plans" },
-  { label: "Blog", href: "/blog" },
   { label: "Help", href: "/help" },
 ];
 

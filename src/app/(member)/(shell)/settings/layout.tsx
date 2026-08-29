@@ -12,6 +12,7 @@ const settingsNav = [
   { href: "/settings/blocked", icon: "🚫", label: "Blocked Users" },
   { href: "/settings/security", icon: "🔑", label: "Password & Security" },
   { href: "/settings/billing", icon: "★", label: "Membership & Billing" },
+  { href: "/settings/support", icon: "💬", label: "Report a Problem" },
   { href: "/settings/account", icon: "⚠", label: "Account" },
 ];
 

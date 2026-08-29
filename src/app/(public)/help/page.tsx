@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageCircle, Phone, Mail } from "lucide-react";
+import Link from "next/link";
+import { Phone, Mail } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -12,10 +13,8 @@ import { useFaqs } from "@/hooks/use-faqs";
 import { AccordionSkeleton } from "@/components/shared/loading-skeletons";
 
 const channels = [
-  { icon: MessageCircle, tint: "bg-surface-blue text-primary", title: "Live chat", desc: "Avg. wait under 2 minutes", cta: "Start chat" },
-  { icon: Phone, tint: "bg-success-bg text-success", title: "Call support", desc: `${"1800-425-77-99"} · 9 AM–9 PM`, cta: "Call now" },
-  { icon: Mail, tint: "bg-surface-cream-2 text-gold-text", title: "Email us", desc: `${brand.supportEmail} · 4 hr reply`, cta: "Write to us" },
-  { icon: "🟢" as const, tint: "bg-success-bg text-success", title: "WhatsApp", desc: "Chat in Malayalam or English", cta: "Open WhatsApp" },
+  { icon: Phone, tint: "bg-success-bg text-success", title: "Call support", desc: `${"1800-425-77-99"} · 9 AM–9 PM`, cta: "Call now", href: "tel:+18004257799" },
+  { icon: Mail, tint: "bg-surface-cream-2 text-gold-text", title: "Contact us", desc: `${brand.supportEmail} · 4 hr reply`, cta: "Get in touch", href: "/contact" },
 ];
 
 export default function HelpCenterPage() {
@@ -34,16 +33,17 @@ export default function HelpCenterPage() {
       </section>
 
       <div className="mx-auto w-full max-w-275 px-5 pt-8 pb-12 lg:px-6 lg:pt-10">
-        <div className="mb-9 grid grid-cols-2 gap-3 lg:mb-11 lg:grid-cols-4 lg:gap-4.5">
+        <div className="mx-auto mb-9 grid max-w-140 grid-cols-2 gap-3 lg:mb-11 lg:gap-4.5">
           {channels.map((ch) => (
-            <div
+            <Link
               key={ch.title}
+              href={ch.href}
               className="rounded-2xl border border-card-border bg-card p-4 text-center lg:p-6 lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-card-hover"
             >
               <span
                 className={`mx-auto mb-2.5 flex size-10 items-center justify-center rounded-xl text-lg lg:mb-3.5 lg:size-12.5 ${ch.tint}`}
               >
-                {typeof ch.icon === "string" ? ch.icon : <ch.icon className="size-[18px] lg:size-5" />}
+                <ch.icon className="size-[18px] lg:size-5" />
               </span>
               <div className="text-sm font-extrabold text-primary-deep lg:text-[15.5px]">
                 {ch.title}
@@ -52,7 +52,7 @@ export default function HelpCenterPage() {
               <div className="mt-2 hidden text-[13px] font-bold text-primary lg:block">
                 {ch.cta} →
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

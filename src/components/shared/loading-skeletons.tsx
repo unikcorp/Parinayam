@@ -80,7 +80,7 @@ export function ProfileDetailSkeleton() {
   );
 }
 
-/** Wide image card with a few text lines below — success stories, blog teasers. */
+/** Wide image card with a few text lines below — success stories. */
 export function MediaCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-card-border bg-card">

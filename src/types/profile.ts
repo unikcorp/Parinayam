@@ -47,6 +47,8 @@ export interface SearchFilters {
   country?: number;
   state?: number;
   district?: number;
+  /** Widen the district filter to every district within ~50km, not just an exact match. */
+  nearby?: boolean;
   sort?: "match" | "newest";
   page?: number;
   limit?: number;

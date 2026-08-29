@@ -4,7 +4,6 @@ import { siteUrl } from "@/lib/seo";
 const publicRoutes: { path: string; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }[] = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/plans", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/blog", changeFrequency: "weekly", priority: 0.7 },
   { path: "/stories", changeFrequency: "weekly", priority: 0.7 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.5 },
   { path: "/help", changeFrequency: "monthly", priority: 0.5 },

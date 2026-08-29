@@ -15,7 +15,6 @@ import { FinalCTA } from "@/components/landing/FinalCTA";
 import { StickyActionBar } from "@/components/shared/sticky-action-bar";
 import { Reveal } from "@/components/shared/reveal";
 import { brand } from "@/data/brand";
-import { homeBlogPosts } from "@/data/blog-posts.data";
 import { buildMetadata, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/shared/json-ld";
 import { fetchFeaturedProfiles } from "@/lib/featured-profiles";
@@ -94,58 +93,6 @@ export default async function LandingPage() {
             />
           </div>
         </Reveal>
-      </section>
-
-      {/* BLOG */}
-      <section id="blog" className="bg-card px-5 pt-2 pb-9 lg:px-18 lg:pt-4 lg:pb-20">
-        <div className="mb-5 flex items-end justify-between lg:mb-10">
-          <div>
-            <div className="mb-2 text-xs font-bold tracking-[0.12em] text-gold uppercase lg:mb-3 lg:text-[13px]">
-              From the blog
-            </div>
-            <h2 className="text-xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[36px]">
-              Advice for your journey
-            </h2>
-          </div>
-          <Button variant="outline" className="hidden lg:inline-flex" render={<Link href="/blog" />}>
-            All articles →
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-7">
-          {homeBlogPosts.map((post, i) => (
-            <Reveal key={post.title} delay={i * 100}>
-              <div className="group overflow-hidden rounded-2xl border border-card-border transition-all duration-200 lg:hover:-translate-y-1.5 lg:hover:shadow-card-hover">
-                <div className="overflow-hidden">
-                  {post.image ? (
-                    <div className="relative h-40 w-full overflow-hidden transition-transform duration-500 ease-out group-hover:scale-105 lg:h-47.5">
-                      <Image
-                        src={post.image}
-                        alt={post.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover object-top"
-                      />
-                    </div>
-                  ) : (
-                    <ImageSlot
-                      label="Article image"
-                      className="h-40 w-full transition-transform duration-500 ease-out group-hover:scale-105 lg:h-47.5"
-                    />
-                  )}
-                </div>
-                <div className="p-5">
-                  <div className="text-xs font-bold tracking-wide text-primary uppercase">
-                    {post.tag}
-                  </div>
-                  <div className="mt-2 mb-2 text-base leading-[1.35] font-bold text-primary-deep transition-colors duration-200 group-hover:text-primary lg:text-[18px]">
-                    {post.title}
-                  </div>
-                  <div className="text-xs text-faint">{post.meta}</div>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
       </section>
 
       <FinalCTA />

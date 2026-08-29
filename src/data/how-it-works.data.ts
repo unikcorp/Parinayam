@@ -24,12 +24,12 @@ export const howItWorksSteps: HowItWorksStep[] = [
     icon: Heart,
     tint: "bg-peach-bg text-peach-text",
     title: "Discover matches",
-    desc: "AI-assisted matches curated by preference, horoscope and family values.",
+    desc: "Search and filter profiles by preference, horoscope and family values.",
   },
   {
     icon: MessageCircle,
     tint: "bg-surface-cream-2 text-gold-text",
     title: "Connect & meet",
-    desc: "Express interest, chat privately, and let the families take it forward.",
+    desc: "Express interest and chat privately with the profiles you connect with.",
   },
 ];

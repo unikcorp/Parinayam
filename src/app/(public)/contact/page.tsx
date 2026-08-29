@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FilterChip } from "@/components/shared/filter-chip";
 import { brand } from "@/data/brand";
+import { api, ApiError } from "@/lib/api";
 import {
   contactSchema,
   contactTopics,
@@ -30,9 +31,13 @@ export default function ContactPage() {
   });
 
   async function onSubmit(values: ContactFormValues) {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    toast.success("Message sent — we'll reply within one working day.");
-    reset(values);
+    try {
+      await api.post("/api/contact", values);
+      toast.success("Message sent — we'll reply within one working day.");
+      reset(contactDefaultValues);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Could not send your message. Please try again.");
+    }
   }
 
   return (

@@ -19,18 +19,3 @@ export interface Testimonial {
   /** 1-5 — defaults to 5 stars when omitted. */
   rating?: number;
 }
-
-export interface BlogPost {
-  tag: string;
-  title: string;
-  excerpt: string;
-  meta: string;
-}
-
-export interface BlogTeaserPost {
-  tag: string;
-  title: string;
-  meta: string;
-  /** Real photo path (e.g. "/images/success1.jpg") — falls back to a placeholder when omitted. */
-  image?: string;
-}

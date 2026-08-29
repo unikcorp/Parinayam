@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Search as SearchIcon, Settings2, LayoutGrid, List } from "lucide-react";
+import { Loader2, Search as SearchIcon, Settings2, LayoutGrid, List, MapPin } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Select,
@@ -29,8 +29,17 @@ const defaultFilters: Omit<SearchFilters, "page"> = { ageMin: 21, ageMax: 45, so
 export default function SearchPage() {
   const lookups = useRegistrationLookups();
   const [filters, setFilters] = useState<Omit<SearchFilters, "page">>(defaultFilters);
+  // Standalone quick-filter, independent of the Filters sidebar's own Apply
+  // flow — toggling it doesn't disturb whatever district/age/etc. filters
+  // are already applied. When no district is selected, the backend centers
+  // it on the viewer's own district instead.
+  const [nearbyOn, setNearbyOn] = useState(false);
+  // Omit the key entirely when off, rather than sending `nearby=false` —
+  // query params are always strings, so `false` isn't a safe value to rely
+  // on the server treating as falsy.
+  const queryFilters: Omit<SearchFilters, "page"> = nearbyOn ? { ...filters, nearby: true } : filters;
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteSearchResults(filters);
+    useInfiniteSearchResults(queryFilters);
   const [view, setView] = useState<"grid" | "list">("list");
 
   const results = data?.pages.flatMap((p) => p.results) ?? [];
@@ -100,7 +109,10 @@ export default function SearchPage() {
         <div className="text-[12.5px] font-semibold text-faint">
           Sorted by <b className="text-primary-deep">{sortLabel}</b>
         </div>
-        <ViewToggle view={view} setView={setView} />
+        <div className="flex items-center gap-2">
+          <NearbyToggle active={nearbyOn} onClick={() => setNearbyOn((v) => !v)} />
+          <ViewToggle view={view} setView={setView} />
+        </div>
       </div>
 
       {/* DESKTOP SIDEBAR */}
@@ -119,6 +131,7 @@ export default function SearchPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <NearbyToggle active={nearbyOn} onClick={() => setNearbyOn((v) => !v)} />
             <Select value={filters.sort} onValueChange={(v) => v && setSort(v as SearchFilters["sort"])}>
               <SelectTrigger className="h-auto rounded-xl border-input px-4 py-2.5 text-[13.5px] font-bold text-primary-deep">
                 <span className="text-faint">Sort:</span>
@@ -176,6 +189,25 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function NearbyToggle({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex items-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-[13.5px] font-bold transition-colors",
+        active
+          ? "border-primary bg-primary text-white"
+          : "border-input bg-card text-primary-deep hover:border-primary"
+      )}
+    >
+      <MapPin className="size-4" />
+      Nearby
+    </button>
   );
 }
 

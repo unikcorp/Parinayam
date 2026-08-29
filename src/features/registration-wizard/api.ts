@@ -22,6 +22,20 @@ const DOCUMENT_TYPE_MAP: Record<string, "Aadhaar" | "Passport" | "PAN" | "Other"
   "Other Documents": "Other",
 };
 
+// Reverse of DOCUMENT_TYPE_MAP — lets the edit-profile form pre-select the
+// "ID type" dropdown to match whatever document type is already on file,
+// so re-uploading a replacement doesn't require re-picking it from scratch.
+const ID_TYPE_BY_DOCUMENT_TYPE: Record<string, string> = {
+  Aadhaar: "Aadhaar",
+  Passport: "Passport",
+  PAN: "PAN",
+  Other: "Other Documents",
+};
+export function idTypeFromDocumentType(documentType: string | undefined | null): string {
+  if (!documentType) return "";
+  return ID_TYPE_BY_DOCUMENT_TYPE[documentType] ?? "";
+}
+
 // ---------- Step 1 — Account info (creates the login) ----------
 export interface RegisterSelfResult {
   memberId: number;
@@ -203,8 +217,12 @@ export async function uploadGalleryPhotoRequest(memberId: number, file: File): P
 
 // ---------- Step 9 — Identity document ----------
 export async function uploadDocumentRequest(memberId: number, idType: string, file: File) {
+  const documentType = DOCUMENT_TYPE_MAP[idType];
+  if (!documentType) {
+    throw new Error("An ID type must be selected before uploading a document.");
+  }
   const form = new FormData();
-  form.append("documentType", DOCUMENT_TYPE_MAP[idType] ?? "Other");
+  form.append("documentType", documentType);
   form.append("file", file);
   return api.post(`/api/members/${memberId}/documents`, form, { isFormData: true });
 }

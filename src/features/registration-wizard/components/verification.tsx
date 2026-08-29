@@ -20,6 +20,10 @@ function IdentityDocumentUpload({ memberId }: { memberId: number | null }) {
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
+    if (!idType) {
+      setError("Select an ID type before uploading your document.");
+      return;
+    }
     setFileName(file.name);
     setValue("idDocumentUploaded", true);
     setError(null);
