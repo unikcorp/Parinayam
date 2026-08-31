@@ -15,6 +15,8 @@ export interface SearchResult {
   verified: boolean;
   /** null when the viewer hasn't set partner preferences — nothing to score against. */
   match: number | null;
+  /** Only set when the Nearby filter is active. */
+  distanceKm?: number | null;
 }
 
 // Homepage "Featured profiles" section — admin-picked real members, served
@@ -47,8 +49,10 @@ export interface SearchFilters {
   country?: number;
   state?: number;
   district?: number;
-  /** Widen the district filter to every district within ~50km, not just an exact match. */
+  /** Widen the district filter (or the viewer's own district) to a radius search. */
   nearby?: boolean;
+  /** Only meaningful when nearby is true. Defaults to 50 on the server if omitted. */
+  radius?: 25 | 50 | 100 | 200;
   sort?: "match" | "newest";
   page?: number;
   limit?: number;

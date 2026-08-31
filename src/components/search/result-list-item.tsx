@@ -35,6 +35,7 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
         <div className="mt-0.5 truncate text-[12.5px] text-muted-foreground">{result.occupation ?? "—"}</div>
         <div className="mt-0.5 truncate text-[11.5px] text-faint">
           {result.height ?? "—"} · {result.place || "—"}
+          {result.distanceKm != null && ` · ${Math.round(result.distanceKm)} km away`}
         </div>
         {result.match != null && (
           <span className="mt-2 inline-flex w-fit items-center rounded-full bg-surface-blue px-2.5 py-1 text-[11px] font-extrabold text-primary">

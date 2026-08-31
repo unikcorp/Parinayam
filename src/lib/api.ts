@@ -136,13 +136,19 @@ export const api = {
     }
   },
   // Same as get, but keeps the `pagination` envelope instead of unwrapping
-  // to just `data` — for paginated list endpoints.
+  // to just `data` — for paginated list endpoints. `isFallback` is optional
+  // and only meaningful for endpoints that can widen a filter on their own
+  // (e.g. Nearby search) — most paginated endpoints simply omit it.
   async getPaginated<T>(
     path: string,
-  ): Promise<{ data: T; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  ): Promise<{
+    data: T;
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+    isFallback?: boolean;
+  }> {
     try {
       const { data } = await client.get(path);
-      return { data: data.data as T, pagination: data.pagination };
+      return { data: data.data as T, pagination: data.pagination, isFallback: data.isFallback };
     } catch (error) {
       throw toApiError(error);
     }

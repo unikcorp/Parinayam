@@ -22,6 +22,8 @@ interface SearchResultRow {
   is_premium: boolean;
   document_status: "PENDING" | "APPROVED" | "REJECTED" | null;
   match_percent: number | null;
+  /** Only present when the Nearby filter is active — DECIMAL columns serialize as strings. */
+  distance_km?: string | number | null;
 }
 
 function buildQueryString(filters: SearchFilters): string {
@@ -51,6 +53,7 @@ function toSearchResult(row: SearchResultRow): SearchResult {
     isPremium: row.is_premium,
     verified: row.document_status === "APPROVED",
     match: row.match_percent,
+    distanceKm: row.distance_km != null ? Number(row.distance_km) : null,
   };
 }
 
@@ -58,10 +61,10 @@ export function useSearchResults(filters: SearchFilters) {
   return useQuery({
     queryKey: ["search-results", filters],
     queryFn: async () => {
-      const { data, pagination } = await api.getPaginated<SearchResultRow[]>(
+      const { data, pagination, isFallback } = await api.getPaginated<SearchResultRow[]>(
         `/api/members/search?${buildQueryString(filters)}`
       );
-      return { results: data.map(toSearchResult), pagination };
+      return { results: data.map(toSearchResult), pagination, isFallback };
     },
   });
 }
@@ -73,10 +76,10 @@ export function useInfiniteSearchResults(filters: Omit<SearchFilters, "page">) {
   return useInfiniteQuery({
     queryKey: ["search-results-infinite", filters],
     queryFn: async ({ pageParam }) => {
-      const { data, pagination } = await api.getPaginated<SearchResultRow[]>(
+      const { data, pagination, isFallback } = await api.getPaginated<SearchResultRow[]>(
         `/api/members/search?${buildQueryString({ ...filters, page: pageParam })}`
       );
-      return { results: data.map(toSearchResult), pagination };
+      return { results: data.map(toSearchResult), pagination, isFallback };
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>

@@ -55,6 +55,7 @@ export function SearchResultCard({
         <div className="mt-1 truncate text-[13px] text-muted-foreground">{result.occupation ?? "—"}</div>
         <div className="mt-0.5 truncate text-xs text-faint">
           {result.height ?? "—"} · {result.place || "—"}
+          {result.distanceKm != null && ` · ${Math.round(result.distanceKm)} km away`}
         </div>
         <div className="mt-3.5 flex gap-2">
           <InterestButton memberId={result.id} className="flex-1" />

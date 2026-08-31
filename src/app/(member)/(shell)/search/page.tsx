@@ -13,11 +13,15 @@ import {
 import { FiltersSidebar } from "@/components/search/filters-sidebar";
 import { SearchResultCard } from "@/components/search/result-card";
 import { SearchResultListItem } from "@/components/search/result-list-item";
+import { FilterChip } from "@/components/shared/filter-chip";
 import { cn } from "@/lib/utils";
+import { ApiError } from "@/lib/api";
 import { useInfiniteSearchResults } from "@/hooks/use-search-results";
 import { useRegistrationLookups } from "@/features/registration-wizard/use-registration-lookups";
 import type { SearchFilters } from "@/types/profile";
 import { ProfileCardGridSkeleton } from "@/components/shared/loading-skeletons";
+
+const RADIUS_OPTIONS = [25, 50, 100, 200] as const;
 
 const sortOptions: { label: string; value: SearchFilters["sort"] }[] = [
   { label: "Best match", value: "match" },
@@ -34,16 +38,24 @@ export default function SearchPage() {
   // are already applied. When no district is selected, the backend centers
   // it on the viewer's own district instead.
   const [nearbyOn, setNearbyOn] = useState(false);
+  const [radius, setRadius] = useState<(typeof RADIUS_OPTIONS)[number]>(50);
   // Omit the key entirely when off, rather than sending `nearby=false` —
   // query params are always strings, so `false` isn't a safe value to rely
-  // on the server treating as falsy.
-  const queryFilters: Omit<SearchFilters, "page"> = nearbyOn ? { ...filters, nearby: true } : filters;
-  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  // on the server treating as falsy. `radius` is part of this object too, so
+  // changing it is just a normal query-key change — TanStack Query resets
+  // pagination and refetches from page 1 automatically, no extra code needed.
+  const queryFilters: Omit<SearchFilters, "page"> = nearbyOn ? { ...filters, nearby: true, radius } : filters;
+  const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteSearchResults(queryFilters);
   const [view, setView] = useState<"grid" | "list">("list");
 
   const results = data?.pages.flatMap((p) => p.results) ?? [];
   const total = data?.pages[0]?.pagination.total;
+  // The backend widens the search itself when nobody is within the chosen
+  // radius (still sorted nearest-first) rather than returning nothing —
+  // every page reports the same value for a given radius/district, so the
+  // first page is all that's needed to decide whether to show the banner.
+  const isNearbyFallback = nearbyOn && !!data?.pages[0]?.isFallback;
   const sortLabel = sortOptions.find((o) => o.value === filters.sort)?.label ?? "Best match";
 
   // Loads the next page automatically once the sentinel below the results
@@ -114,6 +126,11 @@ export default function SearchPage() {
           <ViewToggle view={view} setView={setView} />
         </div>
       </div>
+      {nearbyOn && (
+        <div className="px-5 pb-3 lg:hidden">
+          <RadiusChips radius={radius} onChange={setRadius} />
+        </div>
+      )}
 
       {/* DESKTOP SIDEBAR */}
       <FiltersSidebar
@@ -148,18 +165,34 @@ export default function SearchPage() {
             <ViewToggle view={view} setView={setView} />
           </div>
         </div>
+        {nearbyOn && (
+          <div className="mb-4 hidden lg:block">
+            <RadiusChips radius={radius} onChange={setRadius} />
+          </div>
+        )}
+        {isNearbyFallback && results.length > 0 && (
+          <div className="mb-4 rounded-xl border border-gold/30 bg-peach-bg px-4 py-3 text-[13px] font-semibold text-primary-deep">
+            No one within {radius} km — here are the closest members instead.
+          </div>
+        )}
 
         {isLoading ? (
           <ProfileCardGridSkeleton count={8} />
         ) : isError ? (
           <div className="flex flex-col items-center gap-2 py-16 text-center">
-            <p className="text-sm font-semibold text-destructive">Unable to load search results.</p>
+            <p className="text-sm font-semibold text-destructive">
+              {error instanceof ApiError ? error.message : "Unable to load search results."}
+            </p>
             <p className="text-sm text-faint">Please try again.</p>
           </div>
         ) : results.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16 text-center">
-            <p className="text-sm font-semibold text-ink">No matches found</p>
-            <p className="text-sm text-faint">Try widening your filters.</p>
+            <p className="text-sm font-semibold text-ink">
+              {nearbyOn ? "No members with a location set were found." : "No matches found"}
+            </p>
+            <p className="text-sm text-faint">
+              {nearbyOn ? "Try adjusting your other filters." : "Try widening your filters."}
+            </p>
           </div>
         ) : view === "grid" ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -188,6 +221,24 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RadiusChips({
+  radius,
+  onChange,
+}: {
+  radius: (typeof RADIUS_OPTIONS)[number];
+  onChange: (radius: (typeof RADIUS_OPTIONS)[number]) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {RADIUS_OPTIONS.map((option) => (
+        <FilterChip key={option} active={radius === option} onClick={() => onChange(option)}>
+          {option} KM
+        </FilterChip>
+      ))}
     </div>
   );
 }
