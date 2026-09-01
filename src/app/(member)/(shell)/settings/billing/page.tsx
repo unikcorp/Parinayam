@@ -12,9 +12,15 @@ export default function BillingSettingsPage() {
   const router = useRouter();
   const { data: profile } = useMyProfile();
   const { data: plans, isLoading, isError } = useMembershipPlans();
-  const { planName: currentPlanName, isPremium, expiresAt, isLoading: membershipLoading } = useMembership();
+  const { planName: currentPlanName, isPremium, isActive, expiresAt, isLoading: membershipLoading } = useMembership();
 
   const badges = getPlanBadges(plans ?? []);
+
+  // The plan the member is actively on right now, if any — used both to
+  // gate self-service downgrades and to know when "Current Plan" should
+  // really mean "Renew" (a real active subscription, not just the Free
+  // fallback name every unsubscribed member also shows).
+  const currentPlan = isActive ? (plans ?? []).find((p) => p.plan_name === currentPlanName) : undefined;
 
   return (
     <div className="flex flex-col gap-5.5">
@@ -63,7 +69,8 @@ export default function BillingSettingsPage() {
             {plans.map((plan) => {
               const isFree = Number(plan.plan_amount) === 0;
               const badge = badges.get(plan.plan_id);
-              const isCurrentPlan = !membershipLoading && currentPlanName === plan.plan_name;
+              const isCurrentPlan = !membershipLoading && isActive && currentPlanName === plan.plan_name;
+              const isDowngrade = !isCurrentPlan && !!currentPlan && plan.sort_order < currentPlan.sort_order;
               return (
                 <PlanCard
                   key={plan.plan_id}
@@ -72,8 +79,8 @@ export default function BillingSettingsPage() {
                   period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
                   badge={badge}
                   dark={badge === "Best Value"}
-                  ctaLabel={isCurrentPlan ? "Current Plan" : `Go ${plan.plan_name}`}
-                  onSelect={isCurrentPlan ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
+                  ctaLabel={isCurrentPlan ? "Renew" : isDowngrade ? "Not available" : `Go ${plan.plan_name}`}
+                  onSelect={isDowngrade ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
                   className={
                     isCurrentPlan
                       ? "border-success ring-2 ring-success/20"

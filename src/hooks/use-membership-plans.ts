@@ -17,6 +17,8 @@ export interface MembershipPlan {
   chat: boolean;
   plan_offers: string;
   status: "ACTIVE" | "INACTIVE";
+  /** Plan hierarchy, ascending (Free < Silver < Gold < Platinum) — used to gate self-service downgrades. */
+  sort_order: number;
   /** null = unlimited (Platinum). */
   interest_limit: number | null;
   can_use_advanced_search: boolean;

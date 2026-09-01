@@ -28,6 +28,11 @@ export default function PlansPage() {
 
   const badges = getPlanBadges(plans ?? []);
 
+  // The plan the member is actively on right now, if any — used to block
+  // self-service downgrades (matches the same rule enforced server-side in
+  // initiateSubscription).
+  const currentPlan = isActive ? (plans ?? []).find((p) => p.plan_name === currentPlanName) : undefined;
+
   // Free costs nothing, so it skips the payment-method screen entirely —
   // it's activated the moment the member picks it. Paid plans still go
   // through /checkout since there's actually money to collect there.
@@ -77,6 +82,7 @@ export default function PlansPage() {
             const badge = badges.get(plan.plan_id);
             const isCurrentPlan = !membershipLoading && isActive && currentPlanName === plan.plan_name;
             const isActivating = activatingPlanId === plan.plan_id;
+            const isDowngrade = !isCurrentPlan && !!currentPlan && plan.sort_order < currentPlan.sort_order;
             return (
               <PlanCard
                 key={plan.plan_id}
@@ -86,9 +92,17 @@ export default function PlansPage() {
                 tagline={plan.plan_offers || undefined}
                 badge={badge}
                 dark={badge === "Best Value"}
-                ctaLabel={isCurrentPlan ? "Current Plan" : isActivating ? "Activating…" : `Go ${plan.plan_name}`}
+                ctaLabel={
+                  isCurrentPlan
+                    ? "Current Plan"
+                    : isDowngrade
+                      ? "Not available"
+                      : isActivating
+                        ? "Activating…"
+                        : `Go ${plan.plan_name}`
+                }
                 onSelect={
-                  isCurrentPlan || isActivating
+                  isCurrentPlan || isActivating || isDowngrade
                     ? undefined
                     : isFree
                       ? () => activateFree(plan.plan_id)
