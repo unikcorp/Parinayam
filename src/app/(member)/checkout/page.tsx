@@ -11,6 +11,9 @@ import { ApiError } from "@/lib/api";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
 import { SectionSkeleton } from "@/components/shared/loading-skeletons";
+import { useMembershipSummary } from "@/features/membership/use-membership-summary";
+import { useEntitlementsPreview } from "@/features/membership/use-entitlements-preview";
+import { PurchaseConfirmation } from "@/features/membership/components/PurchaseConfirmation";
 
 type Method = "upi" | "card" | "netbanking" | "wallet";
 const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
@@ -22,6 +25,17 @@ function CheckoutPageInner() {
 
   const { data: plans, isLoading: plansLoading, isError: plansError } = useMembershipPlans();
   const plan = plans?.find((p) => p.plan_id === planId);
+
+  // Buying while something's still active never cancels it (carried-forward
+  // upgrade / stacked purchase) — if that's about to happen, show what it
+  // means before payment instead of only letting it be discovered after.
+  const { summary, isLoading: summaryLoading } = useMembershipSummary();
+  const hasExistingBenefits = (summary?.contributions.length ?? 0) > 0;
+  const [confirmed, setConfirmed] = useState(false);
+  const { preview, isLoading: previewLoading } = useEntitlementsPreview(
+    Number.isNaN(planId) ? null : planId,
+    hasExistingBenefits && !confirmed,
+  );
 
   const initiate = useInitiateSubscription();
   const confirm = useConfirmSubscription();
@@ -53,7 +67,7 @@ function CheckoutPageInner() {
     }
   }
 
-  if (plansLoading) {
+  if (plansLoading || summaryLoading) {
     return (
       <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
         <SectionSkeleton />
@@ -69,6 +83,24 @@ function CheckoutPageInner() {
         <Button size="sm" onClick={() => router.push("/plans")}>
           Back to plans
         </Button>
+      </div>
+    );
+  }
+
+  // Show the carry-forward confirmation before payment, only when there's
+  // actually something active to explain. Once acknowledged, the rest of
+  // this component renders exactly as it did before this feature existed.
+  if (hasExistingBenefits && !confirmed) {
+    if (previewLoading || !preview) {
+      return (
+        <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+          <SectionSkeleton />
+        </div>
+      );
+    }
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <PurchaseConfirmation preview={preview} onConfirm={() => setConfirmed(true)} onCancel={() => router.back()} />
       </div>
     );
   }
