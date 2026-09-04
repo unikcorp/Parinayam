@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   // Next.js blocks cross-origin dev requests by default; the dev server is
   // reached both via localhost and via the LAN IP for network testers.
   allowedDevOrigins: ["192.168.1.20"],
-  images: {
-    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
-  },
 };
 
 export default nextConfig;

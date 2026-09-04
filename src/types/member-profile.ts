@@ -116,6 +116,8 @@ export interface MemberProfileResponse {
   document: MemberProfileDocument | null;
   lastLoginAt: string | null;
   profileCompletion: number;
+  /** Profile Highlight — a paid add-on independent of Membership. */
+  isHighlighted: boolean;
 }
 
 // GET /api/members/:id/profile — the privacy-safe subset of MemberProfileRow
@@ -167,6 +169,8 @@ export interface PublicMemberProfileResponse {
   partnerPreference: MemberPartnerPreference | null;
   photos: MemberProfilePhoto[];
   verified: boolean;
+  /** Profile Highlight — a paid add-on independent of Membership. */
+  isHighlighted: boolean;
   lastLoginAt: string | null;
 }
 

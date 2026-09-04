@@ -1,23 +1,22 @@
 /**
  * Stable image references for the landing page hero collage and marketing
- * sections. Pulled from the curated, pre-fetched dataset in
- * `src/data/stock-photos.ts` (hotlink-safe CDN URLs, regenerate via
- * `scripts/fetch-stock-photos.mjs`) so the layout never shifts between
- * renders and no image URL is generated on the fly.
+ * sections. These are local placeholders (client/public) — every homepage
+ * slot is admin-overridable (Site Settings > Home Page Banner), so nothing
+ * here hotlinks an external image API/CDN.
  */
-import { avatarPhotos, scenePhotos } from "@/data/stock-photos";
+const localPhoto = (src: string, alt: string) => ({ id: src, regular: src, small: src, alt });
 
 export const heroCollageImages = {
   /** Large portrait/landscape image, top-right of the collage. */
-  main: scenePhotos[3],
+  main: localPhoto("/photos/couple.jpg", "Couple photo"),
   /** Overlapping couple/outdoor image. */
-  secondary: scenePhotos[20],
+  secondary: localPhoto("/photos/couple.jpg", "Couple photo"),
   /** Wide family/friends/social gathering image, lower-middle. */
-  gathering: scenePhotos[5],
+  gathering: localPhoto("/photos/couple.jpg", "Couple photo"),
   /** Small wedding/celebration image, bottom-right. */
-  celebration: scenePhotos[10],
+  celebration: localPhoto("/photos/couple.jpg", "Couple photo"),
   /** Optional small portrait tucked behind the collage. */
-  portrait: avatarPhotos.women[8],
+  portrait: localPhoto("/images/women.png", "Portrait"),
 };
 
-export const privacyImage = scenePhotos[9];
+export const privacyImage = localPhoto("/photos/couple.jpg", "Your privacy comes first");

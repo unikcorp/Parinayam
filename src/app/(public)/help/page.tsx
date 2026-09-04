@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, MessageCircle } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +14,7 @@ import { AccordionSkeleton } from "@/components/shared/loading-skeletons";
 
 const channels = [
   { icon: Phone, tint: "bg-success-bg text-success", title: "Call support", desc: `${"1800-425-77-99"} · 9 AM–9 PM`, cta: "Call now", href: "tel:+18004257799" },
+  { icon: MessageCircle, tint: "bg-success-bg text-success", title: "WhatsApp us", desc: `${brand.whatsapp} · usually replies in minutes`, cta: "Chat now", href: `https://wa.me/${brand.whatsapp.replace(/\D/g, "")}` },
   { icon: Mail, tint: "bg-surface-cream-2 text-gold-text", title: "Contact us", desc: `${brand.supportEmail} · 4 hr reply`, cta: "Get in touch", href: "/contact" },
 ];
 
@@ -33,11 +34,13 @@ export default function HelpCenterPage() {
       </section>
 
       <div className="mx-auto w-full max-w-275 px-5 pt-8 pb-12 lg:px-6 lg:pt-10">
-        <div className="mx-auto mb-9 grid max-w-140 grid-cols-2 gap-3 lg:mb-11 lg:gap-4.5">
+        <div className="mx-auto mb-9 grid max-w-180 grid-cols-3 gap-3 lg:mb-11 lg:gap-4.5">
           {channels.map((ch) => (
             <Link
               key={ch.title}
               href={ch.href}
+              target={ch.href.startsWith("http") ? "_blank" : undefined}
+              rel={ch.href.startsWith("http") ? "noopener noreferrer" : undefined}
               className="rounded-2xl border border-card-border bg-card p-4 text-center lg:p-6 lg:transition-all lg:duration-200 lg:hover:-translate-y-1 lg:hover:shadow-card-hover"
             >
               <span

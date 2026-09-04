@@ -20,6 +20,7 @@ interface SearchResultRow {
   profile_photo_url: string | null;
   photo_is_blurred: boolean;
   is_premium: boolean;
+  is_highlighted: boolean;
   document_status: "PENDING" | "APPROVED" | "REJECTED" | null;
   match_percent: number | null;
   /** Only present when the Nearby filter is active — DECIMAL columns serialize as strings. */
@@ -51,6 +52,7 @@ function toSearchResult(row: SearchResultRow): SearchResult {
     photoUrl: row.profile_photo_url,
     photoIsBlurred: row.photo_is_blurred,
     isPremium: row.is_premium,
+    isHighlighted: row.is_highlighted,
     verified: row.document_status === "APPROVED",
     match: row.match_percent,
     distanceKm: row.distance_km != null ? Number(row.distance_km) : null,

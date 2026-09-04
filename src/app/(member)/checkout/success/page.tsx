@@ -9,6 +9,7 @@ import { useMySubscriptions } from "@/features/subscription/use-subscription";
 import { useMembership } from "@/features/membership/use-membership";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { SectionSkeleton } from "@/components/shared/loading-skeletons";
+import { useHighlightHistory } from "@/features/profile-highlight/use-profile-highlight";
 
 function limitLabel(limit: number | null, noun: string) {
   return limit === null ? `Unlimited ${noun}` : `${limit} ${noun}`;
@@ -26,6 +27,11 @@ function formatDate(value: string | null) {
 function OrderSuccessPageInner() {
   const searchParams = useSearchParams();
   const subscriptionId = Number(searchParams.get("subscription"));
+  const highlightPurchaseId = searchParams.get("highlight");
+
+  if (highlightPurchaseId) {
+    return <HighlightSuccess purchaseId={Number(highlightPurchaseId)} />;
+  }
 
   const { data: profile } = useMyProfile();
   const { data: subscriptions, isLoading: subsLoading } = useMySubscriptions();
@@ -120,6 +126,72 @@ function OrderSuccessPageInner() {
         </Button>
         <Button className="flex-1" render={<Link href="/dashboard" />}>
           Go to dashboard
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function HighlightSuccess({ purchaseId }: { purchaseId: number }) {
+  const { data: history, isLoading } = useHighlightHistory();
+  const purchase = history?.find((p) => p.id === purchaseId);
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <SectionSkeleton />
+      </div>
+    );
+  }
+
+  if (!purchase) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-5 py-24 text-center">
+        <p className="text-sm font-semibold text-destructive">We couldn&apos;t find this order.</p>
+        <Button size="sm" render={<Link href="/plans/highlight" />}>
+          Back to Highlight packages
+        </Button>
+      </div>
+    );
+  }
+
+  const expiresAt = formatDate(purchase.expires_at);
+
+  return (
+    <div className="mx-auto max-w-lg px-5 py-10 lg:py-16">
+      <div className="flex flex-col items-center text-center">
+        <span className="flex size-16 items-center justify-center rounded-full bg-success-bg">
+          <Check className="size-8 text-success" strokeWidth={3} />
+        </span>
+        <h1 className="mt-5 text-2xl font-extrabold tracking-[-0.02em] text-primary-deep lg:text-[28px]">
+          Your profile is now highlighted ✨
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">Your payment was successful and your Highlight is now active.</p>
+      </div>
+
+      <div className="mt-7 rounded-[20px] border border-card-border bg-card p-6 lg:p-7">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="text-[15px] font-extrabold text-primary-deep">{purchase.package_name_snapshot}</span>
+          <span className="rounded-full bg-success-bg px-2.75 py-1 text-[11px] font-extrabold text-success uppercase">
+            {expiresAt ? `Active till ${expiresAt}` : "Active"}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2.5 text-sm">
+          <Row label="Order ID" value={`PNM-HL-${purchase.id}`} />
+          <Row label="Date" value={formatDate(purchase.started_at) ?? "-"} />
+          <div className="flex items-baseline justify-between border-t border-card-border pt-3.5">
+            <span className="text-[15px] font-extrabold text-primary-deep">Amount paid</span>
+            <span className="text-xl font-extrabold text-primary-deep">
+              ₹{Number(purchase.paid_amount).toLocaleString("en-IN")}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+        <Button className="flex-1" render={<Link href="/settings/profile-highlight" />}>
+          View my Highlight
         </Button>
       </div>
     </div>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Camera, ImagePlus, Loader2, Pencil, Settings, ShieldCheck, Star, Trash2, X } from "lucide-react";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { PhotoLightbox } from "@/components/shared/photo-lightbox";
+import { HighlightBadge } from "@/features/profile-highlight/components/HighlightBadge";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/shared/progress-ring";
 import { DetailSectionCard, DetailAccordion } from "@/components/profile/detail-section";
@@ -35,6 +37,7 @@ export default function MyProfilePage() {
 
   const [pendingProfileSrc, setPendingProfileSrc] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [pendingGallerySrc, setPendingGallerySrc] = useState<string | null>(null);
   // Set when the crop dialog was opened from a photo's own Update button —
   // routes the save to updatePhoto (replace in place) instead of add-new.
@@ -154,14 +157,32 @@ export default function MyProfilePage() {
     <div className="mx-auto max-w-260 px-5 py-6 lg:px-12 lg:py-8">
       {/* HEADER */}
       <div className="mb-7 flex flex-col items-center gap-5 rounded-[22px] border border-card-border bg-card p-6 text-center lg:flex-row lg:items-start lg:gap-7 lg:p-8 lg:text-left">
-        <div className="relative shrink-0">
-          <MemberProfilePhoto
-            photoUrl={profilePhoto?.photo_url ?? null}
-            approvalStatus={profilePhoto?.approval_status ?? null}
-            gender={member.gender}
-            name={`${member.first_name} ${member.last_name}`}
-            className="size-32 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)] lg:size-36"
-          />
+        <div
+          className={cn(
+            "relative shrink-0",
+            data.isHighlighted && "bg-highlight-ring-gradient animate-highlight-glow rounded-[22px] p-[3px]"
+          )}
+        >
+          <button
+            type="button"
+            className="relative block cursor-zoom-in"
+            onClick={() => profilePhoto && setLightboxOpen(true)}
+            disabled={!profilePhoto}
+          >
+            <MemberProfilePhoto
+              photoUrl={profilePhoto?.photo_url ?? null}
+              approvalStatus={profilePhoto?.approval_status ?? null}
+              gender={member.gender}
+              name={`${member.first_name} ${member.last_name}`}
+              className={cn(
+                "rounded-2xl shadow-[0_10px_30px_rgba(127,29,29,0.15)]",
+                data.isHighlighted ? "size-44 lg:size-56" : "size-32 border-4 border-white lg:size-44"
+              )}
+            />
+            {data.isHighlighted && (
+              <HighlightBadge isHighlighted className="absolute -bottom-2 left-1/2 -translate-x-1/2" />
+            )}
+          </button>
 
           <div className="absolute -right-1.5 -bottom-1.5 flex items-center gap-1.5">
             {profilePhoto && (
@@ -370,6 +391,15 @@ export default function MyProfilePage() {
       <div className="lg:hidden">
         <DetailAccordion sections={sections} />
       </div>
+
+      {lightboxOpen && profilePhoto && (
+        <PhotoLightbox
+          photos={[{ url: profilePhoto.photo_url, isBlurred: false }]}
+          index={0}
+          onClose={() => setLightboxOpen(false)}
+          onIndexChange={() => {}}
+        />
+      )}
 
       {pendingProfileSrc && (
         <ImageCropperDialog

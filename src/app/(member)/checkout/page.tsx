@@ -14,6 +14,12 @@ import { SectionSkeleton } from "@/components/shared/loading-skeletons";
 import { useMembershipSummary } from "@/features/membership/use-membership-summary";
 import { useEntitlementsPreview } from "@/features/membership/use-entitlements-preview";
 import { PurchaseConfirmation } from "@/features/membership/components/PurchaseConfirmation";
+import {
+  useConfirmHighlightPurchase,
+  useHighlightPackages,
+  useInitiateHighlightPurchase,
+} from "@/features/profile-highlight/use-profile-highlight";
+import { useMyEligibleCouponForPlan } from "@/features/coupon/use-coupon";
 
 type Method = "upi" | "card" | "netbanking" | "wallet";
 const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
@@ -22,6 +28,16 @@ function CheckoutPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planId = Number(searchParams.get("plan"));
+  const highlightPackageId = searchParams.get("highlight");
+
+  // Profile Highlight is an independent purchasable feature from Membership
+  // — same page, same initiate->confirm->pay flow, but against the
+  // highlight endpoints and with no offer/carry-forward logic (a highlight
+  // purchase always cleanly extends the current one, nothing to explain
+  // before payment).
+  if (highlightPackageId) {
+    return <HighlightCheckout packageId={Number(highlightPackageId)} />;
+  }
 
   const { data: plans, isLoading: plansLoading, isError: plansError } = useMembershipPlans();
   const plan = plans?.find((p) => p.plan_id === planId);
@@ -47,8 +63,17 @@ function CheckoutPageInner() {
 
   const originalPrice = plan ? Number(plan.plan_amount) : 0;
   const offerPrice = plan?.offer ? plan.offer.offer_price : null;
-  const discount = offerPrice != null ? Math.round((originalPrice - offerPrice) * 100) / 100 : 0;
-  const total = offerPrice ?? originalPrice;
+  const offerDiscount = offerPrice != null ? Math.round((originalPrice - offerPrice) * 100) / 100 : 0;
+
+  // Private/targeted coupon for this exact plan, if the member is eligible
+  // — display only. Same "bigger discount wins, never stacked" rule the
+  // backend enforces; the actual charged amount always comes back from the
+  // initiate/confirm response below, never computed here.
+  const { data: eligibleCoupon } = useMyEligibleCouponForPlan(Number.isNaN(planId) ? null : planId);
+  const useCoupon = !!eligibleCoupon && eligibleCoupon.discountAmount > offerDiscount;
+
+  const discount = useCoupon ? eligibleCoupon.discountAmount : offerDiscount;
+  const total = Math.round((originalPrice - discount) * 100) / 100;
 
   async function handlePay() {
     if (!plan) return;
@@ -212,19 +237,37 @@ function CheckoutPageInner() {
             </div>
           </div>
 
-          {plan.offer && (
+          {useCoupon ? (
             <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
               <Tag className="size-4 text-success" />
               <div>
-                <div className="text-[13.5px] font-extrabold text-success">{plan.offer.title}</div>
+                <div className="text-[13.5px] font-extrabold text-success">
+                  Special Offer for You — {eligibleCoupon.couponName}
+                </div>
                 <div className="text-[11.5px] text-muted-foreground">Applied automatically</div>
               </div>
             </div>
+          ) : (
+            plan.offer && (
+              <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
+                <Tag className="size-4 text-success" />
+                <div>
+                  <div className="text-[13.5px] font-extrabold text-success">{plan.offer.title}</div>
+                  <div className="text-[11.5px] text-muted-foreground">Applied automatically</div>
+                </div>
+              </div>
+            )
           )}
 
           <div className="flex flex-col gap-2.5 text-sm">
             <Row label={`${plan.plan_name} plan`} value={`₹${originalPrice.toLocaleString("en-IN")}`} />
-            {discount > 0 && <Row label="Offer discount" value={`− ₹${discount.toLocaleString("en-IN")}`} tone="success" />}
+            {discount > 0 && (
+              <Row
+                label={useCoupon ? `Coupon ${eligibleCoupon.couponCode}` : "Offer discount"}
+                value={`− ₹${discount.toLocaleString("en-IN")}`}
+                tone="success"
+              />
+            )}
             <div className="flex items-baseline justify-between border-t border-card-border pt-3.5">
               <span className="text-[15px] font-extrabold text-primary-deep">Total payable</span>
               <span className="text-2xl font-extrabold text-primary-deep">₹{total.toLocaleString("en-IN")}</span>
@@ -245,6 +288,89 @@ function CheckoutPageInner() {
           <span>🧾 Invoice on request</span>
         </div>
       </aside>
+    </div>
+  );
+}
+
+function HighlightCheckout({ packageId }: { packageId: number }) {
+  const router = useRouter();
+  const { data: packages, isLoading, isError } = useHighlightPackages();
+  const pkg = packages?.find((p) => p.id === packageId);
+
+  const initiate = useInitiateHighlightPurchase();
+  const confirm = useConfirmHighlightPurchase();
+  const isProcessing = initiate.isPending || confirm.isPending;
+
+  const price = pkg ? Number(pkg.price) : 0;
+
+  async function handlePay() {
+    if (!pkg) return;
+    try {
+      const { purchase_id } = await initiate.mutateAsync(pkg.id);
+      await confirm.mutateAsync({ purchaseId: purchase_id, gatewayPaymentId: `stub_${Date.now()}` });
+      router.push(`/checkout/success?highlight=${purchase_id}`);
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Payment could not be completed. Please try again.");
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-215 px-5 py-8 lg:px-6">
+        <SectionSkeleton />
+      </div>
+    );
+  }
+
+  if (isError || !pkg) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-24 text-center">
+        <p className="text-sm font-semibold text-destructive">This Highlight package isn&apos;t available.</p>
+        <p className="text-sm text-faint">Please choose a package again.</p>
+        <Button size="sm" onClick={() => router.push("/plans/highlight")}>
+          Back to Highlight packages
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-215 px-5 pt-6 pb-8 lg:px-6 lg:pt-10 lg:pb-16">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="mb-4 flex items-center gap-1.5 text-[13.5px] font-bold text-muted-foreground hover:text-primary-deep"
+      >
+        <ChevronLeft className="size-4" /> Back
+      </button>
+
+      <div className="rounded-[20px] border border-card-border bg-card p-6 lg:p-7">
+        <div className="mb-4.5 text-base font-extrabold text-primary-deep lg:text-[17px]">Order summary</div>
+        <div className="mb-5 flex items-center gap-3.5 rounded-2xl bg-primary-deep p-4 text-white">
+          <span className="bg-gold-gradient flex size-11 shrink-0 items-center justify-center rounded-xl">
+            <Star className="size-[19px] fill-current" />
+          </span>
+          <div className="flex-1">
+            <div className="text-[15px] font-extrabold">{pkg.package_name}</div>
+            <div className="mt-0.5 text-xs text-white/70">{pkg.duration_days}-day Profile Highlight</div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2.5 text-sm">
+          <Row label={pkg.package_name} value={`₹${price.toLocaleString("en-IN")}`} />
+          <div className="flex items-baseline justify-between border-t border-card-border pt-3.5">
+            <span className="text-[15px] font-extrabold text-primary-deep">Total payable</span>
+            <span className="text-2xl font-extrabold text-primary-deep">₹{price.toLocaleString("en-IN")}</span>
+          </div>
+        </div>
+
+        <Button variant="gold" size="cta" className="mt-5.5 w-full" disabled={isProcessing} onClick={handlePay}>
+          {isProcessing ? "Processing…" : `Pay ₹${price.toLocaleString("en-IN")} securely`}
+        </Button>
+        <div className="mt-3 text-center text-xs text-faint">
+          If you already have an active Highlight, this extends it — the remaining time carries forward.
+        </div>
+      </div>
     </div>
   );
 }

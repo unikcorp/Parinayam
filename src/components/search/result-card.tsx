@@ -21,24 +21,36 @@ export function SearchResultCard({
         className
       )}
     >
-      <Link href={`/profile/${result.id}`} className="relative block h-55 w-full">
-        <MemberProfilePhoto
-          photoUrl={result.photoUrl}
-          // Search only ever returns approved photos for other members (see
-          // member-search.repository.ts) — never expose a pending upload.
-          approvalStatus={result.photoUrl ? "APPROVED" : null}
-          gender={result.gender}
-          name={result.name}
-          isBlurred={result.photoIsBlurred}
-          className="absolute inset-0 h-full w-full"
-        />
-        {result.match != null && (
-          <span className="absolute right-2.5 bottom-2.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11.5px] font-extrabold text-white">
-            {result.match}% match
-          </span>
+      <div
+        className={cn(
+          "relative",
+          result.isHighlighted && "bg-highlight-ring-gradient animate-highlight-glow rounded-t-[18px] p-[3px]"
         )}
-        <PremiumBadge isPremium={result.isPremium} className="absolute top-2.5 left-2.5" />
-      </Link>
+      >
+        <Link
+          href={`/profile/${result.id}`}
+          className={cn("relative block h-55 w-full overflow-hidden", result.isHighlighted && "rounded-t-[15px]")}
+        >
+          <MemberProfilePhoto
+            photoUrl={result.photoUrl}
+            // Search only ever returns approved photos for other members (see
+            // member-search.repository.ts) — never expose a pending upload.
+            approvalStatus={result.photoUrl ? "APPROVED" : null}
+            gender={result.gender}
+            name={result.name}
+            isBlurred={result.photoIsBlurred}
+            className="absolute inset-0 h-full w-full"
+          />
+          {result.match != null && (
+            <span className="absolute right-2.5 bottom-2.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11.5px] font-extrabold text-white">
+              {result.match}% match
+            </span>
+          )}
+          <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
+            <PremiumBadge isPremium={result.isPremium} />
+          </div>
+        </Link>
+      </div>
       <div className="p-4.5">
         <Link href={`/profile/${result.id}`} className="flex items-center gap-1.5">
           <span className="truncate text-[15.5px] font-extrabold text-primary-deep">

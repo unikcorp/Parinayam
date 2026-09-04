@@ -12,6 +12,8 @@ export interface SearchResult {
   photoUrl: string | null;
   photoIsBlurred: boolean;
   isPremium: boolean;
+  /** Profile Highlight — a paid add-on independent of Membership. */
+  isHighlighted: boolean;
   verified: boolean;
   /** null when the viewer hasn't set partner preferences — nothing to score against. */
   match: number | null;

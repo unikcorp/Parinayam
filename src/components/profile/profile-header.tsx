@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Camera, Share2, MoreHorizontal, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { MemberProfilePhoto } from "@/components/shared/member-profile-photo";
+import { HighlightBadge } from "@/features/profile-highlight/components/HighlightBadge";
 import { PhotoLightbox } from "@/components/shared/photo-lightbox";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -30,7 +32,7 @@ async function shareProfile(name: string) {
 }
 
 export function ProfileHeader({ profile }: { profile: PublicMemberProfileResponse }) {
-  const { member, photos, verified, lastLoginAt } = profile;
+  const { member, photos, verified, isHighlighted, lastLoginAt } = profile;
   const name = `${member.first_name} ${member.last_name}`;
   const age = calculateAge(member.dob);
   const place = [member.district_name, member.state_name, member.country_name].filter(Boolean).join(", ");
@@ -48,22 +50,30 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
       {/* DESKTOP HEADER — plain card, no fake cover banner */}
       <div className="hidden px-12 pt-6 lg:block">
         <div className="flex items-start gap-7 rounded-[22px] border border-card-border bg-card p-8">
-          <button
-            type="button"
-            className="shrink-0 cursor-zoom-in disabled:cursor-default"
-            onClick={() => setLightboxIndex(profilePhotoIndex)}
-            disabled={!profilePhoto}
-          >
-            <MemberProfilePhoto
-              photoUrl={profilePhoto?.photo_url ?? null}
-              approvalStatus={profilePhoto?.approval_status ?? null}
-              gender={member.gender}
-              name={name}
-              isBlurred={profilePhoto?.is_blurred}
-              className="size-36 rounded-2xl border-4 border-white shadow-[0_10px_30px_rgba(127,29,29,0.15)]"
-              showMessage={false}
-            />
-          </button>
+          <div className={cn("relative shrink-0", isHighlighted && "bg-highlight-ring-gradient animate-highlight-glow rounded-[20px] p-[3px]")}>
+            <button
+              type="button"
+              className="relative block cursor-zoom-in disabled:cursor-default"
+              onClick={() => setLightboxIndex(profilePhotoIndex)}
+              disabled={!profilePhoto}
+            >
+              <MemberProfilePhoto
+                photoUrl={profilePhoto?.photo_url ?? null}
+                approvalStatus={profilePhoto?.approval_status ?? null}
+                gender={member.gender}
+                name={name}
+                isBlurred={profilePhoto?.is_blurred}
+                className={cn(
+                  "rounded-2xl shadow-[0_10px_30px_rgba(127,29,29,0.15)]",
+                  isHighlighted ? "size-56" : "size-44 border-4 border-white"
+                )}
+                showMessage={false}
+              />
+              {isHighlighted && (
+                <HighlightBadge isHighlighted className="absolute -bottom-2 left-1/2 -translate-x-1/2" />
+              )}
+            </button>
+          </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
@@ -122,22 +132,24 @@ export function ProfileHeader({ profile }: { profile: PublicMemberProfileRespons
       {/* MOBILE HERO */}
       <div className="lg:hidden">
         <div className="relative">
-          <button
-            type="button"
-            className="block w-full cursor-zoom-in disabled:cursor-default"
-            onClick={() => setLightboxIndex(profilePhotoIndex)}
-            disabled={!profilePhoto}
-          >
-            <MemberProfilePhoto
-              photoUrl={profilePhoto?.photo_url ?? null}
-              approvalStatus={profilePhoto?.approval_status ?? null}
-              isBlurred={profilePhoto?.is_blurred}
-              gender={member.gender}
-              name={name}
-              className="h-105 w-full"
-              showMessage={false}
-            />
-          </button>
+          <div className={cn(isHighlighted && "bg-highlight-ring-gradient animate-highlight-glow p-[3px]")}>
+            <button
+              type="button"
+              className="block w-full cursor-zoom-in disabled:cursor-default"
+              onClick={() => setLightboxIndex(profilePhotoIndex)}
+              disabled={!profilePhoto}
+            >
+              <MemberProfilePhoto
+                photoUrl={profilePhoto?.photo_url ?? null}
+                approvalStatus={profilePhoto?.approval_status ?? null}
+                isBlurred={profilePhoto?.is_blurred}
+                gender={member.gender}
+                name={name}
+                className="h-105 w-full"
+                showMessage={false}
+              />
+            </button>
+          </div>
           <div className="absolute inset-x-0 top-0 flex justify-between p-4">
             <button className="flex size-10.5 items-center justify-center rounded-xl bg-white/92 text-primary-deep">
               <ArrowLeft className="size-4" />

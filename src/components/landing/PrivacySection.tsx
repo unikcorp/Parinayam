@@ -5,8 +5,14 @@ import { motion } from "motion/react";
 import { ShieldCheck } from "lucide-react";
 import { privacyFeatures } from "@/data/privacy-features.data";
 import { privacyImage } from "@/config/landingImages";
+import { usePrivacyImage, privacyImageUrl } from "@/hooks/use-privacy-image";
 
 export function PrivacySection() {
+  // Admin-uploaded image (Site Settings > Home Page Banner) overrides the
+  // curated stock photo when set.
+  const { data } = usePrivacyImage();
+  const imageSrc = privacyImageUrl(data?.image ?? null) ?? privacyImage.regular;
+
   return (
     <section className="bg-surface-cream px-5 py-9 lg:px-18 lg:py-20">
       <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
@@ -20,7 +26,7 @@ export function PrivacySection() {
           <div className="bg-peach-bg absolute inset-6 -z-10 rounded-full opacity-60 blur-3xl" aria-hidden />
           <div className="relative h-[280px] w-full overflow-hidden rounded-[28px] border-8 border-white shadow-[0_24px_54px_rgba(127,29,29,0.16)] lg:h-[420px]">
             <Image
-              src={privacyImage.regular}
+              src={imageSrc}
               alt={privacyImage.alt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

@@ -13,6 +13,7 @@ const settingsNav = [
   { href: "/settings/security", icon: "🔑", label: "Password & Security" },
   { href: "/settings/billing", icon: "★", label: "Membership & Billing" },
   { href: "/settings/membership", icon: "🏆", label: "My Membership" },
+  { href: "/settings/profile-highlight", icon: "✨", label: "Profile Highlight" },
   { href: "/settings/support", icon: "💬", label: "Report a Problem" },
   { href: "/settings/account", icon: "⚠", label: "Account" },
 ];

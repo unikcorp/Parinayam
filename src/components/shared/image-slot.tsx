@@ -1,7 +1,6 @@
 import { useId } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { avatarPhotos, scenePhotos } from "@/data/stock-photos";
 
 export interface ImageSlotProps {
   label?: string;
@@ -19,11 +18,10 @@ function hashSeed(seed: string) {
 }
 
 /**
- * Dummy photo filler for design mockups. Renders a curated South Indian
- * portrait or wedding/couple photo (from Unsplash, see
- * scripts/fetch-stock-photos.mjs) — swap for next/image fed by real
- * member/CDN photos in production, per the design handoff's white-label
- * notes.
+ * Dummy photo filler for design mockups. Renders a local placeholder image
+ * (client/public) — no external image API/CDN — swap for next/image fed by
+ * real member/CDN photos in production, per the design handoff's
+ * white-label notes.
  */
 export function ImageSlot({ label = "photo", className }: ImageSlotProps) {
   const id = useId();
@@ -34,14 +32,11 @@ export function ImageSlot({ label = "photo", className }: ImageSlotProps) {
   let alt: string;
   if (isAvatar) {
     const gender = hash % 2 === 0 ? "men" : "women";
-    const pool = avatarPhotos[gender];
-    const photo = pool[hash % pool.length];
-    src = photo.small;
-    alt = photo.alt;
+    src = gender === "men" ? "/images/men.png" : "/images/women.png";
+    alt = "Placeholder portrait";
   } else {
-    const photo = scenePhotos[hash % scenePhotos.length];
-    src = photo.regular;
-    alt = photo.alt;
+    src = "/photos/couple.jpg";
+    alt = "Placeholder photo";
   }
 
   return (

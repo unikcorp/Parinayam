@@ -18,6 +18,8 @@ export interface ProfileCardProps {
   gender?: "Male" | "Female" | string;
   verified?: boolean;
   premium?: boolean;
+  /** Profile Highlight — a paid add-on independent of Membership. */
+  highlighted?: boolean;
   online?: boolean;
   matchPercent?: number;
   /** Real member id — when present the Interest/Shortlist buttons actually work. Omit for demo/marketing cards. */
@@ -38,6 +40,7 @@ export function ProfileCard({
   gender = "Male",
   verified,
   premium,
+  highlighted,
   online,
   matchPercent,
   memberId,
@@ -57,28 +60,36 @@ export function ProfileCard({
       <CardLink memberId={memberId} teaser={teaser}>
         <div
           className={cn(
-            "relative h-[210px] w-full shrink-0 overflow-hidden",
-            photoClassName
+            "relative",
+            highlighted && "bg-highlight-ring-gradient animate-highlight-glow rounded-t-3xl p-[3px]"
           )}
         >
-          <MemberProfilePhoto
-            photoUrl={photoUrl ?? null}
-            approvalStatus={photoUrl ? "APPROVED" : null}
-            isBlurred={photoIsBlurred}
-            gender={gender}
-            name={name}
-            className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
-          />
-          {online && (
-            <span className="absolute bottom-3 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-success">
-              <span className="size-1.5 rounded-full bg-success" /> Online now
-            </span>
-          )}
-          {typeof matchPercent === "number" && (
-            <span className="absolute bottom-3 right-3.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11px] font-extrabold text-white">
-              {matchPercent}% match
-            </span>
-          )}
+          <div
+            className={cn(
+              "relative h-[210px] w-full shrink-0 overflow-hidden",
+              highlighted && "rounded-t-[21px]",
+              photoClassName
+            )}
+          >
+            <MemberProfilePhoto
+              photoUrl={photoUrl ?? null}
+              approvalStatus={photoUrl ? "APPROVED" : null}
+              isBlurred={photoIsBlurred}
+              gender={gender}
+              name={name}
+              className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
+            />
+            {online && (
+              <span className="absolute bottom-3 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-success">
+                <span className="size-1.5 rounded-full bg-success" /> Online now
+              </span>
+            )}
+            {typeof matchPercent === "number" && (
+              <span className="absolute bottom-3 right-3.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11px] font-extrabold text-white">
+                {matchPercent}% match
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="px-4.5 pt-4">

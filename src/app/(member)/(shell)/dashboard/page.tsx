@@ -179,6 +179,7 @@ export default function DashboardPage() {
                     matchPercent={m.match ?? undefined}
                     verified={m.verified}
                     premium={m.isPremium}
+                    highlighted={m.isHighlighted}
                     className="w-50 shrink-0 lg:w-auto"
                     photoClassName="h-45 lg:h-52.5"
                   />
