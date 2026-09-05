@@ -216,13 +216,14 @@ export async function uploadGalleryPhotoRequest(memberId: number, file: File): P
 }
 
 // ---------- Step 9 — Identity document ----------
-export async function uploadDocumentRequest(memberId: number, idType: string, file: File) {
+export async function uploadDocumentRequest(memberId: number, idType: string, documentNumber: string, file: File) {
   const documentType = DOCUMENT_TYPE_MAP[idType];
   if (!documentType) {
     throw new Error("An ID type must be selected before uploading a document.");
   }
   const form = new FormData();
   form.append("documentType", documentType);
+  form.append("documentNumber", documentNumber);
   form.append("file", file);
   return api.post(`/api/members/${memberId}/documents`, form, { isFormData: true });
 }

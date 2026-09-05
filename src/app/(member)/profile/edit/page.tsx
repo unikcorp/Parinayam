@@ -146,6 +146,7 @@ function mapProfileToFormValues(data: MemberProfileResponse): Partial<Registrati
     photoCount: data.photos.length,
     idDocumentUploaded: !!data.document,
     idType: idTypeFromDocumentType(data.document?.document_type),
+    idDocumentNumber: data.document?.document_number ?? "",
   };
 }
 

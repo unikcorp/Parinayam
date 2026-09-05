@@ -15,7 +15,7 @@ export function HighlightBadge({ isHighlighted, className }: HighlightBadgeProps
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide text-white uppercase",
+        "inline-flex items-center gap-1 rounded-full bg-highlight-badge-gradient px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide text-white uppercase",
         className
       )}
     >

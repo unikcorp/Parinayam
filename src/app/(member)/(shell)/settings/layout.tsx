@@ -2,20 +2,62 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Lock,
+  Bell,
+  Ban,
+  KeyRound,
+  Star,
+  Trophy,
+  Sparkles,
+  MessageCircle,
+  TriangleAlert,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const settingsNav = [
-  { href: "/settings", icon: "👤", label: "Profile Settings" },
-  { href: "/settings/privacy", icon: "🔒", label: "Privacy & Visibility" },
-  { href: "/settings/notifications", icon: "🔔", label: "Notifications" },
-  { href: "/settings/blocked", icon: "🚫", label: "Blocked Users" },
-  { href: "/settings/security", icon: "🔑", label: "Password & Security" },
-  { href: "/settings/billing", icon: "★", label: "Membership & Billing" },
-  { href: "/settings/membership", icon: "🏆", label: "My Membership" },
-  { href: "/settings/profile-highlight", icon: "✨", label: "Profile Highlight" },
-  { href: "/settings/support", icon: "💬", label: "Report a Problem" },
-  { href: "/settings/account", icon: "⚠", label: "Account" },
+type SettingsNavItem = {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  color: string;
+  bg: string;
+  gradientBorder?: string;
+};
+
+function IconChip({ item }: { item: SettingsNavItem }) {
+  const icon = <item.icon className={cn("size-[17px]", item.color)} />;
+  if (item.gradientBorder) {
+    return (
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br p-[2px]",
+          item.gradientBorder
+        )}
+      >
+        <span className={cn("flex size-full items-center justify-center rounded-[7px]", item.bg)}>{icon}</span>
+      </span>
+    );
+  }
+  return (
+    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", item.bg)}>{icon}</span>
+  );
+}
+
+const settingsNav: SettingsNavItem[] = [
+  { href: "/settings", icon: User, label: "Profile Settings", color: "text-blue-600", bg: "bg-blue-50" },
+  { href: "/settings/privacy", icon: Lock, label: "Privacy & Visibility", color: "text-purple-600", bg: "bg-purple-50" },
+  { href: "/settings/notifications", icon: Bell, label: "Notifications", color: "text-amber-600", bg: "bg-amber-50" },
+  { href: "/settings/blocked", icon: Ban, label: "Blocked Users", color: "text-danger", bg: "bg-danger-bg" },
+  { href: "/settings/security", icon: KeyRound, label: "Password & Security", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { href: "/settings/billing", icon: Star, label: "Membership & Billing", color: "text-gold-text", bg: "bg-[#fdf1e2]" },
+  { href: "/settings/membership", icon: Trophy, label: "My Membership", color: "text-orange-600", bg: "bg-orange-50" },
+  { href: "/settings/profile-highlight", icon: Sparkles, label: "Profile Highlight", color: "text-rose-600", bg: "bg-rose-50" },
+  { href: "/settings/support", icon: MessageCircle, label: "Report a Problem", color: "text-sky-600", bg: "bg-sky-50" },
+  { href: "/settings/account", icon: TriangleAlert, label: "Account", color: "text-destructive", bg: "bg-danger-bg" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -49,7 +91,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   : "font-semibold text-muted-foreground hover:bg-surface"
               )}
             >
-              <span className="text-base">{item.icon}</span> {item.label}
+              <IconChip item={item} />
+              {item.label}
             </Link>
           );
         })}
@@ -67,7 +110,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 i === settingsNav.length - 2 && "border-b-0"
               )}
             >
-              <span className="text-base">{item.icon}</span>
+              <IconChip item={item} />
               <span className="flex-1 text-sm font-bold text-ink">{item.label}</span>
               <ChevronRight className="size-4 text-faint" />
             </Link>

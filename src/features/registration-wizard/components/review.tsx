@@ -199,6 +199,7 @@ export function ReviewStep({
         onEdit={() => onEditStep(8)}
         rows={[
           ["ID type", data.idType],
+          ["ID number", data.idDocumentNumber],
           ["ID document", data.idDocumentUploaded ? "Uploaded" : "Not uploaded"],
         ]}
       />

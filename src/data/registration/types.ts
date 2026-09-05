@@ -66,6 +66,7 @@ export const initialRegistrationData: RegistrationFormValues = {
   photoCount: 0,
 
   idType: "",
+  idDocumentNumber: "",
   idDocumentUploaded: false,
 };
 

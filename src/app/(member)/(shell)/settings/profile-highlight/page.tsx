@@ -51,7 +51,7 @@ export default function ProfileHighlightPage() {
           {isActive ? (
             <section className="rounded-2xl border border-card-border bg-card p-5 lg:rounded-[20px] lg:p-7">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3 py-1 text-[11px] font-extrabold text-primary-deep">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-highlight-badge-gradient px-3 py-1 text-[11px] font-extrabold text-white">
                   <Sparkles className="size-3.5" /> Highlighted
                 </span>
                 <span className="rounded-full border border-success/30 bg-success/10 px-2.5 py-0.5 text-[11px] font-bold text-success">
@@ -72,8 +72,8 @@ export default function ProfileHighlightPage() {
             </section>
           ) : (
             <section className="rounded-2xl border border-card-border bg-card p-7 text-center lg:rounded-[20px]">
-              <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-gold-gradient">
-                <Sparkles className="size-6 text-primary-deep" />
+              <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-highlight-badge-gradient">
+                <Sparkles className="size-6 text-white" />
               </span>
               <div className="text-lg font-extrabold text-primary-deep">Make Your Profile Stand Out</div>
               <p className="mx-auto mt-1 max-w-sm text-sm text-faint">

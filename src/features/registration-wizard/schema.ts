@@ -99,6 +99,7 @@ export const registrationSchema = z
 
     // Step 9 — Identity verification (not mandatory)
     idType: optionalString,
+    idDocumentNumber: optionalString,
     idDocumentUploaded: z.boolean(),
 
     // Step 10 — Review & submit has no fields of its own

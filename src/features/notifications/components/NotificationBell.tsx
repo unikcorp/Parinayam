@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   Camera,
@@ -37,19 +38,35 @@ const TYPE_DISPLAY: Record<NotificationType, { icon: LucideIcon; tint: string }>
   subscription_success: { icon: CreditCard, tint: "bg-surface-cream-2 text-gold-text" },
 };
 
+// Where clicking a notification of this type should take the member.
+// Notification rows don't carry a specific target id (no conversation/
+// member/interest reference is stored server-side) — this routes to the
+// relevant section, not the exact interest/message/profile involved.
+const TYPE_HREF: Record<NotificationType, string> = {
+  interest_received: "/interests",
+  interest_accepted: "/interests",
+  interest_rejected: "/interests",
+  new_message: "/messages",
+  profile_viewed: "/who-viewed-me",
+  favorite_added: "/shortlist",
+  profile_photo_approved: "/profile/me",
+  profile_photo_rejected: "/profile/me",
+  subscription_success: "/settings/membership",
+};
+
 function NotificationRow({
   notification,
-  onRead,
+  onOpen,
 }: {
   notification: NotificationRecord;
-  onRead: (id: number) => void;
+  onOpen: (notification: NotificationRecord) => void;
 }) {
   const { icon: Icon, tint } = TYPE_DISPLAY[notification.type];
 
   return (
     <button
       type="button"
-      onClick={() => onRead(notification.id)}
+      onClick={() => onOpen(notification)}
       className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-surface"
     >
       <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-full", tint)}>
@@ -66,12 +83,22 @@ function NotificationRow({
 }
 
 export function NotificationBell() {
+  const router = useRouter();
   const { data: notifications = [] } = useUnreadNotifications();
   const markAsRead = useMarkNotificationRead();
   const markAllAsRead = useMarkAllNotificationsRead();
 
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Clicking a notification used to just mark it read, which made it vanish
+  // from this unread list with nothing else happening — closing the panel
+  // and going to the relevant page is the whole point of clicking one.
+  function handleOpenNotification(notification: NotificationRecord) {
+    markAsRead.mutate(notification.id);
+    setOpen(false);
+    router.push(TYPE_HREF[notification.type]);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -123,7 +150,7 @@ export function NotificationBell() {
               <p className="px-4 py-8 text-center text-sm text-faint">You&apos;re all caught up.</p>
             ) : (
               notifications.map((n) => (
-                <NotificationRow key={n.id} notification={n} onRead={(id) => markAsRead.mutate(id)} />
+                <NotificationRow key={n.id} notification={n} onOpen={handleOpenNotification} />
               ))
             )}
           </div>

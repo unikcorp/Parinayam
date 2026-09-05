@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FileText, Loader2, UploadCloud, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
-import { FieldGroup, SelectField } from "@/components/forms/form-fields";
+import { FieldGroup, SelectField, TextField } from "@/components/forms/form-fields";
 import { uploadDocumentRequest } from "../api";
 import { ApiError } from "@/lib/api";
 import type { RegistrationFormValues } from "../schema";
@@ -13,6 +13,7 @@ const idTypes = ["Aadhaar", "Passport", "PAN", "Other Documents"];
 function IdentityDocumentUpload({ memberId }: { memberId: number | null }) {
   const { watch, setValue } = useFormContext<RegistrationFormValues>();
   const idType = watch("idType");
+  const idDocumentNumber = watch("idDocumentNumber");
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -24,6 +25,10 @@ function IdentityDocumentUpload({ memberId }: { memberId: number | null }) {
       setError("Select an ID type before uploading your document.");
       return;
     }
+    if (!idDocumentNumber.trim()) {
+      setError("Enter your document number before uploading.");
+      return;
+    }
     setFileName(file.name);
     setValue("idDocumentUploaded", true);
     setError(null);
@@ -31,7 +36,7 @@ function IdentityDocumentUpload({ memberId }: { memberId: number | null }) {
 
     setUploading(true);
     try {
-      await uploadDocumentRequest(memberId, idType, file);
+      await uploadDocumentRequest(memberId, idType, idDocumentNumber.trim(), file);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not upload the document.");
       setFileName(null);
@@ -103,6 +108,14 @@ export function VerificationStep({ memberId }: { memberId: number | null }) {
       <FieldGroup title="Government ID">
         <div className="mb-4">
           <SelectField<RegistrationFormValues> name="idType" label="ID type" required options={idTypes} />
+        </div>
+        <div className="mb-4">
+          <TextField<RegistrationFormValues>
+            name="idDocumentNumber"
+            label="Document number"
+            required
+            placeholder="Enter the ID number as printed on the document"
+          />
         </div>
         <IdentityDocumentUpload memberId={memberId} />
       </FieldGroup>
