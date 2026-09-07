@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FilterChip } from "@/components/shared/filter-chip";
 import { brand } from "@/data/brand";
+import { useContactInfo } from "@/hooks/use-contact-info";
 import { api, ApiError } from "@/lib/api";
 import {
   contactSchema,
@@ -18,6 +19,11 @@ import {
   contactDefaultValues,
   type ContactFormValues,
 } from "@/validation/contact.schema";
+
+function whatsappHref(whatsapp: string): string | null {
+  const digits = whatsapp.replace(/[^\d]/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+}
 
 export default function ContactPage() {
   const {
@@ -29,6 +35,10 @@ export default function ContactPage() {
     resolver: zodResolver(contactSchema),
     defaultValues: contactDefaultValues,
   });
+
+  const { data: contactInfo } = useContactInfo();
+  const supportEmail = contactInfo?.supportEmail || brand.supportEmail;
+  const waHref = contactInfo?.whatsapp ? whatsappHref(contactInfo.whatsapp) : null;
 
   async function onSubmit(values: ContactFormValues) {
     try {
@@ -69,16 +79,36 @@ export default function ContactPage() {
 
         {/* mobile quick channels */}
         <div className="mb-5.5 grid grid-cols-2 gap-3 lg:hidden">
-          <div className="rounded-2xl border border-success/25 bg-success-bg p-4">
-            <div className="mb-2 text-xl">🟢</div>
-            <div className="text-[13.5px] font-extrabold text-success">WhatsApp</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">Replies in minutes</div>
-          </div>
-          <div className="rounded-2xl border border-[#D7DFF0] bg-surface-blue p-4">
-            <div className="mb-2 text-xl">📞</div>
-            <div className="text-[13.5px] font-extrabold text-primary-deep">1800-425-77-99</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">9 AM – 9 PM IST</div>
-          </div>
+          {waHref ? (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-2xl border border-success/25 bg-success-bg p-4"
+            >
+              <div className="mb-2 text-xl">🟢</div>
+              <div className="text-[13.5px] font-extrabold text-success">WhatsApp</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">Replies in minutes</div>
+            </a>
+          ) : (
+            <div className="rounded-2xl border border-success/25 bg-success-bg p-4 opacity-60">
+              <div className="mb-2 text-xl">🟢</div>
+              <div className="text-[13.5px] font-extrabold text-success">WhatsApp</div>
+              <div className="mt-0.5 text-[11px] text-muted-foreground">Coming soon</div>
+            </div>
+          )}
+          {contactInfo?.phone ? (
+            <a href={`tel:${contactInfo.phone}`} className="rounded-2xl border border-[#D7DFF0] bg-surface-blue p-4">
+              <div className="mb-2 text-xl">📞</div>
+              <div className="text-[13.5px] font-extrabold text-primary-deep">{contactInfo.phone}</div>
+              {contactInfo.hours && <div className="mt-0.5 text-[11px] text-muted-foreground">{contactInfo.hours}</div>}
+            </a>
+          ) : (
+            <div className="rounded-2xl border border-[#D7DFF0] bg-surface-blue p-4 opacity-60">
+              <div className="mb-2 text-xl">📞</div>
+              <div className="text-[13.5px] font-extrabold text-primary-deep">Call us</div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-7 lg:grid-cols-[1fr_420px]">
@@ -96,7 +126,7 @@ export default function ContactPage() {
                   name="fullName"
                   control={control}
                   render={({ field }) => (
-                    <Input {...field} className="h-auto rounded-xl px-4 py-3.5 text-sm" />
+                    <Input {...field} placeholder="Your name" className="h-auto rounded-xl px-4 py-3.5 text-sm" />
                   )}
                 />
                 {errors.fullName && (
@@ -113,7 +143,7 @@ export default function ContactPage() {
                   name="phone"
                   control={control}
                   render={({ field }) => (
-                    <Input {...field} className="h-auto rounded-xl px-4 py-3.5 text-sm" />
+                    <Input {...field} placeholder="+91 98765 43210" className="h-auto rounded-xl px-4 py-3.5 text-sm" />
                   )}
                 />
                 {errors.phone && (
@@ -129,7 +159,12 @@ export default function ContactPage() {
                 name="email"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} type="email" className="h-auto rounded-xl px-4 py-3.5 text-sm" />
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="you@example.com"
+                    className="h-auto rounded-xl px-4 py-3.5 text-sm"
+                  />
                 )}
               />
               {errors.email && (
@@ -167,7 +202,12 @@ export default function ContactPage() {
                 name="message"
                 control={control}
                 render={({ field }) => (
-                  <Textarea {...field} rows={5} className="resize-none rounded-xl text-sm" />
+                  <Textarea
+                    {...field}
+                    rows={5}
+                    placeholder="Tell us how we can help…"
+                    className="resize-none rounded-xl text-sm"
+                  />
                 )}
               />
               {errors.message && (
@@ -211,44 +251,54 @@ export default function ContactPage() {
               <div className="mb-2 text-sm font-extrabold text-primary-deep lg:mb-4 lg:text-base">
                 Registered office
               </div>
-              <div className="text-[13px] leading-[1.7] text-[#4A5568] lg:text-sm">
+              <div className="text-[13px] leading-[1.7] whitespace-pre-line text-[#4A5568] lg:text-sm">
                 {brand.name} Matrimony Pvt. Ltd.
-                <br />
-                3rd Floor, Trilogy Towers, Kakkanad
-                <br />
-                Kochi — 682 030, Kerala
+                {contactInfo?.address ? `\n${contactInfo.address}` : ""}
               </div>
               <div className="mt-3.5 flex flex-col gap-3 lg:mt-5">
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="flex size-9 items-center justify-center rounded-[11px] bg-surface-blue text-primary">
-                    <Phone className="size-4" />
-                  </span>
-                  <b className="text-primary-deep">1800-425-77-99</b>
-                  <span className="text-xs text-faint">9 AM – 9 PM IST</span>
-                </div>
+                {contactInfo?.phone && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="flex size-9 items-center justify-center rounded-[11px] bg-surface-blue text-primary">
+                      <Phone className="size-4" />
+                    </span>
+                    <a href={`tel:${contactInfo.phone}`} className="text-primary-deep font-bold hover:underline">
+                      {contactInfo.phone}
+                    </a>
+                    {contactInfo.hours && <span className="text-xs text-faint">{contactInfo.hours}</span>}
+                  </div>
+                )}
                 <div className="flex items-center gap-3 text-sm">
                   <span className="flex size-9 items-center justify-center rounded-[11px] bg-surface-cream-2 text-gold-text">
                     <Mail className="size-4" />
                   </span>
-                  <b className="text-primary-deep">{brand.supportEmail}</b>
+                  <a href={`mailto:${supportEmail}`} className="text-primary-deep font-bold hover:underline">
+                    {supportEmail}
+                  </a>
                 </div>
               </div>
             </div>
 
-            <div className="hidden items-center gap-4 rounded-[20px] border border-success/25 bg-success-bg p-5.5 lg:flex">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-success text-xl text-white">
-                🟢
-              </span>
-              <div className="flex-1">
-                <div className="text-[15px] font-extrabold text-success">
-                  Chat on WhatsApp
+            {waHref && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-4 rounded-[20px] border border-success/25 bg-success-bg p-5.5 lg:flex"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-success text-xl text-white">
+                  🟢
+                </span>
+                <div className="flex-1">
+                  <div className="text-[15px] font-extrabold text-success">
+                    Chat on WhatsApp
+                  </div>
+                  <div className="mt-0.5 text-[12.5px] text-muted-foreground">
+                    usually replies in minutes
+                  </div>
                 </div>
-                <div className="mt-0.5 text-[12.5px] text-muted-foreground">
-                  മലയാളം / English · usually replies in minutes
-                </div>
-              </div>
-              <span className="font-extrabold text-success">→</span>
-            </div>
+                <span className="font-extrabold text-success">→</span>
+              </a>
+            )}
           </aside>
         </div>
       </div>

@@ -10,8 +10,6 @@ import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
 import { ApiError } from "@/lib/api";
 import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
 import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
-import { useMyEligibleCoupons } from "@/features/coupon/use-coupon";
-import { Gift } from "lucide-react";
 
 export default function PlansPage() {
   const router = useRouter();
@@ -28,11 +26,6 @@ export default function PlansPage() {
   const confirm = useConfirmSubscription();
   const [activatingPlanId, setActivatingPlanId] = useState<number | null>(null);
 
-  // Private/targeted coupons — only ever shown to the member they're
-  // assigned to, resolved server-side from the JWT. No code is ever typed.
-  const { data: eligibleCoupons } = useMyEligibleCoupons();
-  const couponByPlanId = new Map((eligibleCoupons ?? []).map((c) => [c.planId, c]));
-
   const badges = getPlanBadges(plans ?? []);
 
   // The plan the member is actively on right now, if any — used to block
@@ -46,7 +39,7 @@ export default function PlansPage() {
   async function activateFree(planId: number) {
     setActivatingPlanId(planId);
     try {
-      const { subscription_id } = await initiate.mutateAsync(planId);
+      const { subscription_id } = await initiate.mutateAsync({ planId });
       await confirm.mutateAsync({ subscriptionId: subscription_id, gatewayPaymentId: `stub_${Date.now()}` });
       router.push(`/checkout/success?subscription=${subscription_id}`);
     } catch (error) {
@@ -70,15 +63,6 @@ export default function PlansPage() {
         </p>
       </div>
 
-      {!!eligibleCoupons?.length && (
-        <div className="mx-auto mb-8 flex max-w-2xl items-center gap-3 rounded-2xl border border-dashed border-gold bg-surface-cream-2 px-5 py-4 text-center lg:mb-10">
-          <Gift className="size-5 shrink-0 text-gold-text" />
-          <p className="text-sm font-bold text-primary-deep">
-            🎁 You have a special membership offer available.
-          </p>
-        </div>
-      )}
-
       {isLoading && <PlanCardsSkeleton />}
 
       {isError && (
@@ -100,14 +84,7 @@ export default function PlansPage() {
             const isActivating = activatingPlanId === plan.plan_id;
             const isDowngrade = !isCurrentPlan && !!currentPlan && plan.sort_order < currentPlan.sort_order;
 
-            // Same "bigger discount wins" rule the backend applies — a
-            // private coupon only overrides the public offer's displayed
-            // price if it's actually the better deal.
-            const originalPrice = Number(plan.plan_amount);
-            const offerDiscount = plan.offer ? originalPrice - plan.offer.offer_price : 0;
-            const coupon = couponByPlanId.get(plan.plan_id);
-            const showCoupon = !!coupon && coupon.discountAmount > offerDiscount;
-            const displayPrice = showCoupon ? coupon.finalPrice : Number(plan.plan_amount);
+            const displayPrice = Number(plan.plan_amount);
 
             return (
               <PlanCard
@@ -115,13 +92,9 @@ export default function PlansPage() {
                 name={plan.plan_name}
                 price={isFree ? "₹0" : `₹${displayPrice.toLocaleString("en-IN")}`}
                 period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
-                tagline={
-                  showCoupon
-                    ? `🎁 Special price for you — was ₹${originalPrice.toLocaleString("en-IN")}`
-                    : plan.plan_offers || undefined
-                }
-                badge={showCoupon ? "Special Offer" : badge}
-                dark={showCoupon || badge === "Best Value"}
+                tagline={plan.plan_offers || undefined}
+                badge={badge}
+                dark={badge === "Best Value"}
                 ctaLabel={
                   isCurrentPlan
                     ? "Current Plan"

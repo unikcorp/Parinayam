@@ -3,11 +3,22 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { Field, FieldGroup, SelectField, SearchableSelectField } from "@/components/forms/form-fields";
 import { useFieldVisibility } from "@/hooks/use-field-visibility";
+import { useBasicConfig } from "@/hooks/use-basic-config";
 import type { RegistrationFormValues } from "../schema";
 import type { RegistrationLookups } from "../use-registration-lookups";
 
 const heights = ["4' 10\"", "5' 0\"", "5' 2\"", "5' 4\" (163 cm)", "5' 6\"", "5' 8\"", "6' 0\""];
-const weights = ["30 Kg", "40 Kg", "50 Kg", "60 Kg", "70 Kg", "80 Kg", "90 Kg", "100+ Kg"];
+const DEFAULT_WEIGHTS = ["30 Kg", "40 Kg", "50 Kg", "60 Kg", "70 Kg", "80 Kg", "90 Kg", "100+ Kg"];
+
+// Admin-configured (Site Settings > Update Basic Config) weight range —
+// stepped every 10kg, with the final option capping at "<end>+ Kg" so an
+// unusually heavy profile still has something to pick.
+function buildWeightOptions(start: number, end: number): string[] {
+  const options: string[] = [];
+  for (let w = start; w < end; w += 10) options.push(`${w} Kg`);
+  options.push(`${end}+ Kg`);
+  return options;
+}
 const bodyTypes = ["Slim", "Athletic", "Average", "Heavy"];
 const complexions = ["Very Fair", "Fair", "Wheatish", "Dark"];
 const physicalStatuses = ["Normal", "Physically Challenged"];
@@ -42,10 +53,13 @@ function WillingToMarryOtherCasteField() {
 export function PersonalStep({ lookups }: { lookups: RegistrationLookups }) {
   const { watch } = useFormContext<RegistrationFormValues>();
   const { isFieldEnabled } = useFieldVisibility();
+  const { data: basicConfig } = useBasicConfig();
   const religion = watch("religion");
   const caste = watch("caste");
   const country = watch("country");
   const state = watch("state");
+
+  const weights = basicConfig ? buildWeightOptions(basicConfig.weightStart, basicConfig.weightEnd) : DEFAULT_WEIGHTS;
 
   const showLifestyle = isFieldEnabled("diet") || isFieldEnabled("smokingHabits") || isFieldEnabled("drinkingHabits");
 

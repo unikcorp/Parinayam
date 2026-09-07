@@ -16,7 +16,10 @@ export function useRegistrationForm() {
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
     defaultValues: initialRegistrationData,
-    mode: "onBlur",
+    // Validate on every keystroke (not just on blur) so a bad email/
+    // password/mobile number is flagged while the member is still typing,
+    // not only after they tab away from the field.
+    mode: "onChange",
   });
 
   const { trigger } = form;

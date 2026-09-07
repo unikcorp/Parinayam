@@ -8,6 +8,7 @@ import {
   Check,
   CreditCard,
   Eye,
+  Gift,
   Heart,
   MessageSquare,
   Star,
@@ -36,6 +37,7 @@ const TYPE_DISPLAY: Record<NotificationType, { icon: LucideIcon; tint: string }>
   profile_photo_approved: { icon: Camera, tint: "bg-success-bg text-success" },
   profile_photo_rejected: { icon: Camera, tint: "bg-danger-bg text-danger" },
   subscription_success: { icon: CreditCard, tint: "bg-surface-cream-2 text-gold-text" },
+  coupon_assigned: { icon: Gift, tint: "bg-surface-cream-2 text-gold-text" },
 };
 
 // Where clicking a notification of this type should take the member.
@@ -52,6 +54,7 @@ const TYPE_HREF: Record<NotificationType, string> = {
   profile_photo_approved: "/profile/me",
   profile_photo_rejected: "/profile/me",
   subscription_success: "/settings/membership",
+  coupon_assigned: "/dashboard",
 };
 
 function NotificationRow({

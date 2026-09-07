@@ -6,6 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { ImageCropUpload, ImageCropperDialog, validateImageFile, type CroppedImageResult } from "@/components/image-crop-upload";
 import { uploadGalleryPhotoRequest, uploadProfilePhotoRequest } from "../api";
 import { ApiError } from "@/lib/api";
+import { useBasicConfig } from "@/hooks/use-basic-config";
 import type { RegistrationFormValues } from "../schema";
 import { MAX_REGISTRATION_PHOTOS as MAX_PHOTOS } from "@/constants/registration";
 
@@ -13,6 +14,7 @@ const MAX_GALLERY_PHOTOS = MAX_PHOTOS - 1;
 
 export function PhotosStep({ memberId }: { memberId: number | null }) {
   const { setValue } = useFormContext<RegistrationFormValues>();
+  const { data: basicConfig } = useBasicConfig();
   const [profileImage, setProfileImage] = useState<CroppedImageResult | null>(null);
   const [profileUploading, setProfileUploading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -97,6 +99,11 @@ export function PhotosStep({ memberId }: { memberId: number | null }) {
 
   return (
     <div className="flex flex-col gap-7">
+      {basicConfig?.profilePicOptional === false && (
+        <p className="text-xs font-semibold text-destructive">
+          A profile photo is required to continue past this step.
+        </p>
+      )}
       <div>
         <p className="mb-3 text-[13px] font-bold text-primary-deep">Profile photo</p>
         <ImageCropUpload

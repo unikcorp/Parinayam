@@ -17,7 +17,8 @@ export function useMySubscriptions() {
 
 export function useInitiateSubscription() {
   return useMutation({
-    mutationFn: (planId: number) => initiateSubscriptionRequest(planId),
+    mutationFn: ({ planId, couponCode }: { planId: number; couponCode?: string }) =>
+      initiateSubscriptionRequest(planId, couponCode),
   });
 }
 

@@ -19,7 +19,8 @@ import {
   useHighlightPackages,
   useInitiateHighlightPurchase,
 } from "@/features/profile-highlight/use-profile-highlight";
-import { useMyEligibleCouponForPlan } from "@/features/coupon/use-coupon";
+import { useValidateCouponCode } from "@/features/coupon/use-coupon";
+import type { ValidatedCoupon } from "@/features/coupon/api";
 
 type Method = "upi" | "card" | "netbanking" | "wallet";
 const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
@@ -65,23 +66,47 @@ function CheckoutPageInner() {
   const offerPrice = plan?.offer ? plan.offer.offer_price : null;
   const offerDiscount = offerPrice != null ? Math.round((originalPrice - offerPrice) * 100) / 100 : 0;
 
-  // Private/targeted coupon for this exact plan, if the member is eligible
-  // — display only. Same "bigger discount wins, never stacked" rule the
-  // backend enforces; the actual charged amount always comes back from the
-  // initiate/confirm response below, never computed here.
-  const { data: eligibleCoupon } = useMyEligibleCouponForPlan(Number.isNaN(planId) ? null : planId);
-  const useCoupon = !!eligibleCoupon && eligibleCoupon.discountAmount > offerDiscount;
+  // The member's typed-in coupon code — no auto-detection anymore. Set only
+  // once the code has been checked against this exact plan; the actual
+  // charged amount is always independently recomputed server-side when the
+  // purchase is initiated, this is display-only.
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<ValidatedCoupon | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const validateCoupon = useValidateCouponCode();
 
-  const discount = useCoupon ? eligibleCoupon.discountAmount : offerDiscount;
+  const useCoupon = !!appliedCoupon && appliedCoupon.discountAmount > offerDiscount;
+  const discount = useCoupon ? appliedCoupon.discountAmount : offerDiscount;
   const total = Math.round((originalPrice - discount) * 100) / 100;
+
+  function handleApplyCoupon() {
+    if (!plan || !couponInput.trim()) return;
+    setCouponError(null);
+    validateCoupon.mutate(
+      { code: couponInput.trim(), planId: plan.plan_id },
+      {
+        onSuccess: (data) => setAppliedCoupon(data),
+        onError: (error) => setCouponError(error instanceof ApiError ? error.message : "Could not apply this code."),
+      },
+    );
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  }
 
   async function handlePay() {
     if (!plan) return;
     try {
       // The backend recomputes the real price itself from the plan + any
-      // active offer — nothing priced here is trusted, this call just
-      // starts the attempt.
-      const { subscription_id } = await initiate.mutateAsync(plan.plan_id);
+      // active offer + the coupon code (re-validated, never trusted as-is)
+      // — nothing priced here is trusted, this call just starts the attempt.
+      const { subscription_id } = await initiate.mutateAsync({
+        planId: plan.plan_id,
+        couponCode: appliedCoupon?.couponCode,
+      });
       // No real payment gateway is wired up yet — the backend's gateway is
       // a deliberate stub that always succeeds (see payment-gateway.stub.ts),
       // so a real one can plug in here later without this flow changing.
@@ -237,33 +262,69 @@ function CheckoutPageInner() {
             </div>
           </div>
 
-          {useCoupon ? (
+          {plan.offer && !useCoupon && (
             <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
               <Tag className="size-4 text-success" />
               <div>
-                <div className="text-[13.5px] font-extrabold text-success">
-                  Special Offer for You — {eligibleCoupon.couponName}
-                </div>
+                <div className="text-[13.5px] font-extrabold text-success">{plan.offer.title}</div>
                 <div className="text-[11.5px] text-muted-foreground">Applied automatically</div>
               </div>
             </div>
-          ) : (
-            plan.offer && (
-              <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
-                <Tag className="size-4 text-success" />
-                <div>
-                  <div className="text-[13.5px] font-extrabold text-success">{plan.offer.title}</div>
-                  <div className="text-[11.5px] text-muted-foreground">Applied automatically</div>
-                </div>
-              </div>
-            )
           )}
+
+          <div className="mb-5">
+            <label className="mb-2 block text-[12.5px] font-bold text-primary-deep">Coupon code</label>
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between gap-2.5 rounded-xl border border-dashed border-[#7BD3B0] bg-success-bg/60 px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <Tag className="size-4 shrink-0 text-success" />
+                  <div>
+                    <div className="text-[13.5px] font-extrabold text-success">
+                      {appliedCoupon.couponCode} applied
+                    </div>
+                    <div className="text-[11.5px] text-muted-foreground">
+                      {useCoupon
+                        ? `− ₹${appliedCoupon.discountAmount.toLocaleString("en-IN")}`
+                        : "Your current price already reflects a better offer."}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  className="shrink-0 text-[12.5px] font-bold text-muted-foreground hover:text-destructive"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2.5">
+                  <Input
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon code"
+                    className="h-auto flex-1 rounded-xl px-4 py-3 text-sm"
+                  />
+                  <Button
+                    variant="outline"
+                    type="button"
+                    disabled={!couponInput.trim() || validateCoupon.isPending}
+                    onClick={handleApplyCoupon}
+                  >
+                    {validateCoupon.isPending ? "Checking…" : "Apply"}
+                  </Button>
+                </div>
+                {couponError && <p className="mt-1.5 text-[12.5px] font-semibold text-destructive">{couponError}</p>}
+              </>
+            )}
+          </div>
 
           <div className="flex flex-col gap-2.5 text-sm">
             <Row label={`${plan.plan_name} plan`} value={`₹${originalPrice.toLocaleString("en-IN")}`} />
             {discount > 0 && (
               <Row
-                label={useCoupon ? `Coupon ${eligibleCoupon.couponCode}` : "Offer discount"}
+                label={useCoupon ? `Coupon ${appliedCoupon.couponCode}` : "Offer discount"}
                 value={`− ₹${discount.toLocaleString("en-IN")}`}
                 tone="success"
               />

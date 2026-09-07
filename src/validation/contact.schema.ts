@@ -16,9 +16,9 @@ export const contactSchema = z.object({
 export type ContactFormValues = z.infer<typeof contactSchema>;
 
 export const contactDefaultValues: ContactFormValues = {
-  fullName: "Radhika Nair",
-  phone: "+91 98470 22133",
-  email: "radhika.n@gmail.com",
+  fullName: "",
+  phone: "",
+  email: "",
   topic: "General enquiry",
-  message: "I'd like to create a profile for my daughter and had a question about photo privacy…",
+  message: "",
 };

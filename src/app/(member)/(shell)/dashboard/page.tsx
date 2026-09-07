@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ProfileCardSkeleton } from "@/components/shared/loading-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CouponWidget } from "@/features/coupon/components/CouponWidget";
 
 const quickActions = [
   { icon: Pencil, label: "Edit profile", tint: "bg-surface-blue text-primary", href: "/profile/edit" },
@@ -288,44 +289,50 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-dark-panel-gradient rounded-[20px] p-5.5 text-white">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-xs font-extrabold tracking-[0.1em] text-gold-light">
-                {isPremium ? `★ ${planName?.toUpperCase()}` : "FREE PLAN"}
-              </span>
-              {isPremium && expiresAt && (
-                <span className="text-xs text-white/70">
-                  till {new Date(expiresAt.replace(" ", "T") + "Z").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+          {isPremium && (
+            <div className="bg-dark-panel-gradient rounded-[20px] p-5.5 text-white">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-extrabold tracking-[0.1em] text-gold-light">
+                  ★ {planName?.toUpperCase()}
                 </span>
-              )}
-            </div>
-            {limits && usage ? (
-              limits.contactViews === null ? (
-                <div className="text-xs text-white/70">Unlimited contact views</div>
+                {expiresAt && (
+                  <span className="text-xs text-white/70">
+                    till {new Date(expiresAt.replace(" ", "T") + "Z").toLocaleDateString("en-IN", { month: "short", year: "numeric" })}
+                  </span>
+                )}
+              </div>
+              {limits && usage ? (
+                limits.contactViews === null ? (
+                  <div className="mb-3.5 text-xs text-white/70">Unlimited contact views</div>
+                ) : limits.contactViews === 0 ? (
+                  <div className="mb-3.5 text-xs text-white/70">Upgrade to unlock contact views</div>
+                ) : (
+                  <>
+                    <ProgressBar
+                      percent={Math.min(100, Math.round((usage.contactViews / limits.contactViews) * 100))}
+                      variant="gold"
+                      trackClassName="bg-white/15"
+                    />
+                    <div className="mt-2 mb-3.5 text-xs text-white/70">
+                      {usage.contactViews} of {limits.contactViews} contact views used
+                    </div>
+                  </>
+                )
               ) : (
-                <>
-                  <ProgressBar
-                    percent={Math.min(100, Math.round((usage.contactViews / Math.max(limits.contactViews, 1)) * 100))}
-                    variant="gold"
-                    trackClassName="bg-white/15"
-                  />
-                  <div className="mt-2 mb-3.5 text-xs text-white/70">
-                    {usage.contactViews} of {limits.contactViews} contact views used
-                  </div>
-                </>
-              )
-            ) : (
-              <Skeleton className="h-3 w-32 bg-white/15" />
-            )}
-            <Button
-              render={<Link href="/plans" />}
-              variant="outline"
-              size="sm"
-              className="w-full border-white/25 bg-white/10 text-white hover:bg-white/18"
-            >
-              {isPremium ? "View plans" : "Upgrade now"} ♛
-            </Button>
-          </div>
+                <Skeleton className="mb-3.5 h-3 w-32 bg-white/15" />
+              )}
+              <Button
+                render={<Link href="/plans" />}
+                variant="outline"
+                size="sm"
+                className="w-full border-white/25 bg-white/10 text-white hover:bg-white/18"
+              >
+                View plans ♛
+              </Button>
+            </div>
+          )}
+
+          <CouponWidget />
 
           <div className="rounded-[20px] border border-card-border bg-card p-5.5">
             <div className="mb-3.5 text-base font-extrabold text-primary-deep">

@@ -25,7 +25,10 @@ import { cn } from "@/lib/utils";
 import { StepperSidebar } from "@/components/layout/registration-stepper-sidebar";
 import { MobileStepHeader } from "@/components/layout/registration-mobile-header";
 import { RegistrationAdPanel } from "@/components/layout/registration-ad-panel";
+import { RegistrationAdPopup } from "@/components/layout/registration-ad-popup";
+import { SiteHeader } from "@/components/layout/site-header";
 import { useAdvertisements } from "@/hooks/use-advertisements";
+import { useBasicConfig } from "@/hooks/use-basic-config";
 import { Button } from "@/components/ui/button";
 import { FormSkeleton } from "@/components/shared/loading-skeletons";
 
@@ -46,6 +49,8 @@ import { ReviewStep } from "@/features/registration-wizard/components/review";
 // rest of the profile can be filled in. Tracked separately from `step` so
 // the stepper still reads "step 1 of 9" while it's showing.
 const ACCOUNT_INFO_STEP = 0;
+const PHOTOS_STEP = 7;
+const VERIFICATION_STEP = 8;
 
 function errorMessage(error: unknown, fallback: string): string {
   return error instanceof ApiError ? error.message : fallback;
@@ -58,6 +63,7 @@ export default function RegisterPage() {
   const lookups = useRegistrationLookups();
   const { data: ads } = useAdvertisements();
   const ad = ads?.[0];
+  const { data: basicConfig } = useBasicConfig();
   const { isStepEnabled, disabledSteps } = useFieldVisibility();
   const isStepEnabledAt = (index: number) => isStepEnabled(registrationSteps[index].key);
   const [showOtp, setShowOtp] = useState(false);
@@ -71,6 +77,9 @@ export default function RegisterPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [realCompletion, setRealCompletion] = useState<number | null>(null);
+  // Mobile only — desktop already saw the ad in the side rail throughout,
+  // so it just navigates straight to /dashboard on submit like before.
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   // Real, field-based percentage from the backend (same calculation the
   // dashboard-entry gate uses) once the account exists — the step-index
@@ -180,12 +189,37 @@ export default function RegisterPage() {
       return;
     }
 
+    // Admin-configured (Site Settings > Update Basic Config) — when the
+    // admin has turned these off ("optional" = false), the member can't
+    // Next/Skip past these two steps without actually providing them.
+    if (step === PHOTOS_STEP && basicConfig?.profilePicOptional === false && form.getValues("photoCount") < 1) {
+      setApiError("A profile photo is required before you can continue.");
+      return;
+    }
+    if (
+      step === VERIFICATION_STEP &&
+      basicConfig?.documentUploadOptional === false &&
+      !form.getValues("idDocumentUploaded")
+    ) {
+      setApiError("An ID document is required before you can continue.");
+      return;
+    }
+
     if (lastStep) {
       setApiError(null);
       setIsSaving(true);
       try {
         await submitMemberRequest(memberId);
-        router.push("/dashboard");
+        // On mobile there's no room for the persistent side-rail ad shown
+        // throughout on desktop (RegistrationAdPanel, hidden below lg) — so
+        // show it once as a dismissible popup right after they finish,
+        // instead of navigating straight to /dashboard.
+        const isDesktopView = window.matchMedia("(min-width: 1024px)").matches;
+        if (!isDesktopView && ad) {
+          setShowAdPopup(true);
+        } else {
+          router.push("/dashboard");
+        }
       } catch (error) {
         setApiError(errorMessage(error, "Could not submit your profile. Please try again."));
       } finally {
@@ -272,11 +306,30 @@ export default function RegisterPage() {
 
   // Only Account Info (step 0) and Review (the last step) are required to
   // move forward — every step in between can be skipped, same as admin's
-  // Add Member wizard.
-  const isSkippableStep = step > ACCOUNT_INFO_STEP && !lastStep;
+  // Add Member wizard. Photos/Verification are the exception when the
+  // admin has turned off "optional" for them (Site Settings > Update Basic
+  // Config) — then Skip disappears too, matching handleNext's own gate.
+  const photoCount = form.watch("photoCount");
+  const idDocumentUploaded = form.watch("idDocumentUploaded");
+  const isPhotoRequiredUnmet =
+    step === PHOTOS_STEP && basicConfig?.profilePicOptional === false && photoCount < 1;
+  const isDocumentRequiredUnmet =
+    step === VERIFICATION_STEP && basicConfig?.documentUploadOptional === false && !idDocumentUploaded;
+  const isSkippableStep =
+    step > ACCOUNT_INFO_STEP && !lastStep && !isPhotoRequiredUnmet && !isDocumentRequiredUnmet;
 
   return (
     <FormProvider {...form}>
+      {/* Mobile only — the desktop StepperSidebar already shows the
+          Parinayam logo/branding, but on mobile that sidebar is hidden
+          entirely, so the site's normal header (logo + nav menu) is shown
+          here instead, above the step progress header. Forced static
+          (SiteHeader is normally sticky) so it doesn't fight the step
+          header below it for the same sticky top-0 position. */}
+      <div className="lg:hidden [&>header]:!static">
+        <SiteHeader />
+      </div>
+
       <div
         className={cn(
           "lg:grid lg:min-h-screen",
@@ -424,6 +477,15 @@ export default function RegisterPage() {
 
         <RegistrationAdPanel ad={ad} />
       </div>
+
+      <RegistrationAdPopup
+        ad={ad}
+        open={showAdPopup}
+        onClose={() => {
+          setShowAdPopup(false);
+          router.push("/dashboard");
+        }}
+      />
     </FormProvider>
   );
 }

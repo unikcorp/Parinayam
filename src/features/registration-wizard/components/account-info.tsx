@@ -4,6 +4,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { ChipGroup, Field, FieldGroup, PasswordField, SelectField, TextField } from "@/components/forms/form-fields";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useBasicConfig } from "@/hooks/use-basic-config";
 import type { RegistrationFormValues } from "../schema";
 import type { RegistrationLookups } from "../use-registration-lookups";
 
@@ -14,7 +15,8 @@ const dobMonths = [
   "July", "August", "September", "October", "November", "December",
 ];
 const CURRENT_YEAR = new Date().getFullYear();
-const dobYears = Array.from({ length: 60 }, (_, i) => String(CURRENT_YEAR - 18 - i));
+const DEFAULT_MALE_LEGAL_AGE = 21;
+const DEFAULT_FEMALE_LEGAL_AGE = 18;
 const maritalStatuses = ["Never Married", "Divorced", "Widowed", "Awaiting Divorce"];
 
 function GenderField() {
@@ -49,7 +51,22 @@ function GenderField() {
 }
 
 function DobField() {
-  const { control } = useFormContext<RegistrationFormValues>();
+  const { control, watch } = useFormContext<RegistrationFormValues>();
+  const { data: basicConfig } = useBasicConfig();
+  const gender = watch("gender");
+
+  // Admin-configured (Site Settings > Update Basic Config) — the year list
+  // only ever offers birth years that are both old enough (per the
+  // gender-specific legal age) and no more recent than the admin's Last
+  // Birth Year cap, whichever is stricter.
+  const legalAge = gender === "male"
+    ? (basicConfig?.maleLegalAge ?? DEFAULT_MALE_LEGAL_AGE)
+    : (basicConfig?.femaleLegalAge ?? DEFAULT_FEMALE_LEGAL_AGE);
+  const maxBirthYear = basicConfig
+    ? Math.min(CURRENT_YEAR - legalAge, basicConfig.lastBirthYear)
+    : CURRENT_YEAR - legalAge;
+  const dobYears = Array.from({ length: 60 }, (_, i) => String(maxBirthYear - i));
+
   const parts = [
     { name: "dobDay" as const, placeholder: "Day", options: dobDays },
     { name: "dobMonth" as const, placeholder: "Month", options: dobMonths },
@@ -65,7 +82,7 @@ function DobField() {
             control={control}
             render={({ field }) => (
               <Select value={field.value || undefined} onValueChange={field.onChange}>
-                <SelectTrigger className="h-auto w-full rounded-xl px-3 py-3.5 text-[15px] font-semibold">
+                <SelectTrigger className="h-auto w-full min-w-0 rounded-xl px-3 py-3.5 text-[15px] font-semibold">
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
                 <SelectContent>
@@ -93,13 +110,13 @@ function MobileField() {
 
   return (
     <Field label="Mobile number" required error={error}>
-      <div className="flex gap-2.5">
+      <div className="flex min-w-0 gap-2.5">
         <Controller
           name="mobileCountryCode"
           control={control}
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className="h-auto w-24 shrink-0 rounded-xl px-3 py-3.5 text-[15px] font-semibold">
+              <SelectTrigger className="h-auto w-20 shrink-0 rounded-xl px-2.5 py-3.5 text-[15px] font-semibold">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -122,7 +139,7 @@ function MobileField() {
               onChange={(e) => field.onChange(e.target.value)}
               onBlur={field.onBlur}
               placeholder="98470 12345"
-              className="h-auto flex-1 rounded-xl border border-input bg-transparent px-4 py-3.5 text-[15px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-auto min-w-0 flex-1 rounded-xl border border-input bg-transparent px-3 py-3.5 text-[15px] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
           )}
         />
@@ -161,7 +178,7 @@ export function AccountInfoStep({
 
       {!hideContactAndLogin && (
         <FieldGroup title="Contact & login">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-x-6">
             <MobileField />
             <TextField<RegistrationFormValues>
               name="email"

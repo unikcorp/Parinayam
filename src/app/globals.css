@@ -169,7 +169,12 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Guards against page-wide horizontal scroll on narrow phones when a
+       stray element (a card, a select, a decorative image) is even a few
+       pixels wider than the viewport — clips the overflow instead of
+       letting the whole page shift/scroll sideways. Fixed/sticky elements
+       sized in vw are unaffected. */
+    @apply bg-background text-foreground overflow-x-hidden;
   }
   html {
     @apply font-sans;

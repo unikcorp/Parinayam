@@ -6,6 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { FieldGroup, SelectField, TextField } from "@/components/forms/form-fields";
 import { uploadDocumentRequest } from "../api";
 import { ApiError } from "@/lib/api";
+import { useBasicConfig } from "@/hooks/use-basic-config";
 import type { RegistrationFormValues } from "../schema";
 
 const idTypes = ["Aadhaar", "Passport", "PAN", "Other Documents"];
@@ -103,8 +104,14 @@ function IdentityDocumentUpload({ memberId }: { memberId: number | null }) {
 }
 
 export function VerificationStep({ memberId }: { memberId: number | null }) {
+  const { data: basicConfig } = useBasicConfig();
   return (
     <div className="flex flex-col gap-7">
+      {basicConfig?.documentUploadOptional === false && (
+        <p className="text-xs font-semibold text-destructive">
+          An ID document is required to continue past this step.
+        </p>
+      )}
       <FieldGroup title="Government ID">
         <div className="mb-4">
           <SelectField<RegistrationFormValues> name="idType" label="ID type" required options={idTypes} />

@@ -9,7 +9,8 @@ export type NotificationType =
   | "favorite_added"
   | "profile_photo_approved"
   | "profile_photo_rejected"
-  | "subscription_success";
+  | "subscription_success"
+  | "coupon_assigned";
 
 export interface NotificationRecord {
   id: number;

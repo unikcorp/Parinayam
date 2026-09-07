@@ -35,22 +35,49 @@ export function SiteHeader() {
         scrolled ? "border-card-border shadow-[0_8px_24px_rgba(127,29,29,0.06)]" : "border-transparent"
       )}
     >
-      <Link href="/" className="flex items-center gap-2.5 lg:gap-3">
-        <BrandMark
-          className="bg-dark-panel-gradient flex size-8.5 items-center justify-center rounded-[10px] text-base font-extrabold text-gold-light lg:size-10 lg:rounded-xl lg:text-xl"
-          imageClassName="h-12 w-auto max-w-44 lg:h-15"
-        />
-        {!hasCustomLogo && (
-          <span className="flex flex-col lg:block">
-            <span className="text-lg font-extrabold tracking-tight text-primary lg:text-xl">
-              {brand.name}
+      <div className="flex items-center gap-2.5">
+        {/* Mobile only — hamburger sits to the left of the logo, matching
+            the common mobile-nav convention (menu on the left, brand next
+            to it, primary action on the right). */}
+        <Sheet>
+          <SheetTrigger render={<Button variant="secondary" size="icon" className="lg:hidden" />}>
+            <Menu className="size-4.5" />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-72 p-6">
+            <nav className="mt-8 flex flex-col gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-lg px-3 py-3 text-[15px] font-semibold text-ink hover:bg-muted"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <Button className="mt-4 w-full" size="cta" render={<Link href="/register" />}>
+              Register Free
+            </Button>
+          </SheetContent>
+        </Sheet>
+
+        <Link href="/" className="flex items-center gap-2.5 lg:gap-3">
+          <BrandMark
+            className="bg-dark-panel-gradient flex size-8.5 items-center justify-center rounded-[10px] text-base font-extrabold text-gold-light lg:size-10 lg:rounded-xl lg:text-xl"
+            imageClassName="h-12 w-auto max-w-44 lg:h-15"
+          />
+          {!hasCustomLogo && (
+            <span className="flex flex-col lg:block">
+              <span className="text-lg font-extrabold tracking-tight text-primary lg:text-xl">
+                {brand.name}
+              </span>
+              <span className="hidden text-[11px] font-semibold tracking-wide text-faint uppercase lg:block">
+                Matrimony
+              </span>
             </span>
-            <span className="hidden text-[11px] font-semibold tracking-wide text-faint uppercase lg:block">
-              Matrimony
-            </span>
-          </span>
-        )}
-      </Link>
+          )}
+        </Link>
+      </div>
 
       <nav className="hidden items-center gap-8 text-[15px] font-semibold text-muted-foreground lg:flex">
         {navLinks.map((link) => (
@@ -69,31 +96,10 @@ export function SiteHeader() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2.5 lg:hidden">
+      <div className="lg:hidden">
         <Button variant="outline" size="sm" render={<Link href="/login" />}>
           Login
         </Button>
-        <Sheet>
-          <SheetTrigger render={<Button variant="secondary" size="icon" />}>
-            <Menu className="size-4.5" />
-          </SheetTrigger>
-          <SheetContent side="right" className="w-72 p-6">
-            <nav className="mt-8 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-lg px-3 py-3 text-[15px] font-semibold text-ink hover:bg-muted"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            <Button className="mt-4 w-full" size="cta" render={<Link href="/register" />}>
-              Register Free
-            </Button>
-          </SheetContent>
-        </Sheet>
       </div>
     </header>
   );

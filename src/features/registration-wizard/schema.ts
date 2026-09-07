@@ -105,7 +105,11 @@ export const registrationSchema = z
     // Step 10 — Review & submit has no fields of its own
   })
   .superRefine((data, ctx) => {
-    if (data.confirmPassword !== data.password) {
+    // Only flag a mismatch once confirmPassword actually has a value — with
+    // live (onChange) validation, checking unconditionally would show
+    // "Passwords do not match" the moment the member starts typing the
+    // password, before they've even reached the confirm field.
+    if (data.confirmPassword && data.confirmPassword !== data.password) {
       ctx.addIssue({ code: "custom", message: "Passwords do not match", path: ["confirmPassword"] });
     }
   });
