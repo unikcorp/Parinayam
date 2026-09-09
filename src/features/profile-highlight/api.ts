@@ -1,5 +1,10 @@
 import { api } from "@/lib/api";
-import type { HighlightPackage, HighlightPurchase, InitiateHighlightPurchaseResult } from "./types";
+import type {
+  HighlightPackage,
+  HighlightPurchase,
+  InitiateHighlightPurchaseResult,
+  RazorpayHighlightConfirmPayload,
+} from "./types";
 
 // Public — no auth needed, active packages only.
 export function getHighlightPackagesRequest() {
@@ -10,8 +15,13 @@ export function initiateHighlightPurchaseRequest(packageId: number) {
   return api.post<InitiateHighlightPurchaseResult>("/api/profile-highlight-purchases/initiate", { packageId });
 }
 
-export function confirmHighlightPurchaseRequest(purchaseId: number, gatewayPaymentId: string) {
-  return api.post<HighlightPurchase>("/api/profile-highlight-purchases/confirm", { purchaseId, gatewayPaymentId });
+export function confirmHighlightPurchaseRequest({ purchaseId, razorpay }: RazorpayHighlightConfirmPayload) {
+  return api.post<HighlightPurchase>("/api/profile-highlight-purchases/confirm", {
+    purchaseId,
+    razorpayOrderId: razorpay.orderId,
+    razorpayPaymentId: razorpay.paymentId,
+    razorpaySignature: razorpay.signature,
+  });
 }
 
 export function getHighlightStatusRequest() {

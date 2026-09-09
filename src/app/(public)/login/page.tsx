@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Heart, Lock, Check, ChevronDown, Apple, ArrowLeft } from "lucide-react";
@@ -13,10 +14,10 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { SegmentedControl } from "@/components/shared/segmented-control";
-import { ImageSlot } from "@/components/shared/image-slot";
 import { BrandMark } from "@/components/shared/brand-mark";
 import { PasswordInput } from "@/components/shared/password-input";
 import { useHasCustomLogo } from "@/hooks/use-branding";
+import { useBanners, bannerImageUrl, type BannerSlot } from "@/hooks/use-banners";
 import { brand } from "@/data/brand";
 import {
   loginSchema,
@@ -81,6 +82,30 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const hasCustomLogo = useHasCustomLogo();
+  // The 4 admin-uploaded Home Page Banner images (Site Settings > Home Page
+  // Banner) rotate through this hero slot — falls back to a single
+  // placeholder photo until at least one banner is uploaded.
+  const { data: banners } = useBanners();
+  const bannerSlots: BannerSlot[] = [1, 2, 3, 4];
+  const heroImages = bannerSlots
+    .map((slot) => bannerImageUrl(banners?.[slot] ?? null))
+    .filter((src): src is string => !!src);
+  const rotatingImages = heroImages.length > 0 ? heroImages : ["/photos/couple.jpg"];
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    // The banner list can change size once it loads (or if an admin edits
+    // it) — clamp back to a valid index rather than leaving every layer
+    // hidden with none matching heroIndex.
+    setHeroIndex((i) => (i >= rotatingImages.length ? 0 : i));
+    if (rotatingImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setHeroIndex((i) => (i + 1) % rotatingImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rotatingImages.length]);
+
   const [formError, setFormError] = useState<string | null>(null);
   const [pendingDeletion, setPendingDeletion] = useState<{
     identifier: { mobileNumber?: string; email?: string };
@@ -255,10 +280,19 @@ export default function LoginPage() {
 
         <div className="relative mt-8 lg:mt-0 lg:flex lg:flex-1 lg:flex-col lg:justify-center">
           <div className="relative mx-auto mb-8 w-full max-w-[400px]">
-            <ImageSlot
-              label="Happy couple photo"
-              className="h-[260px] w-full rounded-[28px] border-4 border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-[380px] lg:border-[5px] lg:shadow-[0_30px_70px_rgba(0,0,0,0.3)]"
-            />
+            <div className="relative h-[260px] w-full overflow-hidden rounded-[28px] border-4 border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-[380px] lg:border-[5px] lg:shadow-[0_30px_70px_rgba(0,0,0,0.3)]">
+              {rotatingImages.map((src, i) => (
+                <Image
+                  key={src}
+                  src={src}
+                  alt="Happy couple photo"
+                  fill
+                  unoptimized
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className={`object-cover transition-opacity duration-1000 ${i === heroIndex ? "opacity-100" : "opacity-0"}`}
+                />
+              ))}
+            </div>
             <div className="animate-float absolute -right-4 -bottom-5 flex items-center gap-2.5 rounded-2xl bg-card px-4 py-3 text-primary-deep shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
               <span className="flex size-9 items-center justify-center rounded-full bg-success-bg text-success">
                 <Heart className="size-4 fill-current" />

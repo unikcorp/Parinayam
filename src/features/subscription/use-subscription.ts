@@ -5,6 +5,7 @@ import {
   getMySubscriptionsRequest,
   initiateSubscriptionRequest,
 } from "./api";
+import type { RazorpayCheckoutResult } from "./types";
 
 export function useMySubscriptions() {
   const { isAuthenticated, isRestoring } = useAuth();
@@ -25,8 +26,8 @@ export function useInitiateSubscription() {
 export function useConfirmSubscription() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ subscriptionId, gatewayPaymentId }: { subscriptionId: number; gatewayPaymentId: string }) =>
-      confirmSubscriptionRequest(subscriptionId, gatewayPaymentId),
+    mutationFn: ({ subscriptionId, razorpay }: { subscriptionId: number; razorpay?: RazorpayCheckoutResult }) =>
+      confirmSubscriptionRequest(subscriptionId, razorpay),
     onSuccess: () => {
       // The member's plan just changed — every screen reading useMembership()
       // (header Premium badge, plan page's "Current Plan", locked features)

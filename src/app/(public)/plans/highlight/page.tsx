@@ -3,11 +3,16 @@
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { useHighlightPackages } from "@/features/profile-highlight/use-profile-highlight";
+import { useMembership } from "@/features/membership/use-membership";
+import { useAuth } from "@/context/auth-context";
 import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function HighlightPackagesPage() {
   const router = useRouter();
   const { data: packages, isLoading, isError } = useHighlightPackages();
+  const { isAuthenticated } = useAuth();
+  const { isPremium, isLoading: membershipLoading } = useMembership();
+  const showUpgradeNotice = isAuthenticated && !membershipLoading && !isPremium;
 
   return (
     <div className="mx-auto max-w-290 px-5 pt-8 pb-10 lg:px-6 lg:pt-12">
@@ -19,9 +24,19 @@ export default function HighlightPackagesPage() {
           Make your profile stand out
         </h1>
         <p className="mx-auto max-w-lg text-sm text-muted-foreground lg:text-[15px]">
-          Highlight your profile to rank higher in search and get noticed faster — independent of your Membership Plan.
+          Highlight your profile to rank higher in search and get noticed faster — a perk for premium plan members.
         </p>
       </div>
+
+      {showUpgradeNotice && (
+        <div className="mx-auto mb-8 max-w-lg rounded-xl border border-gold/30 bg-gold/5 px-5 py-3.5 text-center text-sm font-semibold text-primary-deep">
+          Profile Highlight is available to premium plan members.{" "}
+          <button type="button" onClick={() => router.push("/plans")} className="text-gold underline underline-offset-2">
+            Upgrade your plan
+          </button>{" "}
+          to unlock it.
+        </div>
+      )}
 
       {isLoading && <PlanCardsSkeleton />}
 
@@ -53,10 +68,12 @@ export default function HighlightPackagesPage() {
               {pkg.description && <p className="text-sm text-muted-foreground">{pkg.description}</p>}
               <button
                 type="button"
-                onClick={() => router.push(`/checkout?highlight=${pkg.id}`)}
+                onClick={() =>
+                  showUpgradeNotice ? router.push("/plans") : router.push(`/checkout?highlight=${pkg.id}`)
+                }
                 className="mt-auto rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white"
               >
-                Purchase
+                {showUpgradeNotice ? "Upgrade to unlock" : "Purchase"}
               </button>
             </div>
           ))}

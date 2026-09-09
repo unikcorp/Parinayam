@@ -40,7 +40,9 @@ export default function PlansPage() {
     setActivatingPlanId(planId);
     try {
       const { subscription_id } = await initiate.mutateAsync({ planId });
-      await confirm.mutateAsync({ subscriptionId: subscription_id, gatewayPaymentId: `stub_${Date.now()}` });
+      // No razorpay field — the server's own paid_amount===0 branch
+      // activates a Free plan without any gateway involved.
+      await confirm.mutateAsync({ subscriptionId: subscription_id });
       router.push(`/checkout/success?subscription=${subscription_id}`);
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : "Could not activate the Free plan. Please try again.");

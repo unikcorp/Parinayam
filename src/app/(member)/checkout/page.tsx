@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, Star, Tag, CreditCard, Landmark, Wallet } from "lucide-react";
+import { ChevronLeft, Star, Tag, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -21,9 +21,6 @@ import {
 } from "@/features/profile-highlight/use-profile-highlight";
 import { useValidateCouponCode } from "@/features/coupon/use-coupon";
 import type { ValidatedCoupon } from "@/features/coupon/api";
-
-type Method = "upi" | "card" | "netbanking" | "wallet";
-const upiApps = ["GPay", "PhonePe", "Paytm", "Other UPI"];
 
 function CheckoutPageInner() {
   const router = useRouter();
@@ -56,11 +53,11 @@ function CheckoutPageInner() {
 
   const initiate = useInitiateSubscription();
   const confirm = useConfirmSubscription();
-  const isProcessing = initiate.isPending || confirm.isPending;
-
-  const [method, setMethod] = useState<Method>("upi");
-  const [upiApp, setUpiApp] = useState(upiApps[0]);
-  const [upiId, setUpiId] = useState("");
+  // The gap between order-creation succeeding and the member finishing/
+  // dismissing the Razorpay modal — neither mutation is "pending" during
+  // that window, so isProcessing needs its own flag to stay disabled then.
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
+  const isProcessing = initiate.isPending || confirm.isPending || awaitingPayment;
 
   const originalPrice = plan ? Number(plan.plan_amount) : 0;
   const offerPrice = plan?.offer ? plan.offer.offer_price : null;
@@ -103,17 +100,77 @@ function CheckoutPageInner() {
       // The backend recomputes the real price itself from the plan + any
       // active offer + the coupon code (re-validated, never trusted as-is)
       // — nothing priced here is trusted, this call just starts the attempt.
-      const { subscription_id } = await initiate.mutateAsync({
+      const { subscription_id, payment_order } = await initiate.mutateAsync({
         planId: plan.plan_id,
         couponCode: appliedCoupon?.couponCode,
       });
-      // No real payment gateway is wired up yet — the backend's gateway is
-      // a deliberate stub that always succeeds (see payment-gateway.stub.ts),
-      // so a real one can plug in here later without this flow changing.
-      await confirm.mutateAsync({ subscriptionId: subscription_id, gatewayPaymentId: `stub_${Date.now()}` });
-      router.push(`/checkout/success?subscription=${subscription_id}`);
+
+      if (payment_order.gateway === "free") {
+        // ₹0 (Free plan, or a 100%-discount coupon/offer) — nothing to
+        // charge, no Razorpay involved at all.
+        await confirm.mutateAsync({ subscriptionId: subscription_id });
+        router.push(`/checkout/success?subscription=${subscription_id}`);
+        return;
+      }
+
+      if (!payment_order.orderId || !payment_order.keyId) {
+        toast.error("Payment could not start. Please refresh and try again.");
+        return;
+      }
+
+      // checkout.js loads async (afterInteractive) — it's normally ready
+      // well before a member finishes reading this page, but give it a
+      // moment rather than failing a perfectly good order outright.
+      if (typeof window !== "undefined" && !window.Razorpay) {
+        for (let attempt = 0; attempt < 20 && !window.Razorpay; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+      }
+      if (typeof window === "undefined" || !window.Razorpay) {
+        toast.error("Payment could not start. Please refresh and try again.");
+        return;
+      }
+
+      setAwaitingPayment(true);
+      const rzp = new window.Razorpay({
+        key: payment_order.keyId,
+        order_id: payment_order.orderId,
+        amount: Math.round(payment_order.amount * 100),
+        currency: payment_order.currency,
+        name: "Parinayam",
+        description: `${plan.plan_name} plan`,
+        handler: (response) => {
+          confirm
+            .mutateAsync({
+              subscriptionId: subscription_id,
+              razorpay: {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              },
+            })
+            .then(() => {
+              router.push(`/checkout/success?subscription=${subscription_id}`);
+            })
+            .catch((error) => {
+              toast.error(
+                error instanceof ApiError ? error.message : "Payment could not be verified. Please contact support.",
+              );
+            })
+            .finally(() => setAwaitingPayment(false));
+        },
+        modal: {
+          // Member closed the Checkout modal without paying — never call
+          // confirm, never navigate anywhere. The subscription stays
+          // PENDING (cleaned up later by the abandoned-checkout job if it's
+          // never completed).
+          ondismiss: () => setAwaitingPayment(false),
+        },
+      });
+      rzp.open();
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : "Payment could not be completed. Please try again.");
+      setAwaitingPayment(false);
     }
   }
 
@@ -157,7 +214,7 @@ function CheckoutPageInner() {
 
   return (
     <div className="mx-auto grid max-w-290 grid-cols-1 gap-6 px-5 pt-6 pb-8 lg:grid-cols-[1fr_420px] lg:items-start lg:gap-8 lg:px-6 lg:pt-10 lg:pb-16">
-      {/* PAYMENT METHODS */}
+      {/* INFO */}
       <main>
         <button
           type="button"
@@ -171,79 +228,20 @@ function CheckoutPageInner() {
           Complete your payment
         </h1>
         <p className="mb-6 text-sm text-muted-foreground lg:mb-7 lg:text-[14.5px]">
-          Choose how you&apos;d like to pay.
+          Review your order, then pay securely — UPI, card, net banking, and wallets are all available on the
+          next screen.
         </p>
 
-        {/* UPI */}
-        <MethodCard selected={method === "upi"} onSelect={() => setMethod("upi")} title="UPI" badge="Recommended · Instant">
-          {method === "upi" && (
-            <>
-              <div className="mb-4.5 grid grid-cols-2 gap-2.5 lg:flex lg:gap-3">
-                {upiApps.map((app) => (
-                  <button
-                    key={app}
-                    type="button"
-                    onClick={() => setUpiApp(app)}
-                    className={cn(
-                      "flex-1 rounded-[13px] border p-3.5 text-center text-[13.5px] font-bold",
-                      upiApp === app ? "border-primary bg-[#FBFCFE] text-primary" : "border-input text-muted-foreground"
-                    )}
-                  >
-                    {app}
-                  </button>
-                ))}
-              </div>
-              <label className="mb-2 block text-[12.5px] font-bold text-primary-deep">UPI ID</label>
-              <div className="flex gap-3">
-                <Input
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  placeholder="yourname@bank"
-                  className="h-auto flex-1 rounded-xl px-4 py-3.5 text-sm"
-                />
-                <Button variant="outline" type="button">
-                  Verify
-                </Button>
-              </div>
-            </>
-          )}
-        </MethodCard>
-
-        {/* CARD */}
-        <MethodCard
-          selected={method === "card"}
-          onSelect={() => setMethod("card")}
-          title="Credit / Debit card"
-          icon={CreditCard}
-          trailing={
-            <span className="flex gap-1.5">
-              {["VISA", "MC", "RuPay"].map((c) => (
-                <span key={c} className="rounded-md border border-input px-2.5 py-1 text-[10.5px] font-extrabold text-muted-foreground">
-                  {c}
-                </span>
-              ))}
-            </span>
-          }
-        />
-
-        {/* NET BANKING */}
-        <MethodCard
-          selected={method === "netbanking"}
-          onSelect={() => setMethod("netbanking")}
-          title="Net banking"
-          icon={Landmark}
-          trailing={<span className="text-xs font-semibold text-faint">SBI, Federal, HDFC, ICICI +38</span>}
-        />
-
-        {/* WALLET */}
-        <MethodCard
-          selected={method === "wallet"}
-          onSelect={() => setMethod("wallet")}
-          title="Wallets"
-          icon={Wallet}
-          trailing={<span className="text-xs font-semibold text-faint">Amazon Pay, Mobikwik</span>}
-          last
-        />
+        <div className="flex items-start gap-3.5 rounded-[18px] border border-card-border bg-card p-5 lg:p-6">
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-success" />
+          <div>
+            <div className="text-[14.5px] font-bold text-primary-deep">Secured by Razorpay</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Clicking &ldquo;Pay securely&rdquo; opens Razorpay&apos;s checkout, where you can choose UPI, card,
+              net banking, or a wallet. Your payment details are never seen or stored by this site.
+            </p>
+          </div>
+        </div>
       </main>
 
       {/* ORDER SUMMARY */}
@@ -360,18 +358,75 @@ function HighlightCheckout({ packageId }: { packageId: number }) {
 
   const initiate = useInitiateHighlightPurchase();
   const confirm = useConfirmHighlightPurchase();
-  const isProcessing = initiate.isPending || confirm.isPending;
+  // The gap between order-creation succeeding and the member finishing/
+  // dismissing the Razorpay modal — neither mutation is "pending" during
+  // that window, so isProcessing needs its own flag to stay disabled then.
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
+  const isProcessing = initiate.isPending || confirm.isPending || awaitingPayment;
 
   const price = pkg ? Number(pkg.price) : 0;
 
   async function handlePay() {
     if (!pkg) return;
     try {
-      const { purchase_id } = await initiate.mutateAsync(pkg.id);
-      await confirm.mutateAsync({ purchaseId: purchase_id, gatewayPaymentId: `stub_${Date.now()}` });
-      router.push(`/checkout/success?highlight=${purchase_id}`);
+      const { purchase_id, payment_order } = await initiate.mutateAsync(pkg.id);
+
+      if (!payment_order.orderId || !payment_order.keyId) {
+        toast.error("Payment could not start. Please refresh and try again.");
+        return;
+      }
+
+      // checkout.js loads async (afterInteractive) — it's normally ready
+      // well before a member finishes reading this page, but give it a
+      // moment rather than failing a perfectly good order outright.
+      if (typeof window !== "undefined" && !window.Razorpay) {
+        for (let attempt = 0; attempt < 20 && !window.Razorpay; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+      }
+      if (typeof window === "undefined" || !window.Razorpay) {
+        toast.error("Payment could not start. Please refresh and try again.");
+        return;
+      }
+
+      setAwaitingPayment(true);
+      const rzp = new window.Razorpay({
+        key: payment_order.keyId,
+        order_id: payment_order.orderId,
+        amount: Math.round(payment_order.amount * 100),
+        currency: payment_order.currency,
+        name: "Parinayam",
+        description: `${pkg.package_name} — Profile Highlight`,
+        handler: (response) => {
+          confirm
+            .mutateAsync({
+              purchaseId: purchase_id,
+              razorpay: {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              },
+            })
+            .then(() => {
+              router.push(`/checkout/success?highlight=${purchase_id}`);
+            })
+            .catch((error) => {
+              toast.error(
+                error instanceof ApiError ? error.message : "Payment could not be verified. Please contact support.",
+              );
+            })
+            .finally(() => setAwaitingPayment(false));
+        },
+        modal: {
+          // Member closed the Checkout modal without paying — never call
+          // confirm, never navigate anywhere. The purchase stays PENDING.
+          ondismiss: () => setAwaitingPayment(false),
+        },
+      });
+      rzp.open();
     } catch (error) {
       toast.error(error instanceof ApiError ? error.message : "Payment could not be completed. Please try again.");
+      setAwaitingPayment(false);
     }
   }
 
@@ -455,54 +510,6 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: "suc
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
       <span className={cn("font-bold", tone === "success" ? "text-success" : "text-primary-deep")}>{value}</span>
-    </div>
-  );
-}
-
-function MethodCard({
-  selected,
-  onSelect,
-  title,
-  badge,
-  icon: Icon,
-  trailing,
-  children,
-  last,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  title: string;
-  badge?: string;
-  icon?: typeof CreditCard;
-  trailing?: React.ReactNode;
-  children?: React.ReactNode;
-  last?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-[18px] border bg-card p-5 lg:p-6",
-        selected ? "border-2 border-primary shadow-[0_8px_26px_rgba(185,28,28,0.08)]" : "border-card-border",
-        !last && "mb-3.5"
-      )}
-    >
-      <button type="button" onClick={onSelect} className="flex w-full items-center gap-3.5">
-        <span
-          className={cn(
-            "flex size-5.5 shrink-0 items-center justify-center rounded-full border-2",
-            selected ? "border-[7px] border-primary" : "border-input"
-          )}
-        />
-        {Icon && <Icon className="size-[18px] text-primary-deep" />}
-        <span className="flex-1 text-left text-[15.5px] font-bold text-primary-deep">{title}</span>
-        {badge && (
-          <span className="rounded-full bg-success-bg px-2.75 py-1 text-[11px] font-extrabold text-success">
-            {badge.toUpperCase()}
-          </span>
-        )}
-        {trailing}
-      </button>
-      {selected && children && <div className="mt-5">{children}</div>}
     </div>
   );
 }

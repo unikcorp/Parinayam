@@ -7,6 +7,7 @@ import {
   getHighlightStatusRequest,
   initiateHighlightPurchaseRequest,
 } from "./api";
+import type { RazorpayHighlightConfirmPayload } from "./types";
 
 // Public — no auth needed, so unauthenticated visitors browsing packages
 // (e.g. the checkout page opened directly) don't get stuck loading forever.
@@ -47,8 +48,7 @@ export function useInitiateHighlightPurchase() {
 export function useConfirmHighlightPurchase() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ purchaseId, gatewayPaymentId }: { purchaseId: number; gatewayPaymentId: string }) =>
-      confirmHighlightPurchaseRequest(purchaseId, gatewayPaymentId),
+    mutationFn: (payload: RazorpayHighlightConfirmPayload) => confirmHighlightPurchaseRequest(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile-highlight", "status"] });
       queryClient.invalidateQueries({ queryKey: ["profile-highlight", "history"] });

@@ -35,5 +35,15 @@ export interface InitiateHighlightPurchaseResult {
     orderId: string;
     amount: number;
     currency: string;
+    keyId: string;
+  };
+}
+
+export interface RazorpayHighlightConfirmPayload {
+  purchaseId: number;
+  razorpay: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
   };
 }
