@@ -220,39 +220,20 @@ export default function ContactPage() {
               <Button size="cta" type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                 Send message →
               </Button>
-              <span className="text-xs text-faint">We reply within one working day.</span>
+              {/* <span className="text-xs text-faint">We reply within one working day.</span> */}
             </div>
           </form>
 
           {/* MAP + OFFICE */}
           <aside className="flex flex-col gap-4.5">
-            <div className="relative h-37.5 overflow-hidden rounded-2xl border border-input bg-[#E8EDF5] lg:h-60 lg:rounded-[20px]">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(#D9E2EF 1px, transparent 1px), linear-gradient(90deg, #D9E2EF 1px, transparent 1px)",
-                  backgroundSize: "34px 34px",
-                }}
-              />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="flex size-9.5 rotate-[-45deg] items-center justify-center rounded-[50%_50%_50%_0] bg-primary shadow-[0_8px_20px_rgba(185,28,28,0.4)] lg:size-11">
-                  <span className="rotate-45 text-sm font-extrabold text-gold-light lg:text-base">
-                    P
-                  </span>
-                </div>
-              </div>
-              <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-[10px] bg-card px-3.25 py-2 text-[11.5px] font-bold text-primary-deep shadow-[0_5px_14px_rgba(127,29,29,0.12)]">
-                <MapPin className="size-3.5" /> Open in Maps
-              </span>
-            </div>
+           
 
             <div className="rounded-2xl border border-card-border bg-card p-5 lg:rounded-[20px] lg:p-6.5">
               <div className="mb-2 text-sm font-extrabold text-primary-deep lg:mb-4 lg:text-base">
                 Registered office
               </div>
               <div className="text-[13px] leading-[1.7] whitespace-pre-line text-[#4A5568] lg:text-sm">
-                {brand.name} Matrimony Pvt. Ltd.
+                {/* {brand.name} Matrimony Pvt. Ltd. */}
                 {contactInfo?.address ? `\n${contactInfo.address}` : ""}
               </div>
               <div className="mt-3.5 flex flex-col gap-3 lg:mt-5">

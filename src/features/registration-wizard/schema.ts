@@ -112,6 +112,18 @@ export const registrationSchema = z
     if (data.confirmPassword && data.confirmPassword !== data.password) {
       ctx.addIssue({ code: "custom", message: "Passwords do not match", path: ["confirmPassword"] });
     }
+
+    // Gender-based minimum partner age:
+    //   male   → 18  (standard matrimony minimum for groom-seeks-bride)
+    //   female → 21  (legal minimum age for marriage in India)
+    const partnerAgeFloor = data.gender === "male" ? 18 : 21;
+    if (data.partnerAgeMin < partnerAgeFloor) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Minimum partner age must be at least ${partnerAgeFloor} for a ${data.gender} member`,
+        path: ["partnerAgeMin"],
+      });
+    }
   });
 
 export type RegistrationFormValues = z.infer<typeof registrationSchema>;

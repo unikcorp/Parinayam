@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   FieldGroup,
@@ -10,16 +11,35 @@ import { RangeFilter } from "@/components/shared/range-filter";
 import { useFieldVisibility } from "@/hooks/use-field-visibility";
 import type { RegistrationFormValues } from "../schema";
 import type { RegistrationLookups } from "../use-registration-lookups";
-import { PARTNER_AGE_MIN, PARTNER_AGE_MAX } from "@/constants/registration";
+import {
+  PARTNER_AGE_MIN_MALE,
+  PARTNER_AGE_MIN_FEMALE,
+  PARTNER_AGE_MAX,
+} from "@/constants/registration";
 
 const heights = ["4' 10\"", "5' 0\"", "5' 2\"", "5' 4\"", "5' 6\"", "5' 8\""];
 
 export function PreferencesStep({ lookups }: { lookups: RegistrationLookups }) {
   const { watch, setValue } = useFormContext<RegistrationFormValues>();
   const { isFieldEnabled } = useFieldVisibility();
+
+  const gender = watch("gender");
   const partnerAgeMin = watch("partnerAgeMin");
   const partnerAgeMax = watch("partnerAgeMax");
   const partnerReligion = watch("partnerReligion");
+
+  // Gender-based lower bound: male members can look for partners from 18,
+  // female members from 21 (legal minimum for marriage in India).
+  const ageMin = gender === "male" ? PARTNER_AGE_MIN_MALE : PARTNER_AGE_MIN_FEMALE;
+
+  // If the stored partnerAgeMin is below the gender-based floor (e.g. the
+  // member changed their gender or an old default was set), snap it up so
+  // the slider never shows an invalid starting position.
+  useEffect(() => {
+    if (partnerAgeMin < ageMin) {
+      setValue("partnerAgeMin", ageMin, { shouldValidate: true });
+    }
+  }, [ageMin, partnerAgeMin, setValue]);
 
   return (
     <FieldGroup title="">
@@ -28,10 +48,11 @@ export function PreferencesStep({ lookups }: { lookups: RegistrationLookups }) {
           label="Partner age"
           value={[partnerAgeMin, partnerAgeMax]}
           onChange={([min, max]) => {
-            setValue("partnerAgeMin", min);
+            // Never allow the user to drag below the gender floor.
+            setValue("partnerAgeMin", Math.max(min, ageMin));
             setValue("partnerAgeMax", max);
           }}
-          min={PARTNER_AGE_MIN}
+          min={ageMin}
           max={PARTNER_AGE_MAX}
         />
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { Controller, useFormContext, type FieldValues, type Path } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -236,12 +237,53 @@ export function SearchableCombobox({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Position of the floating dropdown in viewport coordinates.
+  const [dropPos, setDropPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    flipUp: boolean;
+  } | null>(null);
 
   // Keep the displayed text in sync when the field's real value changes from
   // outside (e.g. resetting the form, or a dependent field getting cleared).
   useEffect(() => {
     if (!open) setQuery(value);
   }, [value, open]);
+
+  // Recompute the dropdown position whenever it opens or the user scrolls /
+  // resizes — this is what keeps the portal-rendered list anchored to the
+  // input even though it lives in document.body.
+  useEffect(() => {
+    if (!open) {
+      setDropPos(null);
+      return;
+    }
+
+    function measure() {
+      const rect = inputRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const DROPDOWN_HEIGHT = 256; // max-h-64 = 16rem = 256px
+      const GAP = 6; // mt-1.5
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const flipUp = spaceBelow < DROPDOWN_HEIGHT + GAP && rect.top > DROPDOWN_HEIGHT + GAP;
+      setDropPos({
+        top: flipUp ? rect.top - GAP - DROPDOWN_HEIGHT : rect.bottom + GAP,
+        left: rect.left,
+        width: rect.width,
+        flipUp,
+      });
+    }
+
+    measure();
+    window.addEventListener("scroll", measure, { passive: true, capture: true });
+    window.addEventListener("resize", measure, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", measure, { capture: true });
+      window.removeEventListener("resize", measure);
+    };
+  }, [open]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -253,6 +295,9 @@ export function SearchableCombobox({
     if (!open) return;
     function handlePointerDown(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        // Also allow clicks inside the portal dropdown (which is outside containerRef).
+        const dropEl = document.getElementById("__combobox-portal__");
+        if (dropEl && dropEl.contains(e.target as Node)) return;
         setOpen(false);
         setQuery(value);
       }
@@ -267,12 +312,52 @@ export function SearchableCombobox({
     setOpen(false);
   }
 
+  const dropdown =
+    open && dropPos
+      ? createPortal(
+          <div
+            id="__combobox-portal__"
+            style={{
+              position: "fixed",
+              top: dropPos.top,
+              left: dropPos.left,
+              width: dropPos.width,
+              zIndex: 9999,
+              maxHeight: 256,
+            }}
+            className="overflow-y-auto rounded-lg border border-input bg-popover py-1 text-popover-foreground shadow-md ring-1 ring-foreground/10"
+          >
+            {filtered.length === 0 ? (
+              <div className="px-3.5 py-2 text-sm text-muted-foreground">No matches</div>
+            ) : (
+              filtered.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => selectOption(option)}
+                  className={cn(
+                    "flex w-full items-center px-3.5 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground",
+                    option === value && "bg-accent/60 font-semibold",
+                  )}
+                >
+                  {option}
+                </button>
+              ))
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div ref={containerRef} className="relative">
       <input
+        ref={inputRef}
         type="text"
         role="combobox"
         aria-expanded={open}
+        aria-autocomplete="list"
         value={query}
         placeholder={placeholder}
         onFocus={() => setOpen(true)}
@@ -302,28 +387,7 @@ export function SearchableCombobox({
         }}
         className="h-auto w-full rounded-xl border border-input bg-transparent px-4 py-3.5 text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       />
-      {open && (
-        <div className="absolute z-50 mt-1.5 max-h-64 w-full overflow-y-auto rounded-lg border border-input bg-popover py-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
-          {filtered.length === 0 ? (
-            <div className="px-3.5 py-2 text-sm text-muted-foreground">No matches</div>
-          ) : (
-            filtered.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => selectOption(option)}
-                className={cn(
-                  "flex w-full items-center px-3.5 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground",
-                  option === value && "bg-accent/60 font-semibold",
-                )}
-              >
-                {option}
-              </button>
-            ))
-          )}
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 }

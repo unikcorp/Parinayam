@@ -307,11 +307,22 @@ export default function ProfileEditPage() {
         router.push("/profile/me");
         return;
       }
-      // Resume flow reaching Review — /dashboard, not /profile/me, so
-      // RequireCompleteProfile (the (shell) gate) re-checks fresh and routes
-      // on to /plans if a plan still hasn't been chosen, same as straight
-      // after registration.
-      router.push("/dashboard");
+      // Resume flow reaching Review — check completion fresh so we can
+      // send directly to /plans if the profile is now ≥ 60% but no plan
+      // has been chosen yet, instead of relying on RequireCompleteProfile
+      // to bounce them a beat later.
+      try {
+        const summary = await api.get<{ profile_completion: number; has_selected_plan: boolean; can_enter_dashboard: boolean }>("/api/members/me/completion");
+        if (summary.can_enter_dashboard) {
+          router.push("/dashboard");
+        } else if (summary.profile_completion >= 60 && !summary.has_selected_plan) {
+          router.push("/plans");
+        } else {
+          router.push("/dashboard");
+        }
+      } catch {
+        router.push("/dashboard");
+      }
       return;
     }
 

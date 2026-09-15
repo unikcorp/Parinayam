@@ -218,7 +218,21 @@ export default function RegisterPage() {
         if (!isDesktopView && ad) {
           setShowAdPopup(true);
         } else {
-          router.push("/dashboard");
+          // Route to /plans if profile is ready but no plan chosen yet;
+          // otherwise let /dashboard (and its RequireCompleteProfile gate)
+          // handle whatever state the member is in.
+          try {
+            const summary = await api.get<{ profile_completion: number; has_selected_plan: boolean; can_enter_dashboard: boolean }>("/api/members/me/completion");
+            if (summary.can_enter_dashboard) {
+              router.push("/dashboard");
+            } else if (summary.profile_completion >= 60 && !summary.has_selected_plan) {
+              router.push("/plans");
+            } else {
+              router.push("/dashboard");
+            }
+          } catch {
+            router.push("/dashboard");
+          }
         }
       } catch (error) {
         setApiError(errorMessage(error, "Could not submit your profile. Please try again."));
@@ -481,9 +495,22 @@ export default function RegisterPage() {
       <RegistrationAdPopup
         ad={ad}
         open={showAdPopup}
-        onClose={() => {
+        onClose={async () => {
           setShowAdPopup(false);
-          router.push("/dashboard");
+          // Same post-registration routing logic as the desktop path —
+          // send to /plans if profile is done but no plan chosen yet.
+          try {
+            const summary = await api.get<{ profile_completion: number; has_selected_plan: boolean; can_enter_dashboard: boolean }>("/api/members/me/completion");
+            if (summary.can_enter_dashboard) {
+              router.push("/dashboard");
+            } else if (summary.profile_completion >= 60 && !summary.has_selected_plan) {
+              router.push("/plans");
+            } else {
+              router.push("/dashboard");
+            }
+          } catch {
+            router.push("/dashboard");
+          }
         }}
       />
     </FormProvider>
