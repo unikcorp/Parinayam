@@ -8,7 +8,7 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <SiteHeader />
+      <SiteHeader simpleCta />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>

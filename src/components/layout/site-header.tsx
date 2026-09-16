@@ -99,7 +99,7 @@ function useNavDest(): NavDest | null {
   return dest;
 }
 
-export function SiteHeader() {
+export function SiteHeader({ simpleCta }: { simpleCta?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const hasCustomLogo = useHasCustomLogo();
 
@@ -138,7 +138,7 @@ export function SiteHeader() {
               ))}
             </nav>
             {/* Mobile drawer CTA */}
-            <NavCta drawer />
+            <NavCta drawer simpleCta={simpleCta} />
           </SheetContent>
         </Sheet>
 
@@ -170,12 +170,12 @@ export function SiteHeader() {
 
       {/* Desktop CTA */}
       <div className="hidden items-center gap-3 lg:flex">
-        <NavCta />
+        <NavCta simpleCta={simpleCta} />
       </div>
 
       {/* Mobile top-bar CTA */}
       <div className="lg:hidden">
-        <NavCta mobile />
+        <NavCta mobile simpleCta={simpleCta} />
       </div>
     </header>
   );
@@ -187,9 +187,49 @@ export function SiteHeader() {
 //   Logged in, profile ≥ 60%, no plan → "Choose a Plan"
 //   Logged in, all good               → "Go to Dashboard"
 // Hidden while the session is still restoring to avoid a flash.
-function NavCta({ mobile, drawer }: { mobile?: boolean; drawer?: boolean }) {
+function NavCta({
+  mobile,
+  drawer,
+  simpleCta,
+}: {
+  mobile?: boolean;
+  drawer?: boolean;
+  simpleCta?: boolean;
+}) {
   const { isAuthenticated, isRestoring } = useAuth();
   const dest = useNavDest();
+
+  // The marketing/landing header always shows Login/Register — it doesn't
+  // route members into their dashboard/profile flow the way the rest of the
+  // site's header does.
+  if (simpleCta) {
+    if (drawer) {
+      return (
+        <Button className="mt-4 w-full" size="cta" render={<Link href="/register" />}>
+          Register Free
+        </Button>
+      );
+    }
+
+    if (mobile) {
+      return (
+        <Button variant="outline" size="sm" render={<Link href="/login" />}>
+          Login
+        </Button>
+      );
+    }
+
+    return (
+      <>
+        <Button variant="outline" size="lg" render={<Link href="/login" />}>
+          Login
+        </Button>
+        <Button size="lg" render={<Link href="/register" />}>
+          Register Free
+        </Button>
+      </>
+    );
+  }
 
   // Hide completely while hydrating / restoring the session cookie so we
   // never flash the wrong buttons before auth state is known.
