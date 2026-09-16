@@ -13,12 +13,11 @@ const jakarta = Plus_Jakarta_Sans({
 
 const defaultTitle = `${brand.name} — Find your life partner`;
 
-// Falls back to the static favicon.ico/icon.svg files in this directory
-// (Next.js's file-convention icons) whenever the admin hasn't uploaded one.
+// Falls back to null whenever the admin hasn't uploaded one.
 async function getFaviconUrl(): Promise<string | null> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001";
-    const res = await fetch(`${apiUrl}/api/site-settings/branding`, { next: { revalidate: 300 } });
+    const res = await fetch(`${apiUrl}/api/site-settings/branding`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
     const { data } = await res.json();
     return data?.favicon ? `${apiUrl}/uploads/${data.favicon}` : null;
@@ -47,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: brand.tagline,
     },
     robots: { index: true, follow: true },
-    ...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+    icons: faviconUrl ? { icon: faviconUrl } : {},
   };
 }
 

@@ -19,6 +19,8 @@ export interface PlanCardProps {
   highlighted?: boolean;
   dark?: boolean;
   badge?: string;
+  /** Admin-configured highlight color (hex) for the badge — falls back to the default gold styling when absent. */
+  badgeColor?: string;
   ctaLabel?: string;
   onSelect?: () => void;
   className?: string;
@@ -33,6 +35,7 @@ export function PlanCard({
   highlighted,
   dark,
   badge,
+  badgeColor,
   ctaLabel = "Choose plan",
   onSelect,
   className,
@@ -49,7 +52,13 @@ export function PlanCard({
       )}
     >
       {badge && (
-        <span className="bg-gold-gradient animate-pop absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-extrabold tracking-wide text-white uppercase shadow-cta-gold">
+        <span
+          className={cn(
+            "animate-pop absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-extrabold tracking-wide text-white uppercase shadow-cta-gold",
+            !badgeColor && "bg-gold-gradient"
+          )}
+          style={badgeColor ? { backgroundColor: badgeColor } : undefined}
+        >
           {badge}
         </span>
       )}

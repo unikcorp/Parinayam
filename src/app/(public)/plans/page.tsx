@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { PlanCard } from "@/components/shared/plan-card";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useMembership } from "@/features/membership/use-membership";
-import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
+import { getPlanBadgeLabel, getPlanFeatures } from "@/lib/membership-plan-display";
 import { ApiError } from "@/lib/api";
 import { useConfirmSubscription, useInitiateSubscription } from "@/features/subscription/use-subscription";
 import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
@@ -25,8 +25,6 @@ export default function PlansPage() {
   const initiate = useInitiateSubscription();
   const confirm = useConfirmSubscription();
   const [activatingPlanId, setActivatingPlanId] = useState<number | null>(null);
-
-  const badges = getPlanBadges(plans ?? []);
 
   // The plan the member is actively on right now, if any — used to block
   // self-service downgrades (matches the same rule enforced server-side in
@@ -81,7 +79,7 @@ export default function PlansPage() {
         <div className="mb-10 flex flex-col gap-4.5 lg:mb-14 lg:grid lg:grid-cols-4 lg:gap-6.5">
           {plans.map((plan) => {
             const isFree = Number(plan.plan_amount) === 0;
-            const badge = badges.get(plan.plan_id);
+            const badge = getPlanBadgeLabel(plan);
             const isCurrentPlan = !membershipLoading && isActive && currentPlanName === plan.plan_name;
             const isActivating = activatingPlanId === plan.plan_id;
             const isDowngrade = !isCurrentPlan && !!currentPlan && plan.sort_order < currentPlan.sort_order;
@@ -96,7 +94,8 @@ export default function PlansPage() {
                 period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
                 tagline={plan.plan_offers || undefined}
                 badge={badge}
-                dark={badge === "Best Value"}
+                badgeColor={plan.badge_color ?? undefined}
+                dark={plan.badge_label === "BEST_VALUE"}
                 ctaLabel={
                   isCurrentPlan
                     ? "Current Plan"

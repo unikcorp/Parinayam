@@ -26,6 +26,10 @@ export interface MembershipPlan {
   can_use_profile_boost: boolean;
   has_priority_visibility: boolean;
   is_premium: boolean;
+  /** Admin-configured plan tag for the plan cards — null if unconfigured, never rendered as an empty tag. */
+  badge_label: "BEST_VALUE" | "MOST_POPULAR" | null;
+  /** Admin-approved reddish-orange highlight color (hex) — null if unconfigured. */
+  badge_color: string | null;
   /** The plan's currently valid offer, resolved server-side (CURDATE()-scoped) — null if none is active right now. */
   offer: {
     id: number;

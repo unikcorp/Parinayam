@@ -5,7 +5,7 @@ import { PlanCard } from "@/components/shared/plan-card";
 import { useMyProfile } from "@/hooks/use-my-profile";
 import { useMembershipPlans } from "@/hooks/use-membership-plans";
 import { useMembership } from "@/features/membership/use-membership";
-import { getPlanBadges, getPlanFeatures } from "@/lib/membership-plan-display";
+import { getPlanBadgeLabel, getPlanFeatures } from "@/lib/membership-plan-display";
 import { PlanCardsSkeleton } from "@/components/shared/loading-skeletons";
 
 export default function BillingSettingsPage() {
@@ -13,8 +13,6 @@ export default function BillingSettingsPage() {
   const { data: profile } = useMyProfile();
   const { data: plans, isLoading, isError } = useMembershipPlans();
   const { planName: currentPlanName, isPremium, isActive, expiresAt, isLoading: membershipLoading } = useMembership();
-
-  const badges = getPlanBadges(plans ?? []);
 
   // The plan the member is actively on right now, if any — used both to
   // gate self-service downgrades and to know when "Current Plan" should
@@ -68,7 +66,7 @@ export default function BillingSettingsPage() {
           <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => {
               const isFree = Number(plan.plan_amount) === 0;
-              const badge = badges.get(plan.plan_id);
+              const badge = getPlanBadgeLabel(plan);
               const isCurrentPlan = !membershipLoading && isActive && currentPlanName === plan.plan_name;
               const isDowngrade = !isCurrentPlan && !!currentPlan && plan.sort_order < currentPlan.sort_order;
               return (
@@ -78,13 +76,14 @@ export default function BillingSettingsPage() {
                   price={isFree ? "₹0" : `₹${Number(plan.plan_amount).toLocaleString("en-IN")}`}
                   period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
                   badge={badge}
-                  dark={badge === "Best Value"}
+                  badgeColor={plan.badge_color ?? undefined}
+                  dark={plan.badge_label === "BEST_VALUE"}
                   ctaLabel={isCurrentPlan ? "Renew" : isDowngrade ? "Not available" : `Go ${plan.plan_name}`}
                   onSelect={isDowngrade ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}
                   className={
                     isCurrentPlan
                       ? "border-success ring-2 ring-success/20"
-                      : badge !== "Best Value" && !isFree
+                      : plan.badge_label !== "BEST_VALUE" && !isFree
                         ? "border-gold-light"
                         : undefined
                   }

@@ -17,6 +17,16 @@ export interface CarouselPlan {
   plan_msg: number;
   chat: boolean;
   video: boolean;
+  /** Admin-configured plan tag — null/absent means no badge is shown. */
+  badge_label?: "BEST_VALUE" | "MOST_POPULAR" | null;
+  /** Admin-approved highlight color (hex) — null/absent falls back to default badge styling. */
+  badge_color?: string | null;
+}
+
+function badgeLabelText(plan: CarouselPlan): string | undefined {
+  if (plan.badge_label === "BEST_VALUE") return "Best Value";
+  if (plan.badge_label === "MOST_POPULAR") return "Most Popular";
+  return undefined;
 }
 
 function planFeatures(plan: CarouselPlan): PlanFeatureRow[] {
@@ -34,11 +44,6 @@ export function PlansCarousel({ plans }: { plans: CarouselPlan[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const mostExpensive = plans.reduce<CarouselPlan | null>(
-    (max, p) => (Number(p.plan_amount) > Number(max?.plan_amount ?? -1) ? p : max),
-    null
-  );
 
   function updateEdges() {
     const el = trackRef.current;
@@ -82,7 +87,7 @@ export function PlansCarousel({ plans }: { plans: CarouselPlan[] }) {
       >
         {plans.map((plan, i) => {
           const isFree = Number(plan.plan_amount) === 0;
-          const isBestValue = plan.plan_id === mostExpensive?.plan_id && !isFree;
+          const isBestValue = plan.badge_label === "BEST_VALUE";
           return (
             <Reveal key={plan.plan_id} delay={i * 100} className="w-[300px] shrink-0 snap-center sm:w-[340px]">
               <div data-plan-card className="h-full">
@@ -90,7 +95,8 @@ export function PlansCarousel({ plans }: { plans: CarouselPlan[] }) {
                   name={plan.plan_name}
                   price={isFree ? "₹0" : `₹${Number(plan.plan_amount).toLocaleString("en-IN")}`}
                   period={isFree ? "forever" : `/ ${plan.plan_duration} days`}
-                  badge={isBestValue ? "Most popular" : undefined}
+                  badge={badgeLabelText(plan)}
+                  badgeColor={plan.badge_color ?? undefined}
                   dark={isBestValue}
                   ctaLabel={isFree ? "Get started" : `Go ${plan.plan_name}`}
                   onSelect={isFree ? undefined : () => router.push(`/checkout?plan=${plan.plan_id}`)}

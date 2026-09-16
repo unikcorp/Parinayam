@@ -3,7 +3,7 @@
  * Swapping this file (plus the color tokens in globals.css) rebrands the app for a new client.
  */
 export const brand = {
-  // name: "Parinayam",
+  name: "Parinayam",
   logoLetter: "P",
   tagline: "Where families begin forever",
   community: "Veluthedathu Nair",
