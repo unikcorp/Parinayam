@@ -171,6 +171,7 @@ export interface PublicMemberProfileResponse {
   verified: boolean;
   /** Profile Highlight — a paid add-on independent of Membership. */
   isHighlighted: boolean;
+  isPremium: boolean;
   lastLoginAt: string | null;
 }
 
