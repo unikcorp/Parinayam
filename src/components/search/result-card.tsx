@@ -25,7 +25,6 @@ export function SearchResultCard({
         className
       )}
     >
-      <HighlightRibbon isHighlighted={result.isHighlighted} />
       <div className={cn("overflow-hidden bg-card", result.isHighlighted ? "rounded-[15px]" : "rounded-[18px]")}>
         <Link href={`/profile/${result.id}`} className="relative block h-55 w-full overflow-hidden">
           <MemberProfilePhoto
@@ -38,12 +37,18 @@ export function SearchResultCard({
             isBlurred={result.photoIsBlurred}
             className="absolute inset-0 h-full w-full"
           />
+          <HighlightRibbon isHighlighted={result.isHighlighted} radiusClassName="rounded-t-[15px]" />
           {result.match != null && (
             <span className="absolute right-2.5 bottom-2.5 rounded-full bg-primary-deep px-2.5 py-1 text-[11.5px] font-extrabold text-white">
               {result.match}% match
             </span>
           )}
-          <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
+          <div
+            className={cn(
+              "absolute left-2.5 flex flex-col items-start gap-1.5",
+              result.isHighlighted ? "top-8" : "top-2.5"
+            )}
+          >
             <PremiumBadge isPremium={result.isPremium} />
           </div>
         </Link>

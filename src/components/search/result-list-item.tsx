@@ -17,7 +17,6 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
           : "border border-card-border bg-card shadow-[0_4px_16px_rgba(127,29,29,0.05)]"
       )}
     >
-      <HighlightRibbon isHighlighted={result.isHighlighted} />
       <div className={cn("flex overflow-hidden bg-card", result.isHighlighted ? "rounded-[15px]" : "rounded-[18px]")}>
         <Link href={`/profile/${result.id}`} className="relative block w-31 shrink-0 overflow-hidden">
           <MemberProfilePhoto
@@ -28,7 +27,13 @@ export function SearchResultListItem({ result }: { result: SearchResult }) {
             isBlurred={result.photoIsBlurred}
             className="h-39 w-full"
           />
-          <div className="absolute top-2 left-2 flex flex-col items-start gap-1.5">
+          <HighlightRibbon isHighlighted={result.isHighlighted} radiusClassName="rounded-tl-[15px]" />
+          <div
+            className={cn(
+              "absolute left-2 flex flex-col items-start gap-1.5",
+              result.isHighlighted ? "top-7" : "top-2"
+            )}
+          >
             <PremiumBadge isPremium={result.isPremium} />
           </div>
         </Link>

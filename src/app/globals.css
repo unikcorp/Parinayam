@@ -202,11 +202,13 @@
     background-size: 400px 100%;
   }
   .bg-highlight-ring-gradient {
-    background-image: linear-gradient(120deg, #2563eb, #7c3aed, #4f46e5, #7c3aed, #2563eb);
+    /* Warm copper-to-maroon sweep — matches the app's brand palette instead
+       of the earlier blue-violet, and mirrors the Flutter app's treatment. */
+    background-image: linear-gradient(120deg, #e8936b, #7f1d1d, #b91c1c, #7f1d1d, #e8936b);
     background-size: 300% 300%;
   }
   .bg-highlight-badge-gradient {
-    background-image: linear-gradient(135deg, #2563eb, #7c3aed);
+    background-image: linear-gradient(135deg, #e8936b, #7f1d1d);
   }
 }
 

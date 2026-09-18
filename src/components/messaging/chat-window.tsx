@@ -33,7 +33,7 @@ export function ChatWindow({
   const { data: conversations = [] } = useConversations();
   const { data: messages = [], isLoading } = useMessages(conversationId);
   const sendMessage = useSendMessage(conversationId);
-  const { isLoading: membershipLoading, canSendMessage } = useMembership();
+  const { isLoading: membershipLoading, canUseChat, canSendMessage } = useMembership();
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -103,30 +103,39 @@ export function ChatWindow({
       </div>
 
       {/* messages */}
-      <div ref={scrollRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-5 lg:px-8">
-        {isLoading ? (
-          <div className="py-10 text-center text-sm text-faint">Loading…</div>
-        ) : messages.length === 0 ? (
-          <div className="py-10 text-center text-sm text-faint">
-            No messages yet. Say hello to {convo.first_name}!
-          </div>
-        ) : (
-          messages.map((m) => (
-            <ChatBubble
-              key={m.id}
-              from={String(m.sender_member_id) === user?.id ? "self" : "other"}
-              time={formatMessageTime(m.created_at)}
-              read={m.is_read}
-              className="max-w-[78%] lg:max-w-[55%]"
-            >
-              {m.body}
-            </ChatBubble>
-          ))
-        )}
-      </div>
+      {!membershipLoading && !canUseChat ? (
+        <div className="flex flex-1 items-center justify-center px-4 py-5 lg:px-8">
+          <UpgradePrompt
+            feature="Chat"
+            message={`Chat isn't available on your plan. Upgrade to see and send messages with ${convo.first_name}.`}
+          />
+        </div>
+      ) : (
+        <div ref={scrollRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-4 py-5 lg:px-8">
+          {isLoading ? (
+            <div className="py-10 text-center text-sm text-faint">Loading…</div>
+          ) : messages.length === 0 ? (
+            <div className="py-10 text-center text-sm text-faint">
+              No messages yet. Say hello to {convo.first_name}!
+            </div>
+          ) : (
+            messages.map((m) => (
+              <ChatBubble
+                key={m.id}
+                from={String(m.sender_member_id) === user?.id ? "self" : "other"}
+                time={formatMessageTime(m.created_at)}
+                read={m.is_read}
+                className="max-w-[78%] lg:max-w-[55%]"
+              >
+                {m.body}
+              </ChatBubble>
+            ))
+          )}
+        </div>
+      )}
 
       {/* composer */}
-      {!membershipLoading && !canSendMessage ? (
+      {!membershipLoading && !canUseChat ? null : !membershipLoading && !canSendMessage ? (
         <div className="shrink-0 border-t border-card-border bg-card px-4 py-3.5 lg:px-7 lg:py-4">
           <UpgradePrompt feature="Messages" message="You've used all your messages for this plan." />
         </div>

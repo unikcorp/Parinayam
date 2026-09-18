@@ -1,24 +1,35 @@
+import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface HighlightRibbonProps {
   isHighlighted: boolean;
   className?: string;
+  /**
+   * Top-corner rounding, matched to the photo container's own radius. The
+   * ribbon sits flush against that container's rounded top edge, so without
+   * its own matching radius its square corners poke out past the curve
+   * instead of following it.
+   */
+  radiusClassName?: string;
 }
 
-// Centered banner straddling a highlighted card's top edge — same "Featured"
-// ribbon pattern other listing sites use, with the Highlight feature's own
-// copy and gradient instead of a generic "Featured Profile" label.
-export function HighlightRibbon({ isHighlighted, className }: HighlightRibbonProps) {
+// Full-width banner across the top of the photo — mirrors the Flutter app's
+// "Featured Profile" overlay treatment (a banner painted on the photo
+// itself, rather than a pill straddling the card's outer edge) so the two
+// clients read as the same design.
+export function HighlightRibbon({ isHighlighted, className, radiusClassName }: HighlightRibbonProps) {
   if (!isHighlighted) return null;
 
   return (
-    <span
+    <div
       className={cn(
-        "bg-highlight-badge-gradient absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-[11.5px] font-extrabold tracking-wide text-white shadow-md",
+        "bg-highlight-badge-gradient absolute inset-x-0 top-0 z-10 flex items-center justify-center gap-1.5 py-1.5",
+        radiusClassName,
         className
       )}
     >
-      Highlighted
-    </span>
+      <Sparkles className="size-3 fill-current text-white" />
+      <span className="text-[11px] font-extrabold tracking-wide text-white">Featured Profile</span>
+    </div>
   );
 }

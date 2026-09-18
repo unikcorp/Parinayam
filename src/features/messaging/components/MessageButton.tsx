@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { VariantProps } from "class-variance-authority";
 import type { buttonVariants } from "@/components/ui/button";
+import { useMembership } from "@/features/membership/use-membership";
 import { useStartConversation } from "../use-messaging";
 
 interface MessageButtonProps {
@@ -18,6 +19,7 @@ interface MessageButtonProps {
 export function MessageButton({ memberId, size = "icon-sm", variant = "outline", className }: MessageButtonProps) {
   const router = useRouter();
   const start = useStartConversation();
+  const { canUseChat } = useMembership();
 
   return (
     <Tooltip>
@@ -28,7 +30,7 @@ export function MessageButton({ memberId, size = "icon-sm", variant = "outline",
             variant={variant}
             size={size}
             aria-label="Message"
-            disabled={start.isPending}
+            disabled={!canUseChat || start.isPending}
             className={className}
             onClick={() =>
               start.mutate(memberId, {
@@ -40,7 +42,7 @@ export function MessageButton({ memberId, size = "icon-sm", variant = "outline",
           </Button>
         }
       />
-      <TooltipContent>Message</TooltipContent>
+      <TooltipContent>{canUseChat ? "Message" : "Chat isn't available on your plan"}</TooltipContent>
     </Tooltip>
   );
 }
